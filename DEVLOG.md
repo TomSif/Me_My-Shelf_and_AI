@@ -94,4 +94,76 @@ la base du moteur de recommandation en v1.
 
 ---
 
+## Session 2026-05-02 — Setup projet (Issue #1)
+
+### Ce qui était prévu
+
+- Créer le repo GitHub et l'initialiser
+- Scaffolder Vite + React + TypeScript
+- Installer et configurer Tailwind CSS v4
+- Poser la structure de dossiers
+- Écrire le README
+- Créer les branches `dev` et `setup/init`, PR et merge
+
+### Ce qui a été fait
+
+- Repo GitHub créé (`TomSif/Me_My-Shelf_and_AI`), issues v0 créées en amont
+- `git init` en local, remote rattaché, premier commit docs sur `main`
+- Branche `dev` créée et poussée
+- Branche `setup/init` créée depuis `dev`
+- Vite scaffoldé (React + TypeScript), `npm install` effectué
+- Tailwind CSS v4 installé (`tailwindcss` + `@tailwindcss/vite`)
+- Structure de dossiers posée : `components/ui`, `components/fragrance`, `hooks`, `types`, `utils`, `services`
+- Boilerplate Vite nettoyé (App.css supprimé, App.tsx réduit à un shell minimal)
+- README rédigé (description, stack, roadmap, architecture)
+- 3 commits atomiques sur `setup/init`, PR mergée dans `main`
+
+### Décisions prises
+
+**Nom du repo : `Me_My-Shelf_and_AI` (pas `fragrances-companion`).**
+Le nom de code initial était `fragrances-companion`. Décision finale : garder le vrai nom du projet,
+plus identitaire et cohérent avec la vision "ton outil, ton IA".
+
+**Tailwind CSS v4 — pas de `tailwind.config.js`.**
+En v4, la configuration se fait entièrement dans le CSS (directives `@theme`, `@layer`, etc.).
+L'unique point d'entrée est `@import "tailwindcss"` dans `index.css`.
+Le plugin `@tailwindcss/vite` remplace l'ancien `postcss`.
+
+**`.claude/` exclu du repo via `.gitignore`.**
+Ce dossier contient les fichiers de mémoire et de configuration de Claude Code.
+Utiles en local, pas pertinents dans l'historique git.
+
+**3 commits atomiques pour le setup.**
+Conformément au WORKFLOW : scaffolding Vite / config Tailwind / structure dossiers
+sont trois intentions distinctes. Ça se lit dans `git log`.
+
+### Bugs / blocages rencontrés
+
+**`npm create vite` annulé sur dossier non vide.**
+Vite affiche un menu interactif quand le dossier cible contient déjà des fichiers.
+Impossible à bypasser avec `echo y |` — le prompt utilise une sélection, pas un input texte.
+Solution : scaffolder dans un sous-dossier temporaire `_vite_tmp/`, puis déplacer les fichiers.
+
+**PR mergée dans `main` au lieu de `dev`.**
+La PR #7 a été mergée directement dans `main`. Corrigé en mergant `main` dans `dev`
+pour remettre les deux branches en phase. À retenir : toujours vérifier la branche cible
+dans l'interface GitHub avant de merger (base doit être `dev`, pas `main`).
+
+### Apprentissages
+
+- Tailwind v4 a une approche radicalement différente de v3 : pas de fichier de config JS,
+  tout passe par le CSS. Plus simple à démarrer, mais la doc v3 ne s'applique plus.
+- `npm create vite` est interactif par design — prévoir de scaffolder dans un dossier propre
+  si le dossier cible contient déjà des fichiers.
+- Dans GitHub, la branche **base** d'une PR = la branche de destination. Toujours vérifier
+  qu'elle est bien `dev` avant de merger.
+
+### Prochaine session
+
+- Issue #2 : définir les types TypeScript dans `src/types/fragrance.ts`
+  (`OlfactoryFamily`, `Season`, `Concentration`, interface `Fragrance`)
+- Branche : `feat/fragrance-type`
+
+---
+
 _Créé le 2026-04-30_
