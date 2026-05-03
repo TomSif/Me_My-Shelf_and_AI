@@ -94,4 +94,155 @@ la base du moteur de recommandation en v1.
 
 ---
 
+## Session 2026-05-02 — Setup projet (Issue #1)
+
+### Ce qui était prévu
+
+- Créer le repo GitHub et l'initialiser
+- Scaffolder Vite + React + TypeScript
+- Installer et configurer Tailwind CSS v4
+- Poser la structure de dossiers
+- Écrire le README
+- Créer les branches `dev` et `setup/init`, PR et merge
+
+### Ce qui a été fait
+
+- Repo GitHub créé (`TomSif/Me_My-Shelf_and_AI`), issues v0 créées en amont
+- `git init` en local, remote rattaché, premier commit docs sur `main`
+- Branche `dev` créée et poussée
+- Branche `setup/init` créée depuis `dev`
+- Vite scaffoldé (React + TypeScript), `npm install` effectué
+- Tailwind CSS v4 installé (`tailwindcss` + `@tailwindcss/vite`)
+- Structure de dossiers posée : `components/ui`, `components/fragrance`, `hooks`, `types`, `utils`, `services`
+- Boilerplate Vite nettoyé (App.css supprimé, App.tsx réduit à un shell minimal)
+- README rédigé (description, stack, roadmap, architecture)
+- 3 commits atomiques sur `setup/init`, PR mergée dans `main`
+
+### Décisions prises
+
+**Nom du repo : `Me_My-Shelf_and_AI` (pas `fragrances-companion`).**
+Le nom de code initial était `fragrances-companion`. Décision finale : garder le vrai nom du projet,
+plus identitaire et cohérent avec la vision "ton outil, ton IA".
+
+**Tailwind CSS v4 — pas de `tailwind.config.js`.**
+En v4, la configuration se fait entièrement dans le CSS (directives `@theme`, `@layer`, etc.).
+L'unique point d'entrée est `@import "tailwindcss"` dans `index.css`.
+Le plugin `@tailwindcss/vite` remplace l'ancien `postcss`.
+
+**`.claude/` exclu du repo via `.gitignore`.**
+Ce dossier contient les fichiers de mémoire et de configuration de Claude Code.
+Utiles en local, pas pertinents dans l'historique git.
+
+**3 commits atomiques pour le setup.**
+Conformément au WORKFLOW : scaffolding Vite / config Tailwind / structure dossiers
+sont trois intentions distinctes. Ça se lit dans `git log`.
+
+### Bugs / blocages rencontrés
+
+**`npm create vite` annulé sur dossier non vide.**
+Vite affiche un menu interactif quand le dossier cible contient déjà des fichiers.
+Impossible à bypasser avec `echo y |` — le prompt utilise une sélection, pas un input texte.
+Solution : scaffolder dans un sous-dossier temporaire `_vite_tmp/`, puis déplacer les fichiers.
+
+**PR mergée dans `main` au lieu de `dev`.**
+La PR #7 a été mergée directement dans `main`. Corrigé en mergant `main` dans `dev`
+pour remettre les deux branches en phase. À retenir : toujours vérifier la branche cible
+dans l'interface GitHub avant de merger (base doit être `dev`, pas `main`).
+
+### Apprentissages
+
+- Tailwind v4 a une approche radicalement différente de v3 : pas de fichier de config JS,
+  tout passe par le CSS. Plus simple à démarrer, mais la doc v3 ne s'applique plus.
+- `npm create vite` est interactif par design — prévoir de scaffolder dans un dossier propre
+  si le dossier cible contient déjà des fichiers.
+- Dans GitHub, la branche **base** d'une PR = la branche de destination. Toujours vérifier
+  qu'elle est bien `dev` avant de merger.
+
+### Prochaine session
+
+- Issue #2 : définir les types TypeScript dans `src/types/fragrance.ts`
+  (`OlfactoryFamily`, `Season`, `Concentration`, interface `Fragrance`)
+- Branche : `feat/fragrance-type`
+
+---
+
+## Session 2026-05-03 — Issues #4 et #5
+
+### Ce qui était prévu
+
+- Issue #4 : composant `FragranceCard` + liste des parfums
+- Issue #5 : suppression d'un parfum
+
+### Ce qui a été fait
+
+**Issue #4 — Afficher la liste (`feat/list-fragrances`, mergée dans `dev`)**
+- Composant `FragranceCard.tsx` : affiche nom, marque, notes libres (si présentes)
+- Composant `FragranceList.tsx` : gère l'état vide + mappe sur `FragranceCard`
+- `App.tsx` mis à jour : `<FragranceList>` remplace le compteur, mise en page centrée
+
+**Issue #5 — Suppression (`feat/delete-fragrance`, en cours)**
+- Prop `onDelete: (id: string) => void` ajoutée sur `FragranceCard` et `FragranceList`
+- `handleDelete` dans `App.tsx` : filtre le tableau par id
+- Confirmation via `window.confirm()` avant suppression
+
+### Décisions prises
+
+**`window.confirm()` pour la confirmation de suppression en v0.**
+Raison : protège contre la fausse manip sans complexifier le code. Une modale custom
+(shadcn Dialog) viendra en v1 quand l'UI sera soignée.
+
+**`onDelete` traverse les deux composants (FragranceList → FragranceCard).**
+La logique de suppression appartient à `App.tsx` qui détient le state. Les composants
+ne font que remonter l'id — ils ne mutent rien eux-mêmes.
+
+### Prochaine session
+
+- Merger la PR `feat/delete-fragrance → dev`
+- Issue #6 : persistance localStorage (`feat/local-storage`)
+
+---
+
+## Session 2026-05-03 (suite) — Issue #6
+
+### Ce qui était prévu
+
+- Persistance de la collection dans localStorage
+
+### Ce qui a été fait
+
+- `src/services/fragranceService.ts` créé : `getAll()` et `save()`, seul endroit du code qui touche localStorage
+- `src/hooks/useFragrances.ts` créé : state, chargement initial, sauvegarde automatique, `add` et `remove`
+- `App.tsx` simplifié : toute la logique métier déléguée au hook, ne garde que le JSX
+
+### Décisions prises
+
+**Couche service dès v0.**
+`fragranceService.ts` abstrait la source de données. En v1, on remplace son implémentation
+par Supabase sans toucher aux composants ni au hook. C'est le seul fichier qui change.
+
+**Initialisation lazy du state.**
+`useState(() => fragranceService.getAll())` charge localStorage de façon synchrone,
+avant le premier render. L'alternative avec deux `useEffect` (un pour charger, un pour sauvegarder)
+crée une race condition : le `useEffect` de sauvegarde s'exécute avec `[]` et écrase localStorage.
+L'initialiseur lazy supprime ce piège.
+
+**`useFragrances` encapsule toute la logique métier.**
+`App.tsx` ne contient plus que du JSX. Si demain on ajoute un tri, une recherche ou
+un filtre, ça entre dans le hook — pas dans le composant.
+
+### Apprentissages
+
+- Un initialiseur lazy `useState(() => fn())` est appelé une seule fois, de façon synchrone,
+  avant le premier render. À préférer à `useEffect` pour initialiser depuis une source synchrone
+  (localStorage, sessionStorage, variables d'environnement).
+- La couche service permet le swap v0→v1 sans refactor : changer une implémentation,
+  pas une interface.
+
+### Prochaine session
+
+- Merger `feat/local-storage → dev` puis `dev → main` : v0 complète
+- Réfléchir au scope v1 : UI soignée (shadcn), filtres, Supabase
+
+---
+
 _Créé le 2026-04-30_
