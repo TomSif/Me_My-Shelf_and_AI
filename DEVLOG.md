@@ -202,4 +202,47 @@ ne font que remonter l'id — ils ne mutent rien eux-mêmes.
 
 ---
 
+## Session 2026-05-03 (suite) — Issue #6
+
+### Ce qui était prévu
+
+- Persistance de la collection dans localStorage
+
+### Ce qui a été fait
+
+- `src/services/fragranceService.ts` créé : `getAll()` et `save()`, seul endroit du code qui touche localStorage
+- `src/hooks/useFragrances.ts` créé : state, chargement initial, sauvegarde automatique, `add` et `remove`
+- `App.tsx` simplifié : toute la logique métier déléguée au hook, ne garde que le JSX
+
+### Décisions prises
+
+**Couche service dès v0.**
+`fragranceService.ts` abstrait la source de données. En v1, on remplace son implémentation
+par Supabase sans toucher aux composants ni au hook. C'est le seul fichier qui change.
+
+**Initialisation lazy du state.**
+`useState(() => fragranceService.getAll())` charge localStorage de façon synchrone,
+avant le premier render. L'alternative avec deux `useEffect` (un pour charger, un pour sauvegarder)
+crée une race condition : le `useEffect` de sauvegarde s'exécute avec `[]` et écrase localStorage.
+L'initialiseur lazy supprime ce piège.
+
+**`useFragrances` encapsule toute la logique métier.**
+`App.tsx` ne contient plus que du JSX. Si demain on ajoute un tri, une recherche ou
+un filtre, ça entre dans le hook — pas dans le composant.
+
+### Apprentissages
+
+- Un initialiseur lazy `useState(() => fn())` est appelé une seule fois, de façon synchrone,
+  avant le premier render. À préférer à `useEffect` pour initialiser depuis une source synchrone
+  (localStorage, sessionStorage, variables d'environnement).
+- La couche service permet le swap v0→v1 sans refactor : changer une implémentation,
+  pas une interface.
+
+### Prochaine session
+
+- Merger `feat/local-storage → dev` puis `dev → main` : v0 complète
+- Réfléchir au scope v1 : UI soignée (shadcn), filtres, Supabase
+
+---
+
 _Créé le 2026-04-30_
