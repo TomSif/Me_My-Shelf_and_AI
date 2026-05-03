@@ -15,6 +15,10 @@ function App() {
     setFragrances((prev) => [...prev, fragrance]);
   }
 
+  function handleDelete(id: string) {
+    setFragrances((prev) => prev.filter((f) => f.id !== id));
+  }
+
   return (
     <div className="min-h-screen bg-stone-50 p-8 max-w-xl mx-auto">
       <h1 className="text-2xl font-medium text-stone-900">Me My Shelf and AI</h1>
@@ -23,7 +27,7 @@ function App() {
         <FragranceForm onSubmit={handleAdd} />
       </div>
       <div className="mt-8">
-        <FragranceList fragrances={fragrances} />
+        <FragranceList fragrances={fragrances} onDelete={handleDelete} />
       </div>
     </div>
   );
