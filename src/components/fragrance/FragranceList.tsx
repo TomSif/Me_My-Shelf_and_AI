@@ -3,9 +3,10 @@ import { FragranceCard } from "./FragranceCard";
 
 interface Props {
   fragrances: Fragrance[];
+  onDelete: (id: string) => void;
 }
 
-export function FragranceList({ fragrances }: Props) {
+export function FragranceList({ fragrances, onDelete }: Props) {
   if (fragrances.length === 0) {
     return (
       <p className="text-sm text-stone-400">
@@ -18,7 +19,7 @@ export function FragranceList({ fragrances }: Props) {
     <ul className="flex flex-col gap-3">
       {fragrances.map((fragrance) => (
         <li key={fragrance.id}>
-          <FragranceCard fragrance={fragrance} />
+          <FragranceCard fragrance={fragrance} onDelete={onDelete} />
         </li>
       ))}
     </ul>

@@ -166,4 +166,40 @@ dans l'interface GitHub avant de merger (base doit être `dev`, pas `main`).
 
 ---
 
+## Session 2026-05-03 — Issues #4 et #5
+
+### Ce qui était prévu
+
+- Issue #4 : composant `FragranceCard` + liste des parfums
+- Issue #5 : suppression d'un parfum
+
+### Ce qui a été fait
+
+**Issue #4 — Afficher la liste (`feat/list-fragrances`, mergée dans `dev`)**
+- Composant `FragranceCard.tsx` : affiche nom, marque, notes libres (si présentes)
+- Composant `FragranceList.tsx` : gère l'état vide + mappe sur `FragranceCard`
+- `App.tsx` mis à jour : `<FragranceList>` remplace le compteur, mise en page centrée
+
+**Issue #5 — Suppression (`feat/delete-fragrance`, en cours)**
+- Prop `onDelete: (id: string) => void` ajoutée sur `FragranceCard` et `FragranceList`
+- `handleDelete` dans `App.tsx` : filtre le tableau par id
+- Confirmation via `window.confirm()` avant suppression
+
+### Décisions prises
+
+**`window.confirm()` pour la confirmation de suppression en v0.**
+Raison : protège contre la fausse manip sans complexifier le code. Une modale custom
+(shadcn Dialog) viendra en v1 quand l'UI sera soignée.
+
+**`onDelete` traverse les deux composants (FragranceList → FragranceCard).**
+La logique de suppression appartient à `App.tsx` qui détient le state. Les composants
+ne font que remonter l'id — ils ne mutent rien eux-mêmes.
+
+### Prochaine session
+
+- Merger la PR `feat/delete-fragrance → dev`
+- Issue #6 : persistance localStorage (`feat/local-storage`)
+
+---
+
 _Créé le 2026-04-30_
