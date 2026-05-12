@@ -1,1 +1,52 @@
 @import "tailwindcss";
+
+:root {
+  --color-bg: #faf8f5;
+  --color-text: #1c1917;
+  --color-text-muted: #78716c;
+  --color-accent: #b45309;
+  --max-width-app: 40rem;
+  --spacing-page-x: 1.5rem;
+  --spacing-page-y: 2rem;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, sans-serif;
+}
+
+.app-layout {
+  max-width: var(--max-width-app);
+  margin: 0 auto;
+  padding: var(--spacing-page-y) var(--spacing-page-x);
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.app-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.app-nav-link {
+  font-size: 0.875rem;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.app-nav-link:hover {
+  text-decoration: underline;
+}
