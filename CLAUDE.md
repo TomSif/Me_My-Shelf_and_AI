@@ -14,7 +14,7 @@ Un outil quotidien — pas une vitrine. L'utilisateur doit pouvoir choisir un pa
 Vision long terme : une étagère interactive et spatiale où chaque étage est une catégorie,
 navigable horizontalement, avec recommandations intelligentes basées sur l'humeur et la météo.
 
-Vision court terme (v0) : un outil de tri et de liste, propre, rapide, bien typé.
+Vision court terme (v1) : navigation par pages, filtres, dirty state, drawer aperçu — logique métier complète avant la passe UI.
 
 **Le nom vient de "Me, Myself and I" — c'est intentionnel.** Ta collection, ton outil, ton IA.
 
@@ -24,9 +24,9 @@ Vision court terme (v0) : un outil de tri et de liste, propre, rapide, bien typ�
 
 ```
 React + TypeScript + Tailwind CSS v4 + Vite + shadcn/ui
-v0 : localStorage
-v1 : Supabase
-v2 : auth + navigation spatiale (mode paysage)
+v0 : localStorage                          ✅ terminée
+v1 : React Router + logique métier complète + localStorage
+v2 : Supabase + auth + étagère spatiale (mode paysage)
 ```
 
 ---
@@ -126,6 +126,7 @@ Après toute intervention significative : proposer une mise à jour du DEVLOG.md
 
 ```
 src/
+  pages/         ← une page par route (ShelfPage, AddPage, FragranceDetailPage)
   components/
     ui/          ← composants shadcn (ne pas modifier)
     fragrance/   ← composants métier (FragranceCard, FragranceForm, etc.)
