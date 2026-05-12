@@ -306,6 +306,34 @@ pour rendre les zones lisibles pendant la construction des features suivantes.
 
 ---
 
+Issue #7b — Setup Zustand
+Titre : setup: installer Zustand et migrer l'état global
+
+Description :
+Avec React Router en place, plusieurs pages partagent la même collection.
+Un store centralisé évite de recréer useFragrances dans chaque composant
+et de repasser les données par props à travers les routes.
+useFragrancesStore remplace useFragrances avec la même interface — aucun
+composant ne voit la différence, sauf qu'ils lisent tous le même état.
+
+useSettingsStore, groupBy(), getLiquidColor et getBottleSize sont
+intentionnellement exclus de cette issue — voir backlog v2.
+
+Critères d'acceptance :
+
+zustand installé
+
+useFragrancesStore créé dans src/stores/fragrancesStore.ts — expose fragrances, add, remove, persisté localStorage via persist middleware
+
+useFragrances supprimé ou remplacé par un alias vers le store
+
+Tous les composants existants migrés (ShelfPage, FragranceForm, etc.)
+
+Comportement identique à l'existant — pas de régression
+Branche : setup/zustand
+
+---
+
 ### Issue #8 — Mise à jour du modèle de données
 
 **Titre** : `feat: ajouter le champ tags à l'interface Fragrance`
@@ -561,6 +589,16 @@ Cette issue intervient en dernier pour ne pas contraindre le layout par le style
 | Upload photo du flacon                                                                                                       | v2            |
 | Estimation consommation automatique (0,5ml/utilisation × fréquence)                                                          | v2            |
 | Import/export CSV                                                                                                            | v2            |
+| `useSettingsStore` — `activeGroupBy` persisté (critère de groupement actif)                                                  | v2            |
+| `groupBy(criteria)` dans le store — retourne `Map<string, Fragrance[]>` pour l'étagère spatiale                              | v2            |
+| `getLiquidColor(fragrance, activeGroupBy)` dans `/utils/bottle.ts` — couleur du liquide par famille                          | v2            |
+| `getBottleSize(volumeMl, isSample)` dans `/utils/bottle.ts` — taille du flacon SVG                                           | v2            |
+
+> **Pourquoi ces 4 items ont été retirés de l'issue #7b :**
+> Ils sont prérequis de l'étagère spatiale (v2), pas des filtres ou du dirty state (v1).
+> `groupBy`, `getLiquidColor` et `getBottleSize` n'ont aucun composant consommateur en v1.
+> `useSettingsStore` avec `activeGroupBy` n'a de sens que quand l'étagère par étages existe.
+> Les coder maintenant serait anticiper une feature qui n'est pas encore designée — le backlog est fait pour ça.
 
 ---
 
