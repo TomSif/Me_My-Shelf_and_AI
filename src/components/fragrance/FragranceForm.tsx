@@ -36,6 +36,7 @@ export function FragranceForm({ onSubmit }: Props) {
       remainingMl: 0,
       families: [],
       seasons: [],
+      tags: [],
     });
     reset();
   }
