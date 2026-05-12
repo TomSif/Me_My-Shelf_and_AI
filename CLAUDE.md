@@ -131,19 +131,22 @@ src/
   components/
     ui/          ← composants shadcn (ne pas modifier)
     fragrance/   ← composants métier (FragranceCard, FragranceForm, etc.)
-  hooks/         ← useFragrances, useLocalStorage, etc.
+  stores/        ← stores Zustand (fragrancesStore, etc.)
+  hooks/         ← hooks React utilitaires (pas de logique métier)
   types/         ← fragrance.ts et autres types
   utils/         ← fonctions pures (tri, filtres, recommandations)
-  services/      ← fragranceService.ts (abstraction de la source de données)
+  services/      ← fragranceService.ts (abstraction de la source de données, utilisé en v2 pour Supabase)
 ```
 
 ---
 
 ## Principes de code
 
-**Couche service obligatoire.**
+**Store Zustand comme couche de données.**
 Les composants React n'accèdent jamais directement à localStorage ou Supabase.
-Ils passent toujours par `fragranceService.ts` — c'est ce qui permet le swap v0→v1 sans refactor.
+Ils passent par les stores (`useFragrancesStore`, etc.).
+Le store gère la persistance via son option `storage` — c'est là que se fera le swap localStorage→Supabase en v2.
+`fragranceService.ts` reste disponible comme abstraction bas niveau si nécessaire.
 
 **Commits atomiques.**
 Un commit = une intention. Respecter les conventions du WORKFLOW.md.
