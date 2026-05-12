@@ -245,4 +245,74 @@ un filtre, ça entre dans le hook — pas dans le composant.
 
 ---
 
+## Session 2026-05-12 — Issues #7, #8, #7b + nettoyage
+
+### Ce qui était prévu
+
+- Démarrer v1 en attaquant l'issue #7 (React Router)
+
+### Ce qui a été fait
+
+**Avant de coder — mise en ordre**
+- PRODUCT.md mis à jour avec les issues v1 complètes (#7 à #19), commité sur `dev`
+- Branches locales mortes nettoyées (`feat/*`, `setup/init`) — toutes les branches v0 supprimées
+- Branches GitHub nettoyées via l'interface
+
+**Issue #7 — Setup React Router (`setup/router`, mergée)**
+- `react-router-dom` installé
+- `src/pages/` créé — `ShelfPage` (reprend `App.tsx`), `AddPage` (shell), `FragranceDetailPage` (shell avec `useParams`)
+- `App.tsx` réduit à son rôle de point d'entrée du router
+- `index.css` enrichi : variables CSS globales (`--color-bg`, `--max-width-app`, etc.) + classes de layout (`.app-layout`, `.app-header`, `.app-main`)
+- `CLAUDE.md` mis à jour : structure `pages/`, stack v1 en cours
+- `WORKFLOW.md` enrichi : recette nettoyage des branches mortes, explication PR
+
+**Issue #8 — Champ tags (`feat/fragrance-tags`, mergée)**
+- `tags: string[]` ajouté à l'interface `Fragrance` dans `types/fragrance.ts`
+- `tags: []` initialisé dans `FragranceForm`
+- `CLAUDE.md` et `PRODUCT.md` synchronisés
+
+**Issue #7b — Setup Zustand (`setup/zustand`, PR à créer)**
+- Scope réduit : `useSettingsStore`, `groupBy`, `getLiquidColor`, `getBottleSize` déplacés en backlog v2
+- `zustand` installé
+- `useFragrancesStore` créé dans `src/stores/fragrancesStore.ts` — expose `fragrances`, `add`, `remove`, persisté via middleware `persist`
+- `useFragrances` supprimé
+- `ShelfPage` migré vers le store
+- `CLAUDE.md` mis à jour : `src/stores/` ajouté à la structure, principe "store comme couche de données"
+
+### Décisions prises
+
+**`src/pages/` et `src/stores/` ajoutés à la structure.**
+Deux dossiers non prévus dans le CLAUDE.md initial, mais inévitables dès lors qu'on a React Router et Zustand. Structure mise à jour en conséquence.
+
+**Zustand remplace `useFragrances`, pas `fragranceService`.**
+Le hook `useFragrances` est supprimé — Zustand le remplace comme couche de données partagée entre les pages. `fragranceService.ts` reste : il représente le contrat d'interface bas niveau qui sera réimplémenté en Supabase en v2.
+
+**Scope de #7b réduit — groupBy et bottle utils en backlog v2.**
+`groupBy`, `useSettingsStore`, `getLiquidColor`, `getBottleSize` sont prérequis de l'étagère spatiale, pas des filtres ni du dirty state. Les coder maintenant = anticiper une feature sans composant consommateur. Principe : une idée hors scope va dans le backlog.
+
+**Format localStorage incompatible entre v0 et v1.**
+Zustand persist stocke `{"state":{"fragrances":[...]},"version":0}` — l'ancien format était un tableau brut. Les données de test v0 sont perdues. Acceptable en dev ; en v2 une migration Supabase remplacera le tout.
+
+### Bugs / blocages rencontrés
+
+**Commit PRODUCT.md fait sur `feat/fragrance-tags` au lieu de `dev`.**
+La modification du scope de #7b a été commitée sur la branche feature en cours. Résultat : git considérait la branche comme "non mergée" après la PR → `git branch -D` obligatoire au lieu de `-d`.
+Règle retenue : les commits de doc non liés à une feature vont directement sur `dev`.
+
+**Erreur SSL sur `git fetch --prune`.**
+`fatal: unable to get local issuer certificate` — résolu avec `git config --global http.sslBackend schannel` (Git utilise le gestionnaire de certificats Windows).
+
+### Apprentissages
+
+- `git branch -d` vs `-D` : minuscule vérifie que la branche est mergée, majuscule force la suppression. Si une branche a des commits non reconnus par git (squash merge, commits orphelins), `-D` est nécessaire même si le code est bien dans `dev`.
+- `git fetch --prune` : met à jour la carte locale des branches remote et supprime les entrées qui n'existent plus. Purement cosmétique — ne touche pas le code.
+- Zustand `partialize` : permet de ne persister que les données (pas les fonctions) dans localStorage. Sans `partialize`, Zustand tente de sérialiser tout le state, y compris les fonctions — ce qui ne fonctionne pas.
+
+### Prochaine session
+
+- Merger `setup/zustand → dev` via PR
+- Issue #9 : dirty state — fonction `isComplete()` + `incompleteCount` dans le store
+
+---
+
 _Créé le 2026-04-30_
