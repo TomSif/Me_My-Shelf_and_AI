@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { FragranceForm } from "../components/fragrance/FragranceForm";
 import { FragranceList } from "../components/fragrance/FragranceList";
-import { useFragrances } from "../hooks/useFragrances";
+import { useFragrancesStore } from "../stores/fragrancesStore";
 
 export function ShelfPage() {
-  const { fragrances, add, remove } = useFragrances();
+  const { fragrances, add, remove } = useFragrancesStore();
 
   return (
     <div className="app-layout">
