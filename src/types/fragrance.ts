@@ -21,6 +21,9 @@ export type Concentration =
   | "parfum"
   | "extrait";
 
+export type GenreOlfactif = -3 | -2 | -1 | 0 | 1 | 2 | 3;
+// -3 très féminin · 0 unisexe · +3 très masculin
+
 export interface Fragrance {
   id: string;
   name: string;
@@ -35,6 +38,7 @@ export interface Fragrance {
   lastUsed?: string;
   families: OlfactoryFamily[];
   seasons: Season[];
+  genre?: GenreOlfactif;
   tags: string[];
   rating?: 1 | 2 | 3 | 4 | 5;
   comment?: string;
