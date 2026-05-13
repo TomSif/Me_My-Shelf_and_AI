@@ -322,10 +322,19 @@ Les champs `tags`, `seasons`, `rating`, `comment` et tous les champs optionnels 
 
 ---
 
-## Issues v1
+## Issues v1 — terminées ✅
 
-> À créer sur GitHub. Ordre = ordre de dépendance logique.
-> **Prochaine issue à implémenter : #20 (Vue Collection)** — dépend uniquement du store (#7b ✅).
+#7 `setup: ajouter React Router et poser la structure de navigation` — mergée
+#7b `setup: installer Zustand et migrer l'état global` — mergée
+#8 `feat: ajouter le champ tags à l'interface Fragrance` — mergée
+#9 `feat: définir et détecter un parfum incomplet (dirty state)` — mergée
+#20 `feat: vue collection — mur de flacons SVG` — mergée
+
+---
+
+## Issues v1 — en cours
+
+> **Prochaine issue à implémenter : #10 (Page d'ajout complet)**
 
 ---
 
@@ -341,12 +350,13 @@ pour rendre les zones lisibles pendant la construction des features suivantes.
 
 **Critères d'acceptance** :
 
-- [ ] `react-router-dom` installé
-- [ ] Route `/` → composant `ShelfPage` (remplace la vue actuelle)
-- [ ] Route `/add` → composant `AddPage` (page d'onboarding, shell vide pour l'instant)
-- [ ] Route `/fragrance/:id` → composant `FragranceDetailPage` (shell vide pour l'instant)
-- [ ] Lien de navigation minimal entre les pages (header ou nav provisoire)
-- [ ] Variables CSS ou classes Tailwind globales posées : fond, texte, max-width, espacements
+- [x] `react-router-dom` installé
+- [x] Route `/` → composant `CollectionPage` (vue mur de flacons)
+- [x] Route `/shelf` → composant `ShelfPage`
+- [x] Route `/add` → composant `AddPage` (shell)
+- [x] Route `/fragrance/:id` → composant `FragranceDetailPage` (shell)
+- [x] Chrome partagé : `AppLayout`, `AppHeader`, `SideNav`, `GestureBar`
+- [x] Design system complet posé dans `index.css` (tokens CSS)
 
 **Branche** : `setup/router`
 
@@ -392,9 +402,9 @@ Un parfum sans tags n'est pas incomplet — le champ est toujours optionnel.
 
 **Critères d'acceptance** :
 
-- [ ] Champ `tags: string[]` ajouté à l'interface `Fragrance` dans `/types/fragrance.ts`
-- [ ] Valeur par défaut `tags: []` dans le formulaire d'ajout existant
-- [ ] `fragranceService` compatible (pas de breaking change)
+- [x] Champ `tags: string[]` ajouté à l'interface `Fragrance` dans `/types/fragrance.ts`
+- [x] Valeur par défaut `tags: []` dans le formulaire d'ajout existant
+- [x] `fragranceService` compatible (pas de breaking change)
 
 **Branche** : `feat/fragrance-tags`
 
@@ -413,9 +423,9 @@ Cette logique est le socle du badge de notification et de l'incitation à compl�
 
 **Critères d'acceptance** :
 
-- [ ] Fonction `isComplete(fragrance: Fragrance): boolean` créée dans `/utils/fragrance.ts`
-- [ ] Fonction testable et exportée
-- [ ] `useFragrancesStore` expose `incompleteCount: number` (nombre de parfums dirty)
+- [x] Fonction `isComplete(fragrance: Fragrance): boolean` créée dans `/utils/fragrance.ts`
+- [x] Fonction testable et exportée
+- [x] `useFragrancesStore` expose `incompleteCount: number` (nombre de parfums dirty)
 
 **Branche** : `feat/dirty-state`
 

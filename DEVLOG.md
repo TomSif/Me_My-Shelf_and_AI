@@ -315,4 +315,57 @@ Règle retenue : les commits de doc non liés à une feature vont directement su
 
 ---
 
+## Session 2026-05-13 — Issues #20 et #9
+
+### Ce qui était prévu
+
+- Issue #20 : vue collection (mur de flacons SVG)
+- Issue #9 : dirty state
+
+### Ce qui a été fait
+
+**Issue #20 — Vue Collection (`feat/collection-view`, mergée)**
+- Design system complet intégré dans `index.css` : tokens pour couleurs, ombres, glassmorphism, motion, familles olfactives (12 teintes désaturées), UI states, iconographie
+- `getLiquidColor()` dans `utils/fragrance.ts` : mappe les familles olfactives vers les variables CSS
+- Composants layout extraits en composants indépendants : `AppLayout`, `AppHeader`, `SideNav`, `GestureBar`
+- `FragranceBottle` : SVG 40×60px généré à la volée, coloré par famille (cap, col, épaules, corps, reflet)
+- `BottleWall` : grille CSS `auto-fill` de 40px, tooltip au hover, navigation au double-clic
+- `CollectionPage` branchée sur `/`, état vide géré proprement
+- `ShelfPage` déplacée sur `/shelf`
+
+**Issue #9 — Dirty state (`feat/dirty-state`, en cours)**
+- `isComplete(fragrance)` dans `utils/fragrance.ts` : vérifie name, brand, families, concentration, volumeMl
+- `incompleteCount` exposé dans `useFragrancesStore` comme getter calculé — jamais persisté en localStorage
+
+### Décisions prises
+
+**Composants layout extraits dès le départ, pas inline dans les pages.**
+Première version de `CollectionPage` écrivait le header et la nav directement dans la page.
+Thomas a corrigé : "pense DRY". Refactorisé en `AppLayout` wrappant `AppHeader + SideNav + GestureBar`.
+Règle retenue : les éléments chrome partagés (header, nav) sont des composants indépendants dès leur première occurrence.
+
+**`incompleteCount` est un getter, pas une propriété stockée.**
+Zustand permet des getters JavaScript natifs dans le state object. `get incompleteCount()` appelle `get().fragrances.filter(...)` à chaque lecture — calculé en temps réel, rien à synchroniser, jamais persisté.
+
+**CSS Tailwind-first — pas de fichier CSS par composant.**
+Tous les styles sont en Tailwind utilities ou en `style={{ var(--token) }}` inline. `index.css` ne contient que les tokens `:root` et le `body`. Pas de fichiers `.module.css` — Tailwind v4 les rend superflus pour ce projet.
+
+### Bugs / blocages rencontrés
+
+**`Edit` tool échoue sur PRODUCT.md** (encodage CRLF).
+La substitution `useFragrances` → `useFragrancesStore` a nécessité un appel PowerShell `-replace` plutôt que l'outil Edit.
+
+### Apprentissages
+
+- SVG inline en React : les attributs snake_case CSS deviennent camelCase (`stroke-width` → `strokeWidth`), mais les attributs SVG natifs (`fill`, `stroke`, `rx`) restent en lowercase.
+- Zustand `get incompleteCount()` : un getter JS standard fonctionne dans le state object — Zustand ne le sérialise pas, il recalcule à chaque accès.
+- `gridTemplateColumns: "repeat(auto-fill, 40px)"` : grille CSS qui adapte automatiquement le nombre de colonnes à la largeur disponible, sans media queries.
+
+### Prochaine session
+
+- Merger `feat/dirty-state → dev` via PR
+- Issue #10 : page d'ajout complet — à concevoir avec Thomas (UI/UX à définir avant de coder)
+
+---
+
 _Créé le 2026-04-30_
