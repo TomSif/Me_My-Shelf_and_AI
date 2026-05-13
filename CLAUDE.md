@@ -134,6 +134,7 @@ src/
   pages/         ← une page par route (ShelfPage, AddPage, FragranceDetailPage)
   components/
     ui/          ← composants shadcn (ne pas modifier)
+    layout/      ← chrome partagé (AppLayout, AppHeader, SideNav, GestureBar)
     fragrance/   ← composants métier (FragranceCard, FragranceForm, etc.)
   stores/        ← stores Zustand (fragrancesStore, etc.)
   hooks/         ← hooks React utilitaires (pas de logique métier)
