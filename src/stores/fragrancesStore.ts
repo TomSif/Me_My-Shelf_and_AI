@@ -1,17 +1,22 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { Fragrance, NewFragrance } from "../types/fragrance";
+import { isComplete } from "../utils/fragrance";
 
 interface FragrancesState {
   fragrances: Fragrance[];
+  incompleteCount: number;
   add: (data: NewFragrance) => void;
   remove: (id: string) => void;
 }
 
 export const useFragrancesStore = create<FragrancesState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       fragrances: [],
+      get incompleteCount() {
+        return get().fragrances.filter((f) => !isComplete(f)).length;
+      },
       add: (data) =>
         set((state) => ({
           fragrances: [
