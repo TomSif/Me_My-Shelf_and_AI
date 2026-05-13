@@ -96,6 +96,7 @@ git commit -m "feat: ajouter le formulaire d'ajout de parfum"
 | `chore:` | maintenance (dépendances, etc.) |
 
 **Exemples de bons messages :**
+
 ```
 feat: ajouter le formulaire d'ajout de parfum
 feat: afficher la liste des parfums avec FragranceCard
@@ -147,6 +148,7 @@ git push origin -d feat/add-fragrance
 apparaît — il supprime la branche remote. Il reste à supprimer la locale manuellement.
 
 **Branches locales mortes en une fois** (pratique pour nettoyer après plusieurs merges) :
+
 ```bash
 # Voir ce qui est mergé dans dev
 git branch --merged dev
@@ -189,24 +191,24 @@ git branch --merged dev | grep -v "^\* \|main\|dev" | xargs git branch -d
 
 > À compléter au fur et à mesure des bugs rencontrés.
 
-| Erreur | Cause | Solution |
-| ------ | ----- | -------- |
-| *(à venir)* | | |
+| Erreur      | Cause | Solution |
+| ----------- | ----- | -------- |
+| _(à venir)_ |       |          |
 
 ---
 
 ## Glossaire
 
-| Terme | Définition simple |
-| ----- | ----------------- |
-| **commit** | Une photo de l'état du code à un instant T, avec un message |
-| **branche** | Une copie parallèle du code où on travaille sans toucher le reste |
-| **merge** | Fusionner une branche dans une autre |
-| **PR (Pull Request)** | Demande formelle de merger une branche — la trace visible du travail |
-| **issue** | Ticket qui décrit une tâche à faire (feature, bug, etc.) |
-| **origin** | Le repo distant sur GitHub |
-| **HEAD** | Le commit où on est actuellement |
-| **staging** | Zone intermédiaire entre les fichiers modifiés et le commit (`git add`) |
+| Terme                 | Définition simple                                                       |
+| --------------------- | ----------------------------------------------------------------------- |
+| **commit**            | Une photo de l'état du code à un instant T, avec un message             |
+| **branche**           | Une copie parallèle du code où on travaille sans toucher le reste       |
+| **merge**             | Fusionner une branche dans une autre                                    |
+| **PR (Pull Request)** | Demande formelle de merger une branche — la trace visible du travail    |
+| **issue**             | Ticket qui décrit une tâche à faire (feature, bug, etc.)                |
+| **origin**            | Le repo distant sur GitHub                                              |
+| **HEAD**              | Le commit où on est actuellement                                        |
+| **staging**           | Zone intermédiaire entre les fichiers modifiés et le commit (`git add`) |
 
 ---
 
