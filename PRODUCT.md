@@ -1,4 +1,4 @@
-# PRODUCT.md — Me My Shelf and AI
+﻿# PRODUCT.md — Me My Shelf and AI
 
 > Vision produit, roadmap et backlog.
 > Ce fichier évolue à chaque session. Il dit ce qu'on construit, pourquoi, et dans quel ordre.
@@ -189,6 +189,51 @@ La contrainte paysage n'entre en jeu qu'avec la navigation spatiale v2.
 
 ---
 
+### Vue Collection — mur de flacons (v1)
+
+**Rôle** : homepage de l'application. Vue d'ensemble de la collection entière.
+Sentiment de richesse et de puissance du collectionneur devant son étagère.
+Porte d'entrée naturelle vers Vue Étagère.
+
+**Layout** :
+
+- Mur dense de rangées horizontales (reprend la métaphore étagère)
+- Flacons SVG à taille fixe : 40×60px, gap uniforme
+- Scroll vertical natif — pas de zoom dynamique en v1
+- Fond crème chaud uniforme, pas d'éclairage par étage
+
+┌─────────────────────────────────────────────────────────┐
+│ HEADER │
+│ Logo · Barre de recherche · Filtres · Trier · IA · + │
+├──────┬──────────────────────────────────────────────────┤
+│ │ [Filtre actif : Bergamote ×] │
+│ NAV ├──────────────────────────────────────────────────┤
+│ │ 🟫 🟡 ⬜ 🟡 ⬜ 🟤 ⬜ 🟡 ⬜ 🟤 🟡 ⬜ ... │
+│ GAUCHE│ ⬜ 🟤 🟡 ⬜ 🟡 ⬜ 🟤 ⬜ 🟡 🟫 ⬜ 🟡 ... │
+│ │ 🟡 ⬜ 🟤 🟡 ⬜ 🟡 🟫 ⬜ 🟤 ⬜ 🟡 ⬜ ... │
+│ │ (scroll vertical — toute la collection) │
+├──────┴──────────────────────────────────────────────────┤
+│ BARRE DE GESTES (bas, fixe) │
+│ Glisser explorer · Cliquer sélectionner · Dbl-clic ouvrir│
+└─────────────────────────────────────────────────────────┘
+
+**Interactions** :
+
+- Hover → légère illumination + tooltip (nom · marque)
+- Click → sélection (label persistent)
+- Double-click → navigation vers `/fragrance/:id`
+- Clic droit → "Voir dans l'étagère" → `/shelf`
+
+**Filtre actif → comportement visuel (CSS uniquement, pas de re-render)** :
+
+- Flacons matchants : opacité 100%, légère lueur colorée
+- Flacons non-matchants : opacité 20%, désaturés
+- Bandeau "Filtre actif · [critère] ×" sous le header
+
+**Ce qui est v2** : zoom pinch dynamique, pan, minimap, virtualisation TanStack Virtual.
+
+---
+
 ## Modèle de données
 
 ```typescript
@@ -249,11 +294,11 @@ Les champs `tags`, `seasons`, `rating`, `comment` et tous les champs optionnels 
 
 ## Roadmap
 
-| Version | Périmètre                                                                                                       | Horizon     |
-| ------- | --------------------------------------------------------------------------------------------------------------- | ----------- |
-| **v0**  | CRUD basique — ajouter / voir / supprimer un parfum (nom, marque, notes libres)                                 | Mai 2026 ✅ |
-| **v1**  | Navigation (router), logique de filtres et croisements, dirty state, tags, drawer aperçu, UI filaire structurée | Juin 2026   |
-| **v2**  | Supabase, auth utilisateur, étagère spatiale (paysage), moteur de suggestion, partage collection                | Juillet+    |
+| Version | Périmètre                                                                                                            | Horizon     |
+| ------- | -------------------------------------------------------------------------------------------------------------------- | ----------- |
+| **v0**  | CRUD basique — ajouter / voir / supprimer un parfum (nom, marque, notes libres)                                      | Mai 2026 ✅ |
+| **v1**  | Vue Collection (homepage), navigation (router), filtres et croisements, dirty state, tags, drawer aperçu, UI filaire | Juin 2026   |
+| **v2**  | Supabase, auth utilisateur, étagère spatiale (paysage), moteur de suggestion, partage collection                     | Juillet+    |
 
 ---
 
@@ -280,6 +325,7 @@ Les champs `tags`, `seasons`, `rating`, `comment` et tous les champs optionnels 
 ## Issues v1
 
 > À créer sur GitHub. Ordre = ordre de dépendance logique.
+> **Prochaine issue à implémenter : #20 (Vue Collection)** — dépend uniquement du store (#7b ✅).
 
 ---
 
@@ -306,10 +352,11 @@ pour rendre les zones lisibles pendant la construction des features suivantes.
 
 ---
 
-Issue #7b — Setup Zustand
-Titre : setup: installer Zustand et migrer l'état global
+### Issue #7b — Setup Zustand
 
-Description :
+**Titre**: setup: installer Zustand et migrer l'état global
+
+**Description** :
 Avec React Router en place, plusieurs pages partagent la même collection.
 Un store centralisé évite de recréer useFragrances dans chaque composant
 et de repasser les données par props à travers les routes.
@@ -319,7 +366,7 @@ composant ne voit la différence, sauf qu'ils lisent tous le même état.
 useSettingsStore, groupBy(), getLiquidColor et getBottleSize sont
 intentionnellement exclus de cette issue — voir backlog v2.
 
-Critères d'acceptance :
+**Critères d'acceptance** :
 
 zustand installé
 
@@ -368,7 +415,7 @@ Cette logique est le socle du badge de notification et de l'incitation à compl�
 
 - [ ] Fonction `isComplete(fragrance: Fragrance): boolean` créée dans `/utils/fragrance.ts`
 - [ ] Fonction testable et exportée
-- [ ] `useFragrances` expose `incompleteCount: number` (nombre de parfums dirty)
+- [ ] `useFragrancesStore` expose `incompleteCount: number` (nombre de parfums dirty)
 
 **Branche** : `feat/dirty-state`
 
@@ -571,6 +618,41 @@ Cette issue intervient en dernier pour ne pas contraindre le layout par le style
 
 ---
 
+### Issue #20 — Vue Collection
+
+**Titre** : `feat: Vue Collection — mur de flacons, homepage de l'app`
+
+**Description** :
+Page d'entrée de l'application. Affiche la totalité de la collection sous forme de mur
+dense et scrollable. Chaque parfum est réduit à un micro-flacon SVG (40×60px).
+Donne au collectionneur le sentiment de voir sa collection d'un seul regard.
+
+Route `/` → `CollectionPage` (ShelfPage devient accessible via `/shelf` et la nav gauche).
+
+Quand un filtre est actif, les parfums qui matchent s'illuminent, les autres s'atténuent —
+permettant de localiser visuellement un sous-ensemble dans la masse. Cette réaction visuelle
+est pilotée par `activeFilters` du store ; aucun refactor ne sera nécessaire quand les
+issues #15-16 (filtres) seront implémentées.
+
+**Critères d'acceptance** :
+
+- [ ] Route `/` → `CollectionPage`, route `/shelf` → `ShelfPage`
+- [ ] CSS grid responsive — flacons 40×60px, gap uniforme, scroll vertical natif
+- [ ] Chaque flacon : SVG minimal avec liquide coloré selon `families[0]` (palette PRODUCT.md)
+- [ ] Hover → illumination + tooltip (nom · marque)
+- [ ] Double-click → navigation vers `/fragrance/:id`
+- [ ] Filtre actif → flacons matchants à 100% opacité, autres à 20% (classe CSS conditionnelle)
+- [ ] Bandeau "Filtre actif · [valeur] ×" affiché sous le header quand filtre actif
+- [ ] Barre de gestes fixe en bas : Glisser · Cliquer · Double-cliquer
+- [ ] État vide géré (collection vide → invitation à ajouter)
+
+**Dépendances** : `useFragrancesStore` (#7b ✅)
+**Compatible sans refactor avec** : filtres (#15-16), recherche (#17), tri (#18)
+
+**Branche** : `feat/collection-view`
+
+---
+
 ## Backlog — idées pour v2+
 
 > Ces idées sont bonnes. Elles n'entrent pas dans v1.
@@ -579,8 +661,9 @@ Cette issue intervient en dernier pour ne pas contraindre le layout par le style
 | ---------------------------------------------------------------------------------------------------------------------------- | ------------- |
 | Persistance cloud (Supabase)                                                                                                 | v2            |
 | Auth utilisateur                                                                                                             | v2            |
+| Vue Collection v2 — zoom pinch dynamique, pan, minimap (Vue Collection v1 = wall fixe, en v1)                                | v2            |
 | Étagère spatiale — navigation par étages (mode paysage)                                                                      | v2            |
-| **Virtualisation de l'étagère (TanStack Virtual)**                                                                           | v2            |
+| Virtualisation de l'étagère (TanStack Virtual)                                                                               | v2            |
 | Menu latéral droit — roue de sélection des critères                                                                          | v2            |
 | Moteur de recommandation par humeur / famille olfactive                                                                      | v2            |
 | Intégration API météo → suggestion de parfum                                                                                 | v2            |
@@ -653,4 +736,4 @@ Si `groupBy` est bien posé en v1, la virtualisation v2 se branche dessus sans r
 
 ---
 
-_Créé le 2026-04-30 — Mis à jour le 2026-05-03 (v1 définie, Supabase décalé en v2, tags ajoutés au modèle, vision design documentée)_
+_Créé le 2026-04-30 — Mis à jour le 2026-05-13 (Vue Collection ajoutée en v1 comme homepage, ShelfPage déplacée sur /shelf, ordre des issues révisé)_
