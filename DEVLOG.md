@@ -324,6 +324,11 @@ Règle retenue : les commits de doc non liés à une feature vont directement su
 
 ### Ce qui a été fait
 
+**Modèle de données — `GenreOlfactif` (commit direct sur `dev`)**
+- Type `GenreOlfactif = -3 | -2 | -1 | 0 | 1 | 2 | 3` ajouté dans `types/fragrance.ts`
+- Champ optionnel `genre?: GenreOlfactif` ajouté à l'interface `Fragrance`
+- `CLAUDE.md` synchronisé avec le modèle mis à jour
+
 **Issue #20 — Vue Collection (`feat/collection-view`, mergée)**
 - Design system complet intégré dans `index.css` : tokens pour couleurs, ombres, glassmorphism, motion, familles olfactives (12 teintes désaturées), UI states, iconographie
 - `getLiquidColor()` dans `utils/fragrance.ts` : mappe les familles olfactives vers les variables CSS
@@ -343,6 +348,9 @@ Règle retenue : les commits de doc non liés à une feature vont directement su
 Première version de `CollectionPage` écrivait le header et la nav directement dans la page.
 Thomas a corrigé : "pense DRY". Refactorisé en `AppLayout` wrappant `AppHeader + SideNav + GestureBar`.
 Règle retenue : les éléments chrome partagés (header, nav) sont des composants indépendants dès leur première occurrence.
+
+**`GenreOlfactif` ajouté directement sur `dev` avant la session.**
+Décision de Thomas : échelle -3 → +3 (très féminin ↔ très masculin, 0 = unisexe). Type union de littéraux numériques plutôt qu'un `number` pour contraindre les valeurs valides. Champ optionnel car non requis pour `isComplete`.
 
 **`incompleteCount` est un getter, pas une propriété stockée.**
 Zustand permet des getters JavaScript natifs dans le state object. `get incompleteCount()` appelle `get().fragrances.filter(...)` à chaque lecture — calculé en temps réel, rien à synchroniser, jamais persisté.
