@@ -234,6 +234,111 @@ Porte d'entrée naturelle vers Vue Étagère.
 
 ---
 
+### AddPage — Page d'ajout de parfums à la collection
+
+#### Vision UX
+
+La page d'ajout n'est pas un formulaire administratif.
+C'est un espace de mise en collection.
+
+L'utilisateur ne "remplit pas une base de données" — il révèle progressivement
+un parfum numérique vivant qui vient rejoindre sa collection.
+
+L'objectif principal : réduire la friction cognitive liée à l'ajout manuel.
+Pour un collectionneur avec 50, 100 ou 200 parfums, une interface classique
+devient immédiatement fatigante et démotivante.
+
+Le design répond à ça par :
+
+- gratification visuelle immédiate à chaque donnée ajoutée
+- progression organique section par section
+- feedback émotionnel via le flacon central
+- révélation progressive de l'objet
+
+#### Layout
+
+**Desktop** : flacon hero centré, 4 sections en quadrant, pyramide olfactive à droite.
+**Mobile** : flacon en haut, sections empilées verticalement.
+
+─────────────────────────────────────────────────────────┐
+│ HEADER — Retour collection · Titre · Complétion % │
+├──────────────┬────────────────┬────────────────────────┤
+│ 1. IDENTITÉ │ │ 2. PHYSIQUE │
+│ name │ │ concentration │
+│ brand │ FLACON HERO │ volumeMl / isSample │
+│ perfumer │ central │ remainingMl │
+├──────────────┤ ├────────────────────────┤
+│ 3. OLFACTIF │ │ PYRAMIDE OLFACTIVE │
+│ families │ │ top / heart / base │
+│ seasons │ │ │
+│ genre │ │ │
+│ tags │ │ │
+├──────────────┴────────────────┴────────────────────────┤
+│ 4. COLLECTION & MÉMOIRE │
+│ rating · purchaseDate · purchasePrice · lastUsed · comment │
+└─────────────────────────────────────────────────────────┘
+
+#### Le flacon central — objet émotionnel
+
+Le flacon est le cœur de la page. Le formulaire n'est qu'un moyen de le révéler.
+Chaque section complétée améliore son rendu — pas d'animation en v1, états CSS uniquement.
+
+**5 états pilotés par `getSectionCompletion()`** :
+
+| État        | Déclencheur                | Rendu                                   |
+| ----------- | -------------------------- | --------------------------------------- |
+| `empty`     | aucun champ                | outline fantôme, opacité très faible    |
+| `identity`  | name + brand               | flacon visible, label gravé             |
+| `physical`  | + concentration + volumeMl | liquide apparent, niveau remainingMl    |
+| `olfactive` | + families[0]              | couleur liquide selon palette olfactive |
+| `complete`  | isComplete() = true        | rendu plein, glow subtil                |
+
+**Règle fondamentale** : seule la Section 1 (name + brand) est obligatoire.
+Elle déclenche la création dans le store. Les autres sections enrichissent — un parfum
+sans pyramide ni genre n'est pas invalide, il est `dirty`.
+
+#### Sections UI
+
+**Section 1 — Identité** _(obligatoire, déclenche la création)_
+`name`, `brand`, `perfumer`
+
+**Section 2 — Physique**
+`concentration` en capsules horizontales (Cologne · EdT · EdP · Parfum · Extrait)
+`volumeMl` en select, `isSample` en toggle, `remainingMl` en slider borné à volumeMl
+
+**Section 3 — Olfactif**
+`families` en chips multi-select, `seasons` en chips, `genre` en slider discret -3/+3
+(labels : "Très féminin" ←→ "Très masculin"), `tags` en chips à saisie libre
+
+**Section 4 — Collection & Mémoire**
+`rating` (système lumineux, 5 niveaux), `purchaseDate`, `purchasePrice`,
+`lastUsed`, `comment` (textarea 300 car., style carnet personnel)
+
+#### Pyramide olfactive
+
+Trois zones de saisie chips en texte libre : **Notes de tête / Notes de cœur / Notes de fond**.
+Une même note peut apparaître en tête chez un parfum et en cœur chez un autre —
+c'est pour ça que `pyramid` est distinct de `families`.
+
+**v1** : saisie + affichage visuel statique.
+**v2** : clic sur une note → filtre la collection → tous les parfums avec cette note
+à cette position. Dépend de #15-16.
+
+#### Complétion
+
+Indicateur `%` en haut à droite, calculé via `getSectionCompletion()`.
+Chaque section affiche son propre ✓ quand elle est complète.
+Le `isDirty` global reste inchangé — il pilote le badge #12.
+
+#### Motion — v2 uniquement
+
+Les animations (remplissage liquide, glow progressif, drag & drop familles,
+micro-vibrations lumineuses) sont documentées dans `add_page_md_design_spec.md`
+et implémentées lors de la passe UI (#19) ou en v2.
+Courbe de référence : `cubic-bezier(0.22, 1, 0.36, 1)` — timing 180–700ms selon l'action.
+
+---
+
 ## Modèle de données
 
 ```typescript
@@ -431,22 +536,64 @@ Cette logique est le socle du badge de notification et de l'incitation à compl�
 
 ---
 
-### Issue #10 — Page onboarding (saisie initiale de la collection)
+### Issue #9b — Extension du modèle Fragrance
 
-**Titre** : `feat: page d'ajout complet — saisie initiale de la collection`
+**Titre** : `feat: étendre le modèle Fragrance — pyramide olfactive et complétion par section`
 
 **Description** :
-Page dédiée `/add` pour saisir sa collection au démarrage de l'app.
-Formulaire complet avec tous les champs de l'interface `Fragrance`.
-Cas d'usage : l'utilisateur découvre l'app et rentre ses parfums existants.
+Avant de construire AddPage (#10), le modèle doit exposer la pyramide olfactive
+et la logique de complétion par section.
+`pyramid` structure les notes par position temporelle (tête / cœur / fond) —
+distinct des `families` qui sont des classifications larges.
+`getSectionCompletion()` pilote les états visuels du flacon dans AddPage.
+
+`GenreOlfactif`, `genre` et `tags` sont déjà en place.
 
 **Critères d'acceptance** :
 
-- [ ] Formulaire avec tous les champs : nom, marque, concentration, volumeMl, families (multi-select), seasons (multi-select), tags (saisie libre), rating, comment
-- [ ] Validation : nom obligatoire (les autres champs requis pour `isComplete` sont fortement encouragés mais non bloquants)
-- [ ] Soumission → ajout dans la collection → redirection vers `/`
-- [ ] Formulaire accessible via le router (route `/add`)
+- [x] `type GenreOlfactif = -3 | -2 | -1 | 0 | 1 | 2 | 3` — ✅ fait
+- [x] `genre?: GenreOlfactif` ajouté à `Fragrance` — ✅ fait
+- [x] `tags: string[]` ajouté à `Fragrance` — ✅ fait (issue #8)
+- [ ] `interface OlfactoryPyramid { top: string[]; heart: string[]; base: string[] }` ajouté
+- [ ] `pyramid?: OlfactoryPyramid` ajouté à `Fragrance`
+- [ ] `interface SectionCompletion { identity: boolean; physical: boolean; olfactive: boolean; memory: boolean }` défini
+- [ ] `getSectionCompletion(fragrance): SectionCompletion` créé dans `utils/fragrance.ts`
+- [ ] `isComplete()` existant inchangé — pas de régression
 
+**Dépendances** : #9 ✅
+**Branche** : `feat/fragrance-model-v2`
+
+---
+
+### Issue #10 — AddPage
+
+**Titre** : `feat: page d'ajout complet — formulaire 4 sections + flacon vivant`
+
+**Description** :
+Page `/add` — point d'entrée pour saisir un nouveau parfum dans la collection.
+L'UX transforme l'ajout en expérience de collection, pas en tâche administrative.
+Le flacon central évolue visuellement via des classes CSS pilotées par `getSectionCompletion()`.
+Seule la Section 1 (nom + marque) est obligatoire — elle déclenche la création dans le store.
+Vision complète documentée dans `### AddPage` (section design) et `add_page_md_design_spec.md`.
+
+**Critères d'acceptance** :
+
+- [ ] Layout desktop : flacon centré, 4 sections en quadrant, pyramide à droite
+- [ ] Layout mobile : flacon en haut, sections empilées
+- [ ] Section 1 seule déclenche la création dans le store + active "Enregistrer"
+- [ ] Soumission → parfum ajouté → redirection vers `/`
+- [ ] Concentration : capsules horizontales (pas de radio buttons)
+- [ ] `remainingMl` : slider borné à `volumeMl`
+- [ ] `families` : chips multi-select (toutes les familles de la palette)
+- [ ] `genre` : slider discret -3/+3, labels "Très féminin" / "Très masculin"
+- [ ] `tags` : chips à saisie libre
+- [ ] Pyramide : 3 zones chips libres (top / heart / base), affichage statique v1
+- [ ] Flacon : 5 états CSS pilotés par `getSectionCompletion()`
+- [ ] Indicateur de complétion % en haut à droite
+- [ ] Chaque section affiche son ✓ quand complète
+- [ ] Boutons : "Annuler" (→ `/`) + "Enregistrer le parfum"
+
+**Dépendances** : #9b
 **Branche** : `feat/add-page`
 
 ---
