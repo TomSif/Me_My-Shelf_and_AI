@@ -751,46 +751,55 @@ Voir issue #10 pour les critères d'acceptance complets.
 
 ---
 
-### Issue #14 — Drawer aperçu rapide (Vue Collection uniquement)
+### Issue #14 — GestureBar Dynamic Island (Vue Collection uniquement)
 
-**Titre** : `feat: drawer aperçu rapide — preview contextuel depuis la Vue Collection`
+**Titre** : `feat: aperçu rapide — GestureBar comme Dynamic Island`
 
 **Description** :
 La Vue Collection affiche des flacons à 40×60px. À cette échelle, le flacon encode
 trois informations visuelles (famille → couleur, remainingMl → niveau, concentration →
 densité) — tout le reste est invisible.
 
-Le drawer est la réponse au besoin de "peek" : l'utilisateur veut confirmer qu'il a
-trouvé le bon parfum sans quitter la vue d'ensemble. Ce n'est pas une interface
-d'exploration — c'est un outil de confirmation rapide.
+L'aperçu rapide est la réponse au besoin de "peek" : confirmer qu'on a trouvé le bon
+parfum sans quitter la vue d'ensemble.
+
+**Approche — GestureBar comme Dynamic Island.**
+Pas de panneau qui monte par-dessus le contenu. La `GestureBar` (toujours présente en bas)
+se transforme en place : au clic sur un flacon, elle s'élargit pour afficher les infos clés.
+Le mur de flacons reste entièrement visible. Clic ailleurs → retour à l'état minimal.
+
+Inspiré de la Dynamic Island d'Apple : un élément permanent qui change de nature
+selon le contexte, sans ajouter une nouvelle couche à l'interface.
 
 **Trois niveaux d'engagement distincts :**
 
-| Niveau   | Geste                            | Expérience                               |
-| -------- | -------------------------------- | ---------------------------------------- |
-| Glance   | Vue Collection passive           | silhouette · couleur · niveau            |
-| **Peek** | **Click dans la Vue Collection** | **drawer — infos clés**                  |
-| Explore  | Double-click → `/fragrance/:id`  | panneaux flottants · rotation · pyramide |
+| Niveau   | Geste                            | Expérience                                      |
+| -------- | -------------------------------- | ----------------------------------------------- |
+| Glance   | Vue Collection passive           | silhouette · couleur · niveau                   |
+| **Peek** | **Click dans la Vue Collection** | **GestureBar élargie — infos clés horizontales**|
+| Explore  | Double-click → `/fragrance/:id`  | FragrancePage — panneaux flottants · pyramide   |
 
-Le drawer opère au niveau 2. Il ne remplace pas la FragrancePage — il évite une
-navigation inutile quand l'utilisateur veut juste vérifier une info avant de décider.
+**Contenu de la GestureBar élargie (gauche → droite)** :
+Flacon SVG · Nom / Marque / Concentration · Famille principale · Concentration · Quantité restante · Saisons · Notation · Tags · [←] [→] · [icône étagère]
 
 **Scope strict** : uniquement depuis la Vue Collection (`/`).
-Pas depuis la ShelfPage, pas depuis la FragrancePage.
 
-**Navigation dans le drawer (si filtre actif)** :
-Flèche droite/gauche → parfum suivant/précédent dans les résultats filtrés.
-Sans filtre : parfum adjacent dans la grille.
+**Navigation** :
+Chevrons ← → aux bords → parfum suivant/précédent (résultats filtrés si filtre actif, adjacent dans la grille sinon).
+
+**Implémentation** :
+`GestureBar` accepte un `selectedFragrance?: Fragrance` — null = état minimal, défini = état élargi.
+Pas de composant Drawer séparé.
 
 **Critères d'acceptance** :
 
-- [ ] Click sur un flacon dans Vue Collection → drawer monte depuis le bas
-- [ ] Contenu : flacon SVG miniature · nom · marque · famille · concentration · remainingMl · rating · tags
-- [ ] Double-click depuis le drawer → navigation vers `/fragrance/:id`
-- [ ] Bouton "Voir dans l'étagère" → navigation vers `/shelf` (avec le parfum en focus si possible)
-- [ ] Flèches navigation → parfum suivant/précédent (filtre actif → prochain match)
-- [ ] Fermeture : click en dehors · touche Échap · swipe bas (mobile)
-- [ ] Le drawer ne s'ouvre pas depuis ShelfPage ni FragrancePage
+- [ ] Click sur un flacon dans Vue Collection → `GestureBar` s'élargit avec les infos du parfum
+- [ ] Contenu : flacon SVG · nom · marque · famille · concentration · remainingMl · rating · tags
+- [ ] Chevrons ← → pour naviguer entre parfums adjacents (ou résultats filtrés)
+- [ ] Icône "Voir dans l'étagère" → navigation vers `/shelf`
+- [ ] Double-click sur un flacon → navigation directe vers `/fragrance/:id` (sans passer par le Peek)
+- [ ] Fermeture : click en dehors de la GestureBar · touche Échap
+- [ ] Le comportement élargi n'existe pas depuis ShelfPage ni FragrancePage
 
 **Dépendances** : #20 (Vue Collection) ✅
 **Branche** : `feat/quick-drawer`
