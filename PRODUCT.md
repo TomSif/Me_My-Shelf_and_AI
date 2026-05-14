@@ -445,13 +445,16 @@ Les champs `tags`, `seasons`, `rating`, `comment` et tous les champs optionnels 
 #7b `setup: installer Zustand et migrer l'état global` — mergée
 #8 `feat: ajouter le champ tags à l'interface Fragrance` — mergée
 #9 `feat: définir et détecter un parfum incomplet (dirty state)` — mergée
+#9b `feat: étendre le modèle Fragrance — pyramide olfactive et complétion par section` — mergée
+#10 `feat: FragrancePage — page unifiée création et vue détaillée` — mergée
+#13 `feat: vue détaillée d'un parfum` — absorbée dans #10, mergée
 #20 `feat: vue collection — mur de flacons SVG` — mergée
 
 ---
 
 ## Issues v1 — en cours
 
-> **Prochaine issue à implémenter : #10 (Page d'ajout complet)**
+> **Prochaine issue à implémenter : #11 (Bouton ajout rapide)**
 
 ---
 
@@ -566,11 +569,11 @@ distinct des `families` qui sont des classifications larges.
 - [x] `type GenreOlfactif = -3 | -2 | -1 | 0 | 1 | 2 | 3` — ✅ fait
 - [x] `genre?: GenreOlfactif` ajouté à `Fragrance` — ✅ fait
 - [x] `tags: string[]` ajouté à `Fragrance` — ✅ fait (issue #8)
-- [ ] `interface OlfactoryPyramid { top: string[]; heart: string[]; base: string[] }` ajouté
-- [ ] `pyramid?: OlfactoryPyramid` ajouté à `Fragrance`
-- [ ] `interface SectionCompletion { identity: boolean; physical: boolean; olfactive: boolean; memory: boolean }` défini
-- [ ] `getSectionCompletion(fragrance): SectionCompletion` créé dans `utils/fragrance.ts`
-- [ ] `isComplete()` existant inchangé — pas de régression
+- [x] `interface OlfactoryPyramid { top: string[]; heart: string[]; base: string[] }` ajouté
+- [x] `pyramid?: OlfactoryPyramid` ajouté à `Fragrance`
+- [x] `interface SectionCompletion { identity: boolean; physical: boolean; olfactive: boolean; memory: boolean }` défini
+- [x] `getSectionCompletion(fragrance): SectionCompletion` créé dans `utils/fragrance.ts`
+- [x] `isComplete()` existant inchangé — pas de régression
 
 **Dépendances** : #9 ✅
 **Branche** : `feat/fragrance-model-v2`
@@ -600,23 +603,23 @@ La décision : un seul composant `FragrancePage`, deux modes UX distincts.
 
 **Critères d'acceptance** :
 
-- [ ] Composant `FragrancePage` remplace `AddPage` et `FragranceDetailPage`
-- [ ] Route `/add` → mode `create`, route `/fragrance/:id` → mode `view`
-- [ ] Layout : flacon hero centré, 4 sections en quadrant, pyramide à droite
-- [ ] Layout mobile : flacon en haut, sections empilées
-- [ ] `store.update(id, data)` ajouté à `fragrancesStore`
-- [ ] Mode `create` : focus guidé section par section après validation de chaque section
-- [ ] Mode `view` : champs éditables librement, champs incomplets mis en évidence
-- [ ] Flacon : 5 états visuels pilotés par `getSectionCompletion()` via mapping données → SVG
-- [ ] Concentration : capsules horizontales
-- [ ] `remainingMl` : slider borné à `volumeMl`
-- [ ] `families` : chips multi-select (12 familles)
-- [ ] `genre` : slider discret -3/+3
-- [ ] `tags` : chips à saisie libre
-- [ ] Pyramide : 3 zones chips libres (top / heart / base)
-- [ ] `rating` : étoiles 1→5
-- [ ] Indicateur de complétion % en haut à droite
-- [ ] Chaque section affiche son ✓ quand complète
+- [x] Composant `FragrancePage` remplace `AddPage` et `FragranceDetailPage`
+- [x] Route `/add` → mode `create`, route `/fragrance/:id` → mode `view`
+- [x] Layout : flacon hero centré, 4 sections en quadrant, pyramide à droite
+- [ ] Layout mobile : flacon en haut, sections empilées (différé #19)
+- [x] `store.update(id, data)` ajouté à `fragrancesStore`
+- [x] Mode `create` : focus guidé section par section après validation de chaque section
+- [x] Mode `view` : champs éditables librement, champs incomplets mis en évidence
+- [x] Flacon : 5 états visuels pilotés par `getSectionCompletion()` via mapping données → SVG
+- [x] Concentration : capsules horizontales
+- [x] `remainingMl` : slider borné à `volumeMl`
+- [x] `families` : chips multi-select (12 familles)
+- [x] `genre` : slider discret -3/+3
+- [x] `tags` : chips à saisie libre
+- [x] Pyramide : 3 zones chips libres (top / heart / base)
+- [x] `rating` : étoiles 1→5
+- [x] Indicateur de complétion % en haut à droite
+- [x] Chaque section affiche son ✓ quand complète
 - [ ] Mode `create` : boutons "Annuler" + "Enregistrer" (actif dès identity complète)
 - [ ] Mode `view` : bouton "Retour" + sauvegarde auto ou explicite
 
