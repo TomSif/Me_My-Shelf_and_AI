@@ -11,38 +11,48 @@ interface FragrancesState {
   remove: (id: string) => void;
 }
 
+function countIncomplete(fragrances: Fragrance[]): number {
+  return fragrances.filter((f) => !isComplete(f)).length;
+}
+
 export const useFragrancesStore = create<FragrancesState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       fragrances: [],
-      get incompleteCount() {
-        return get().fragrances.filter((f) => !isComplete(f)).length;
-      },
+      incompleteCount: 0,
       add: (data) => {
         const id = crypto.randomUUID();
-        set((state) => ({
-          fragrances: [
+        set((state) => {
+          const fragrances = [
             ...state.fragrances,
             { ...data, id, createdAt: new Date().toISOString() },
-          ],
-        }));
+          ];
+          return { fragrances, incompleteCount: countIncomplete(fragrances) };
+        });
         return id;
       },
       update: (id, data) =>
-        set((state) => ({
-          fragrances: state.fragrances.map((f) =>
+        set((state) => {
+          const fragrances = state.fragrances.map((f) =>
             f.id === id ? { ...f, ...data } : f
-          ),
-        })),
+          );
+          return { fragrances, incompleteCount: countIncomplete(fragrances) };
+        }),
       remove: (id) =>
-        set((state) => ({
-          fragrances: state.fragrances.filter((f) => f.id !== id),
-        })),
+        set((state) => {
+          const fragrances = state.fragrances.filter((f) => f.id !== id);
+          return { fragrances, incompleteCount: countIncomplete(fragrances) };
+        }),
     }),
     {
       name: "fragrances",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ fragrances: state.fragrances }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.incompleteCount = countIncomplete(state.fragrances);
+        }
+      },
     }
   )
 );
