@@ -70,7 +70,9 @@ function deriveBottleState(form: FormState): BottleState {
     id: "",
     createdAt: "",
     concentration: form.concentration ?? "eau de parfum",
-    purchasePrice: form.purchasePrice ? parseFloat(form.purchasePrice) : undefined,
+    purchasePrice: form.purchasePrice
+      ? parseFloat(form.purchasePrice)
+      : undefined,
     seasons: [],
   });
   if (s.identity && s.physical && s.olfactive) return "complete";
@@ -134,7 +136,9 @@ export function FragrancePage({ mode }: Props) {
     id: "",
     createdAt: "",
     concentration: form.concentration ?? "eau de parfum",
-    purchasePrice: form.purchasePrice ? parseFloat(form.purchasePrice) : undefined,
+    purchasePrice: form.purchasePrice
+      ? parseFloat(form.purchasePrice)
+      : undefined,
     seasons: [],
   });
 
@@ -146,13 +150,28 @@ export function FragrancePage({ mode }: Props) {
   useEffect(() => {
     if (mode !== "create") return;
     if (completion.identity && !completion.physical) {
-      section2Ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      section2Ref.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     } else if (completion.physical && !completion.olfactive) {
-      section3Ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      section3Ref.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     } else if (completion.olfactive && !completion.memory) {
-      section4Ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      section4Ref.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     }
-  }, [completion.identity, completion.physical, completion.olfactive, completion.memory, mode]);
+  }, [
+    completion.identity,
+    completion.physical,
+    completion.olfactive,
+    completion.memory,
+    mode,
+  ]);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -164,7 +183,7 @@ export function FragrancePage({ mode }: Props) {
       name: form.name.trim(),
       brand: form.brand.trim(),
       perfumer: form.perfumer.trim() || undefined,
-      concentration: form.concentration ?? "eau de parfum" as Concentration,
+      concentration: form.concentration ?? ("eau de parfum" as Concentration),
       isSample: form.isSample,
       volumeMl: form.volumeMl,
       remainingMl: form.remainingMl,
@@ -175,7 +194,9 @@ export function FragrancePage({ mode }: Props) {
       tags: form.tags,
       rating: form.rating,
       purchaseDate: form.purchaseDate || undefined,
-      purchasePrice: form.purchasePrice ? parseFloat(form.purchasePrice) : undefined,
+      purchasePrice: form.purchasePrice
+        ? parseFloat(form.purchasePrice)
+        : undefined,
       lastUsed: form.lastUsed || undefined,
       comment: form.comment.trim() || undefined,
     };
@@ -206,9 +227,43 @@ export function FragrancePage({ mode }: Props) {
     border: "1px solid var(--border-soft)",
     borderRadius: "12px",
     padding: "20px",
+    boxShadow: "var(--shadow-soft)",
     display: "flex",
     flexDirection: "column" as const,
     gap: "16px",
+  };
+
+  const ICONS = {
+    identity: (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
+        <circle cx="7" cy="5" r="2.5" />
+        <path d="M2.5 12c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" />
+      </svg>
+    ),
+    physical: (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 2v4L2 11h10L9 6V2" />
+        <path d="M5 2h4" />
+      </svg>
+    ),
+    olfactive: (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
+        <path d="M7 12C4.5 12 2.5 10 2.5 7.5S4.5 3 7 3s4.5 2 4.5 4.5S9.5 12 7 12z" />
+        <path d="M7 3V1" />
+        <path d="M5 7.5h4" />
+      </svg>
+    ),
+    pyramid: (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M7 1L13 12H1L7 1z" />
+        <path d="M3.5 8.5h7M5 5.5h4" strokeWidth="1" />
+      </svg>
+    ),
+    memory: (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M7 1l5 2.5V8L7 13 2 8V3.5L7 1z" />
+      </svg>
+    ),
   };
 
   return (
@@ -226,25 +281,38 @@ export function FragrancePage({ mode }: Props) {
         >
           ← Retour à la collection
         </button>
-        <span className="text-sm font-medium" style={{ color: "var(--text-secondary)" }}>
-          {mode === "create" ? "Nouveau parfum" : form.name || "Parfum sans nom"}
+        <span
+          className="text-sm font-medium"
+          style={{ color: "var(--text-secondary)" }}
+        >
+          {mode === "create"
+            ? "Nouveau parfum"
+            : form.name || "Parfum sans nom"}
         </span>
-        <span className="text-sm font-medium" style={{ color: "var(--icon-active)" }}>
+        <span
+          className="text-sm font-medium"
+          style={{ color: "var(--icon-active)" }}
+        >
           Complété {completionPct}%
         </span>
       </div>
 
       <form
         onSubmit={(e) => { e.preventDefault(); handleSave(); }}
-        className="flex flex-col lg:grid gap-4 p-6"
-        style={{ gridTemplateColumns: "1fr auto 1fr", gridTemplateRows: "1fr 1fr" }}
+        className="grid gap-4 p-6"
+        style={{ gridTemplateColumns: "1fr 1fr 1fr" }}
       >
-        {/* Section 1 — Identité */}
-        <div style={sectionStyle}>
+        {/* Section 1 — Identité — col 1 row 1 */}
+        <div style={{ ...sectionStyle, gridColumn: 1, gridRow: 1 }}>
           <div className="flex items-center justify-between">
-            <span style={labelStyle}>1. Identité</span>
+            <span className="flex items-center gap-2" style={{ ...labelStyle, color: "var(--text-secondary)" }}>
+              {ICONS.identity}
+              1. Identité
+            </span>
             {completion.identity && (
-              <span style={{ color: "var(--icon-active)", fontSize: "0.8rem" }}>✓</span>
+              <span style={{ color: "var(--icon-active)", fontSize: "0.8rem" }}>
+                ✓
+              </span>
             )}
           </div>
 
@@ -286,8 +354,8 @@ export function FragrancePage({ mode }: Props) {
           </div>
         </div>
 
-        {/* Flacon hero — colonne centrale */}
-        <div className="flex items-center justify-center lg:row-span-2 px-8">
+        {/* Flacon hero — col 2 row 1 */}
+        <div className="flex items-center justify-center px-8" style={{ gridColumn: 2, gridRow: 1 }}>
           <FragranceBottle
             families={form.families}
             size={3}
@@ -295,12 +363,17 @@ export function FragrancePage({ mode }: Props) {
           />
         </div>
 
-        {/* Section 2 — Physique */}
-        <div ref={section2Ref} style={sectionStyle}>
+        {/* Section 2 — Physique — col 3 row 1 */}
+        <div ref={section2Ref} style={{ ...sectionStyle, gridColumn: 3, gridRow: 1 }}>
           <div className="flex items-center justify-between">
-            <span style={labelStyle}>2. Physique</span>
+            <span className="flex items-center gap-2" style={{ ...labelStyle, color: "var(--text-secondary)" }}>
+              {ICONS.physical}
+              2. Physique
+            </span>
             {completion.physical && (
-              <span style={{ color: "var(--icon-active)", fontSize: "0.8rem" }}>✓</span>
+              <span style={{ color: "var(--icon-active)", fontSize: "0.8rem" }}>
+                ✓
+              </span>
             )}
           </div>
 
@@ -325,9 +398,13 @@ export function FragrancePage({ mode }: Props) {
                   className="px-3 py-2 rounded-lg text-sm outline-none"
                   style={inputStyle}
                 >
-                  {[0, 5, 7.5, 10, 15, 30, 50, 75, 100, 125, 150, 200].map((ml) => (
-                    <option key={ml} value={ml}>{ml === 0 ? "—" : `${ml} ml`}</option>
-                  ))}
+                  {[0, 5, 7.5, 10, 15, 30, 50, 75, 100, 125, 150, 200].map(
+                    (ml) => (
+                      <option key={ml} value={ml}>
+                        {ml === 0 ? "—" : `${ml} ml`}
+                      </option>
+                    ),
+                  )}
                 </select>
               </div>
               <div className="flex items-center gap-2 pt-4">
@@ -336,7 +413,7 @@ export function FragrancePage({ mode }: Props) {
                   type="checkbox"
                   checked={form.isSample}
                   onChange={(e) => set("isSample", e.target.checked)}
-                  className="accent-[var(--icon-active)]"
+                  className="accent-(--icon-active)"
                 />
               </div>
             </div>
@@ -352,30 +429,41 @@ export function FragrancePage({ mode }: Props) {
                   step={0.5}
                   value={form.remainingMl}
                   onChange={(e) => set("remainingMl", Number(e.target.value))}
-                  className="w-full accent-[var(--icon-active)]"
+                  className="w-full accent-(--icon-active)"
                 />
               </div>
             )}
           </div>
         </div>
 
-        {/* Section 3 — Olfactif */}
-        <div ref={section3Ref} style={sectionStyle}>
+        {/* Section 3 — Olfactif — col 1 row 2 */}
+        <div ref={section3Ref} style={{ ...sectionStyle, gridColumn: 1, gridRow: 2 }}>
           <div className="flex items-center justify-between">
-            <span style={labelStyle}>3. Olfactif</span>
+            <span className="flex items-center gap-2" style={{ ...labelStyle, color: "var(--text-secondary)" }}>
+              {ICONS.olfactive}
+              3. Olfactif
+            </span>
             {completion.olfactive && (
-              <span style={{ color: "var(--icon-active)", fontSize: "0.8rem" }}>✓</span>
+              <span style={{ color: "var(--icon-active)", fontSize: "0.8rem" }}>
+                ✓
+              </span>
             )}
           </div>
 
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1">
               <label style={labelStyle}>Familles</label>
-              <FamilyChips value={form.families} onChange={(v) => set("families", v)} />
+              <FamilyChips
+                value={form.families}
+                onChange={(v) => set("families", v)}
+              />
             </div>
             <div className="flex flex-col gap-1">
               <label style={labelStyle}>Genre olfactif</label>
-              <GenreSlider value={form.genre} onChange={(v) => set("genre", v)} />
+              <GenreSlider
+                value={form.genre}
+                onChange={(v) => set("genre", v)}
+              />
             </div>
             <div className="flex flex-col gap-1">
               <label style={labelStyle}>Tags personnels</label>
@@ -384,31 +472,42 @@ export function FragrancePage({ mode }: Props) {
           </div>
         </div>
 
-        {/* Pyramide olfactive */}
-        <div style={{ ...sectionStyle, gridColumn: "3" }}>
-          <span style={labelStyle}>Pyramide olfactive</span>
+        {/* Pyramide olfactive — col 3 row 2 */}
+        <div style={{ ...sectionStyle, gridColumn: 3, gridRow: 2 }}>
+          <span className="flex items-center gap-2" style={{ ...labelStyle, color: "var(--text-secondary)" }}>
+            {ICONS.pyramid}
+            Pyramide olfactive
+          </span>
           <PyramidInput
             value={form.pyramid}
             onChange={(v) => set("pyramid", v)}
           />
         </div>
 
-        {/* Section 4 — Collection & Mémoire */}
+        {/* Section 4 — Collection & Mémoire — col 2 row 2 */}
         <div
           ref={section4Ref}
-          style={{ ...sectionStyle, gridColumn: "1 / -1" }}
+          style={{ ...sectionStyle, gridColumn: 2, gridRow: 2 }}
         >
           <div className="flex items-center justify-between">
-            <span style={labelStyle}>4. Collection & Mémoire</span>
+            <span className="flex items-center gap-2" style={{ ...labelStyle, color: "var(--text-secondary)" }}>
+              {ICONS.memory}
+              4. Collection & Mémoire
+            </span>
             {completion.memory && (
-              <span style={{ color: "var(--icon-active)", fontSize: "0.8rem" }}>✓</span>
+              <span style={{ color: "var(--icon-active)", fontSize: "0.8rem" }}>
+                ✓
+              </span>
             )}
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="flex flex-col gap-1">
               <label style={labelStyle}>Note</label>
-              <RatingPicker value={form.rating} onChange={(v) => set("rating", v)} />
+              <RatingPicker
+                value={form.rating}
+                onChange={(v) => set("rating", v)}
+              />
             </div>
             <div className="flex flex-col gap-1">
               <label style={labelStyle}>Date d'achat</label>
@@ -457,10 +556,10 @@ export function FragrancePage({ mode }: Props) {
           </div>
         </div>
 
-        {/* Actions */}
+        {/* Actions — row 3 full width */}
         <div
           className="flex justify-end gap-3"
-          style={{ gridColumn: "1 / -1" }}
+          style={{ gridColumn: "1 / -1", gridRow: 3 }}
         >
           <button
             type="button"
@@ -479,7 +578,9 @@ export function FragrancePage({ mode }: Props) {
             disabled={!canSave}
             className="px-5 py-2 rounded-lg text-sm font-medium transition-opacity"
             style={{
-              backgroundColor: canSave ? "var(--icon-active)" : "var(--state-disabled)",
+              backgroundColor: canSave
+                ? "var(--icon-active)"
+                : "var(--state-disabled)",
               color: canSave ? "#fff" : "var(--text-ghost)",
               cursor: canSave ? "pointer" : "not-allowed",
             }}
