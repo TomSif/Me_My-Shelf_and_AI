@@ -1,8 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CollectionPage } from "./pages/CollectionPage";
 import { ShelfPage } from "./pages/ShelfPage";
-import { AddPage } from "./pages/AddPage";
-import { FragranceDetailPage } from "./pages/FragranceDetailPage";
+import { FragrancePage } from "./pages/FragrancePage";
 
 function App() {
   return (
@@ -10,8 +9,8 @@ function App() {
       <Routes>
         <Route path="/" element={<CollectionPage />} />
         <Route path="/shelf" element={<ShelfPage />} />
-        <Route path="/add" element={<AddPage />} />
-        <Route path="/fragrance/:id" element={<FragranceDetailPage />} />
+        <Route path="/add" element={<FragrancePage mode="create" />} />
+        <Route path="/fragrance/:id" element={<FragrancePage mode="view" />} />
       </Routes>
     </BrowserRouter>
   );
