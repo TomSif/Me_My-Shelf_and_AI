@@ -918,3 +918,4 @@ Si `groupBy` est bien posé en v1, la virtualisation v2 se branche dessus sans r
 ---
 
 _Créé le 2026-04-30 — Mis à jour le 2026-05-13 (Vue Collection ajoutée en v1 comme homepage, ShelfPage déplacée sur /shelf, ordre des issues révisé)_
+| Clic droit sur etagere filtree -> ajout rapide pre-rempli avec les attributs du filtre actif — `QuickAddModal` acceptera un `prefill?: Partial<NewFragrance>` | v2 |
