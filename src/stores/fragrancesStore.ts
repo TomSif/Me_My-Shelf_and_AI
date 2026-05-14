@@ -6,7 +6,7 @@ import { isComplete } from "../utils/fragrance";
 interface FragrancesState {
   fragrances: Fragrance[];
   incompleteCount: number;
-  add: (data: NewFragrance) => void;
+  add: (data: NewFragrance) => string;
   update: (id: string, data: Partial<NewFragrance>) => void;
   remove: (id: string) => void;
 }
@@ -18,17 +18,16 @@ export const useFragrancesStore = create<FragrancesState>()(
       get incompleteCount() {
         return get().fragrances.filter((f) => !isComplete(f)).length;
       },
-      add: (data) =>
+      add: (data) => {
+        const id = crypto.randomUUID();
         set((state) => ({
           fragrances: [
             ...state.fragrances,
-            {
-              ...data,
-              id: crypto.randomUUID(),
-              createdAt: new Date().toISOString(),
-            },
+            { ...data, id, createdAt: new Date().toISOString() },
           ],
-        })),
+        }));
+        return id;
+      },
       update: (id, data) =>
         set((state) => ({
           fragrances: state.fragrances.map((f) =>
