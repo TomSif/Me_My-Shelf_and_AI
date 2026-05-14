@@ -787,6 +787,7 @@ Sans filtre : parfum adjacent dans la grille.
 - [ ] Click sur un flacon dans Vue Collection → drawer monte depuis le bas
 - [ ] Contenu : flacon SVG miniature · nom · marque · famille · concentration · remainingMl · rating · tags
 - [ ] Double-click depuis le drawer → navigation vers `/fragrance/:id`
+- [ ] Bouton "Voir dans l'étagère" → navigation vers `/shelf` (avec le parfum en focus si possible)
 - [ ] Flèches navigation → parfum suivant/précédent (filtre actif → prochain match)
 - [ ] Fermeture : click en dehors · touche Échap · swipe bas (mobile)
 - [ ] Le drawer ne s'ouvre pas depuis ShelfPage ni FragrancePage
