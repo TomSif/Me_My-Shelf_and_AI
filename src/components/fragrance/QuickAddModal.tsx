@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
 import { FamilyChips } from "./FamilyChips";
 import type { OlfactoryFamily } from "../../types/fragrance";
@@ -9,7 +8,6 @@ interface Props {
 }
 
 export function QuickAddModal({ onClose }: Props) {
-  const navigate = useNavigate();
   const add = useFragrancesStore((s) => s.add);
 
   const [name, setName] = useState("");
@@ -18,8 +16,8 @@ export function QuickAddModal({ onClose }: Props) {
 
   const canSave = name.trim().length > 0 && brand.trim().length > 0;
 
-  function handleSave(andComplete: boolean) {
-    const fragrance = add({
+  function handleSave() {
+    add({
       name: name.trim(),
       brand: brand.trim(),
       families,
@@ -31,9 +29,6 @@ export function QuickAddModal({ onClose }: Props) {
       tags: [],
       pyramid: { top: [], heart: [], base: [] },
     });
-    if (andComplete && fragrance) {
-      navigate(`/fragrance/${fragrance}`);
-    }
     onClose();
   }
 
@@ -140,21 +135,7 @@ export function QuickAddModal({ onClose }: Props) {
           <button
             type="button"
             disabled={!canSave}
-            onClick={() => handleSave(false)}
-            className="px-4 py-2 rounded-lg text-sm transition-opacity"
-            style={{
-              backgroundColor: canSave ? "var(--surface-primary)" : "var(--state-disabled)",
-              color: canSave ? "var(--text-primary)" : "var(--text-ghost)",
-              border: "1px solid var(--border-soft)",
-              cursor: canSave ? "pointer" : "not-allowed",
-            }}
-          >
-            Enregistrer
-          </button>
-          <button
-            type="button"
-            disabled={!canSave}
-            onClick={() => handleSave(true)}
+            onClick={handleSave}
             className="px-4 py-2 rounded-lg text-sm font-medium transition-opacity"
             style={{
               backgroundColor: canSave ? "var(--icon-active)" : "var(--state-disabled)",
@@ -162,7 +143,7 @@ export function QuickAddModal({ onClose }: Props) {
               cursor: canSave ? "pointer" : "not-allowed",
             }}
           >
-            Enregistrer & compléter →
+            Enregistrer
           </button>
         </div>
       </div>
