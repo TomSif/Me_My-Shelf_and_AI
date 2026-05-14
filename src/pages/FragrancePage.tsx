@@ -152,7 +152,7 @@ export function FragrancePage({ mode }: Props) {
     } else if (completion.olfactive && !completion.memory) {
       section4Ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-  }, [completion.identity, completion.physical, completion.olfactive, mode]);
+  }, [completion.identity, completion.physical, completion.olfactive, completion.memory, mode]);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
