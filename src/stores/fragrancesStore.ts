@@ -7,6 +7,7 @@ interface FragrancesState {
   fragrances: Fragrance[];
   incompleteCount: number;
   add: (data: NewFragrance) => void;
+  update: (id: string, data: Partial<NewFragrance>) => void;
   remove: (id: string) => void;
 }
 
@@ -27,6 +28,12 @@ export const useFragrancesStore = create<FragrancesState>()(
               createdAt: new Date().toISOString(),
             },
           ],
+        })),
+      update: (id, data) =>
+        set((state) => ({
+          fragrances: state.fragrances.map((f) =>
+            f.id === id ? { ...f, ...data } : f
+          ),
         })),
       remove: (id) =>
         set((state) => ({
