@@ -1,8 +1,9 @@
 interface Props {
   count?: number;
+  onQuickAdd?: () => void;
 }
 
-export function AppHeader({ count }: Props) {
+export function AppHeader({ count, onQuickAdd }: Props) {
   return (
     <header
       className="flex items-center gap-4 px-6 py-3 shrink-0"
@@ -28,11 +29,27 @@ export function AppHeader({ count }: Props) {
         </span>
       </div>
 
-      {count !== undefined && (
-        <span className="ml-auto text-xs" style={{ color: "var(--text-muted)" }}>
-          {count} parfum{count > 1 ? "s" : ""}
-        </span>
-      )}
+      <div className="ml-auto flex items-center gap-3">
+        {count !== undefined && (
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+            {count} parfum{count > 1 ? "s" : ""}
+          </span>
+        )}
+        {onQuickAdd && (
+          <button
+            type="button"
+            onClick={onQuickAdd}
+            className="w-7 h-7 rounded-full flex items-center justify-center text-base leading-none transition-colors"
+            style={{
+              backgroundColor: "var(--icon-active)",
+              color: "#fff",
+            }}
+            title="Ajout rapide"
+          >
+            +
+          </button>
+        )}
+      </div>
     </header>
   );
 }
