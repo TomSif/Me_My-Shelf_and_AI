@@ -4,10 +4,12 @@ import { useFragrancesStore } from "../stores/fragrancesStore";
 import { AppLayout } from "../components/layout/AppLayout";
 import { BottleWall } from "../components/fragrance/BottleWall";
 import { QuickAddModal } from "../components/fragrance/QuickAddModal";
+import { IncompletePanel } from "../components/fragrance/IncompletePanel";
 
 export function CollectionPage() {
-  const { fragrances } = useFragrancesStore();
+  const { fragrances, incompleteCount } = useFragrancesStore();
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [incompletePanelOpen, setIncompletePanelOpen] = useState(false);
 
   if (fragrances.length === 0) {
     return (
@@ -27,9 +29,17 @@ export function CollectionPage() {
   }
 
   return (
-    <AppLayout headerCount={fragrances.length} onQuickAdd={() => setQuickAddOpen(true)}>
+    <AppLayout
+      headerCount={fragrances.length}
+      incompleteCount={incompleteCount}
+      onQuickAdd={() => setQuickAddOpen(true)}
+      onIncompleteBadgeClick={() => setIncompletePanelOpen((o) => !o)}
+    >
       <BottleWall fragrances={fragrances} />
       {quickAddOpen && <QuickAddModal onClose={() => setQuickAddOpen(false)} />}
+      {incompletePanelOpen && (
+        <IncompletePanel onClose={() => setIncompletePanelOpen(false)} />
+      )}
     </AppLayout>
   );
 }

@@ -6,16 +6,23 @@ import { GestureBar } from "./GestureBar";
 interface Props {
   children: ReactNode;
   headerCount?: number;
+  incompleteCount?: number;
   onQuickAdd?: () => void;
+  onIncompleteBadgeClick?: () => void;
 }
 
-export function AppLayout({ children, headerCount, onQuickAdd }: Props) {
+export function AppLayout({ children, headerCount, incompleteCount, onQuickAdd, onIncompleteBadgeClick }: Props) {
   return (
     <div
       className="flex flex-col h-screen"
       style={{ backgroundColor: "var(--bg-primary)" }}
     >
-      <AppHeader count={headerCount} onQuickAdd={onQuickAdd} />
+      <AppHeader
+        count={headerCount}
+        incompleteCount={incompleteCount}
+        onQuickAdd={onQuickAdd}
+        onIncompleteBadgeClick={onIncompleteBadgeClick}
+      />
       <div className="flex flex-1 overflow-hidden">
         <SideNav />
         <main className="flex-1 overflow-y-auto">{children}</main>

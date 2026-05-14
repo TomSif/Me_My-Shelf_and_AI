@@ -1,9 +1,11 @@
 interface Props {
   count?: number;
+  incompleteCount?: number;
   onQuickAdd?: () => void;
+  onIncompleteBadgeClick?: () => void;
 }
 
-export function AppHeader({ count, onQuickAdd }: Props) {
+export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadgeClick }: Props) {
   return (
     <header
       className="flex items-center gap-4 px-6 py-3 shrink-0"
@@ -34,6 +36,21 @@ export function AppHeader({ count, onQuickAdd }: Props) {
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
             {count} parfum{count > 1 ? "s" : ""}
           </span>
+        )}
+        {incompleteCount !== undefined && incompleteCount > 0 && (
+          <button
+            type="button"
+            onClick={onIncompleteBadgeClick}
+            className="h-5 min-w-5 px-1.5 rounded-full flex items-center justify-center text-xs font-medium leading-none transition-opacity"
+            style={{
+              backgroundColor: "var(--icon-active)",
+              color: "#fff",
+              opacity: 0.85,
+            }}
+            title={`${incompleteCount} parfum${incompleteCount > 1 ? "s" : ""} incomplet${incompleteCount > 1 ? "s" : ""}`}
+          >
+            {incompleteCount}
+          </button>
         )}
         {onQuickAdd && (
           <button
