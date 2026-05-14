@@ -191,9 +191,11 @@ git branch --merged dev | grep -v "^\* \|main\|dev" | xargs git branch -d
 
 > À compléter au fur et à mesure des bugs rencontrés.
 
-| Erreur      | Cause | Solution |
-| ----------- | ----- | -------- |
-| _(à venir)_ |       |          |
+| Erreur | Cause | Solution |
+| ------ | ----- | -------- |
+| PR mergée dans `main` au lieu de `dev` | La branche **base** est affichée en petit en haut à gauche sur GitHub — facile à rater | Toujours vérifier "base: **dev**" avant de cliquer Merge. Si déjà mergé : `git checkout dev && git merge origin/main && git push origin dev` (fast-forward si la feature était branchée depuis dev) |
+| `git branch -d` refuse de supprimer | La branche a des commits non reconnus par git (squash merge, commit orphelin) | Utiliser `git branch -D` (majuscule) pour forcer — vérifier d'abord que le code est bien dans `dev` |
+| `fatal: unable to get local issuer certificate` sur git fetch | Git n'utilise pas le gestionnaire de certificats Windows | `git config --global http.sslBackend schannel` |
 
 ---
 
