@@ -70,6 +70,7 @@ function deriveBottleState(form: FormState): BottleState {
     id: "",
     createdAt: "",
     concentration: form.concentration ?? "eau de parfum",
+    purchasePrice: form.purchasePrice ? parseFloat(form.purchasePrice) : undefined,
     seasons: [],
   });
   if (s.identity && s.physical && s.olfactive) return "complete";
@@ -133,6 +134,7 @@ export function FragrancePage({ mode }: Props) {
     id: "",
     createdAt: "",
     concentration: form.concentration ?? "eau de parfum",
+    purchasePrice: form.purchasePrice ? parseFloat(form.purchasePrice) : undefined,
     seasons: [],
   });
 
