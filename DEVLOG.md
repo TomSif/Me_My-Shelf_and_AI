@@ -377,3 +377,97 @@ La substitution `useFragrances` → `useFragrancesStore` a nécessité un appel 
 ---
 
 _Créé le 2026-04-30_
+
+
+## Session 2026-05-14 — Issues #9b, #10/#13, #11, #12
+
+### Ce qui était prévu
+
+- Issue #9b : étendre le modèle (pyramide olfactive + complétion par section)
+- Issue #10 : FragrancePage (création + vue détaillée)
+- Issues suivantes selon avancement
+
+### Ce qui a été fait
+
+**Issue #9b — Extension du modèle (`feat/fragrance-model-v2`, mergée)**
+- `OlfactoryPyramid { top, heart, base: string[] }` ajouté aux types
+- `pyramid?: OlfactoryPyramid` ajouté à `Fragrance`
+- `interface SectionCompletion { identity, physical, olfactive, memory: boolean }` créé dans `utils/fragrance.ts`
+- `getSectionCompletion(fragrance)` : identity = name+brand, physical = concentration+volumeMl, olfactive = families.length > 0, memory = rating !== undefined
+- `isComplete()` inchangé — les deux fonctions ont des rôles distincts
+
+**Issues #10 + #13 fusionnées — FragrancePage (`feat/add-page`, mergée)**
+- Décision : AddPage et FragranceDetailPage affichent exactement les mêmes informations → un seul composant, deux modes UX
+- `/add` → `<FragrancePage mode="create">`, `/fragrance/:id` → `<FragrancePage mode="view">`
+- Layout : grid 3 colonnes égales, flacon hero centré, 4 sections + pyramide
+- `FragranceBottle` étendu : 5 états visuels (`empty / identity / physical / olfactive / complete`) via mapping données → attributs SVG (pas classes CSS)
+- 6 composants de saisie créés : `ConcentrationPicker`, `FamilyChips`, `GenreSlider`, `TagsInput`, `PyramidInput`, `RatingPicker`
+- Mode `create` : focus guidé section par section via `useEffect` + `scrollIntoView`
+- Mode `view` : navigation libre, champs éditables
+- `store.update(id, data)` ajouté à `fragrancesStore`
+- `store.add()` modifié pour retourner l'`id` créé
+- Indicateur de complétion % + check par section
+
+**Issue #11 — Bouton ajout rapide (`feat/quick-add`, mergée)**
+- Bouton `+` (cercle amber) dans `AppHeader`, visible depuis `CollectionPage`
+- `QuickAddModal` : nom + marque + familles, save & close uniquement
+- Décision (Thomas) : ajout rapide et page détail sont deux chemins séparés — pas de redirection post-save
+
+**Issue #12 — Badge incompleteCount (`feat/incomplete-badge`, mergée)**
+- Badge amber dans `AppHeader` (masqué si 0), cliquable
+- `IncompletePanel` : panneau flottant listant les parfums incomplets, chips par section manquante (Identité / Physique / Olfactif / Mémoire), lien direct vers `/fragrance/:id`
+- Wiring : `AppLayout` → `AppHeader` → `CollectionPage`
+
+**PRODUCT.md — Philosophie UI ajoutée (Thomas)**
+- Section "Objets Olfactifs Interactifs" : 3 niveaux d'engagement Glance / Peek / Explore
+- Issue #14 (drawer) recentrée : Peek uniquement depuis Vue Collection, scope strict
+- Click → drawer, double-click → `/fragrance/:id`
+
+### Décisions prises
+
+**`memory` = `rating !== undefined`.**
+La section Mémoire n'a pas de champ obligatoire. La note est le signal le plus précieux — elle indique que l'utilisateur a testé le parfum. C'est elle qui déclenche l'état "testé".
+
+**États visuels du flacon = mapping données → attributs SVG, pas classes CSS.**
+Thomas a posé la question : les états ne seront-ils pas des attributs SVG en v2 ? Oui. Décision : `BOTTLE_VISUAL: Record<BottleState, { bodyOpacity, liquidOpacity, glowOpacity }>` — les états déclenchent des fonctions de rendu, pas des classes. Extensible vers des animations SVG sans changer l'interface du composant.
+
+**Un seul composant pour create et view.**
+Thomas : "si c'est exactement les mêmes éléments, pourquoi les séparer ?" La différence est dans le comportement UX (focus guidé vs libre), pas dans le layout. `FragrancePage` est la source de vérité pour les deux routes.
+
+**`incompleteCount` = valeur d'état recalculée à chaque mutation.**
+Le getter JavaScript ne survit pas au spread Zustand — voir bug ci-dessous. Remplacé par une valeur d'état mise à jour dans `add`, `update`, `remove`, et restaurée via `onRehydrateStorage` au démarrage.
+
+### Bugs / blocages rencontrés
+
+**`purchasePrice: string` non assignable à `number` dans `getSectionCompletion`.**
+`FormState` utilise `purchasePrice: string` pour la compatibilité `<input>`. Converti avant chaque appel : `purchasePrice: form.purchasePrice ? parseFloat(form.purchasePrice) : undefined`.
+
+**`completion.memory` absent des dépendances `useEffect`.**
+React avertit d'une dépendance manquante dans le tableau du `useEffect` de focus guidé. Ajouté.
+
+**Grid layout incorrect (colonnes inégales).**
+Premier rendu : `gridTemplateColumns: "1fr auto 1fr"` — la colonne centrale se redimensionnait librement. Corrigé en `"1fr 1fr 1fr"` avec `gridColumn`/`gridRow` explicites sur chaque section.
+
+**PR mergée dans `main` au lieu de `dev` (deuxième occurrence).**
+Corrigée par `git checkout dev && git merge origin/main` (fast-forward propre). Les issues GitHub n'ont pas été auto-fermées car le merge n'a pas touché la branche par défaut — fermées manuellement.
+
+**`incompleteCount` toujours à 0 — getter JavaScript incompatible avec Zustand.**
+`get incompleteCount() { return get().fragrances.filter(...) }` : quand Zustand spread l'état, le getter JS est évalué une fois et figé comme valeur primitive. Il ne se met plus jamais à jour.
+Solution : valeur plain recalculée dans chaque mutation via `countIncomplete(fragrances)` + `onRehydrateStorage`.
+Note : l'entrée du 2026-05-13 indiquait que le getter fonctionnait — c'était incorrect. Corrigé aujourd'hui.
+
+### Apprentissages
+
+- **Spread JavaScript évalue les getters.** `{ ...obj }` produit des valeurs, pas des getters. Zustand utilise le spread pour mettre à jour l'état → les getters JS ne fonctionnent pas comme état dérivé réactif.
+- **`onRehydrateStorage` de Zustand persist.** Callback appelé après le chargement depuis localStorage. Utile pour recalculer des valeurs dérivées non persistées.
+- **PR dans GitHub — base = destination.** Encore une fois : toujours vérifier que "base" est `dev` avant de merger. Deuxième occurrence de cette erreur.
+
+### Prochaine session
+
+- Issue #14 : drawer aperçu rapide depuis Vue Collection
+  - Click → drawer, double-click → `/fragrance/:id` (modifier comportement de `BottleWall`)
+  - Contenu : flacon SVG · nom · marque · famille · concentration · remainingMl · rating · tags
+  - Navigation left/right entre parfums adjacents
+  - Fermeture : click dehors · Échap · swipe bas
+
+---

@@ -335,12 +335,12 @@ Le `isDirty` global reste inchangé — il pilote le badge #12.
 `FragrancePage` est un composant unique servi par deux routes.
 L'UI (layout, flacon, sections) est identique dans les deux modes.
 
-| | Mode `create` (`/add`) | Mode `view` (`/fragrance/:id`) |
-|---|---|---|
-| Focus | Guidé section par section | Libre |
-| Champs incomplets | Pas encore remplis — normal | Mis en évidence — invitation à compléter |
-| Sauvegarde | Bouton "Enregistrer" (actif dès identity complète) | Sauvegarde explicite ou auto |
-| Store | `store.add()` | `store.update(id, data)` |
+|                   | Mode `create` (`/add`)                             | Mode `view` (`/fragrance/:id`)           |
+| ----------------- | -------------------------------------------------- | ---------------------------------------- |
+| Focus             | Guidé section par section                          | Libre                                    |
+| Champs incomplets | Pas encore remplis — normal                        | Mis en évidence — invitation à compléter |
+| Sauvegarde        | Bouton "Enregistrer" (actif dès identity complète) | Sauvegarde explicite ou auto             |
+| Store             | `store.add()`                                      | `store.update(id, data)`                 |
 
 #### Motion — v2 uniquement
 
@@ -348,6 +348,76 @@ Les animations (remplissage liquide, glow progressif, drag & drop familles,
 micro-vibrations lumineuses) sont documentées dans `add_page_md_design_spec.md`
 et implémentées lors de la passe UI (#19) ou en v2.
 Courbe de référence : `cubic-bezier(0.22, 1, 0.36, 1)` — timing 180–700ms selon l'action.
+
+---
+
+### Philosophie UI — Objets Olfactifs Interactifs
+
+#### Principe
+
+L'application n'utilise pas de cards traditionnelles ni d'interfaces saturées de métadonnées.
+Chaque parfum est un **objet vivant** capable d'encoder visuellement ses informations.
+Le flacon lui-même devient l'interface.
+
+#### Informations encodées dans le flacon
+
+| Information       | Encodage visuel                            |
+| ----------------- | ------------------------------------------ |
+| Famille olfactive | teinte du liquide (palette désaturée)      |
+| Concentration     | densité et opacité du liquide              |
+| Quantité restante | niveau du liquide                          |
+| Nom + marque      | étiquette gravée                           |
+| Saisons           | micro-icônes sur le bouchon ou l'étiquette |
+
+Les couleurs restent toujours très désaturées — esthétique luxe minimaliste préservée.
+
+#### Trois niveaux d'engagement
+
+| Niveau      | Contexte               | Geste        | Expérience                                    |
+| ----------- | ---------------------- | ------------ | --------------------------------------------- |
+| **Glance**  | Vue Collection 40×60px | passif       | silhouette · couleur · niveau                 |
+| **Peek**    | Vue Collection         | click        | drawer — infos clés, navigation entre parfums |
+| **Explore** | FragrancePage          | double-click | panneaux flottants · rotation · pyramide      |
+
+Chaque niveau est adapté à l'échelle et à l'intention de l'utilisateur.
+Le drawer (Peek) et les panneaux flottants (Explore) ne sont pas deux philosophies
+contradictoires — ils opèrent à des échelles différentes.
+
+#### Focus state — sensation recherchée
+
+Au click dans la Vue Collection :
+
+> "prendre légèrement un parfum hors de l'étagère pour l'examiner".
+
+- le flacon avance légèrement
+- la lumière devient plus précise
+- les autres flacons se désaturent subtilement
+
+#### Révélation de la pyramide olfactive — v2
+
+Depuis la FragrancePage, molette (desktop) ou drag horizontal (mobile) :
+
+- rotation subtile du flacon sur l'axe Y
+- la pyramide apparaît derrière le flacon ou dans le liquide
+- sensation : "regarder à travers le parfum pour révéler sa structure"
+
+La pyramide ne ressemble pas à une card UI indépendante.
+Elle est translucide, gravée dans le verre, suspendue dans le liquide.
+
+#### Ce que l'interface évite
+
+- drawers lourds dans les vues immersives
+- modales classiques
+- overlays envahissants
+- panneaux de métadonnées indépendants du flacon
+- patterns CRUD standard
+
+#### Motion — v2
+
+Inspirations : Apple · Framer · interfaces muséales · objets physiques premium.
+Courbe : `cubic-bezier(0.22, 1, 0.36, 1)`
+Timing : 180–240ms (interactions simples) · 300–450ms (révélation) · 500–700ms (transitions majeures)
+Règle : aucune animation ne doit sembler gamifiée ou "tech demo".
 
 ---
 
@@ -590,12 +660,14 @@ Les séparer reviendrait à dupliquer un layout complexe pour rien.
 La décision : un seul composant `FragrancePage`, deux modes UX distincts.
 
 **Deux routes, un composant :**
+
 ```
 /add              → <FragrancePage mode="create" />
 /fragrance/:id    → <FragrancePage mode="view" />
 ```
 
 **Différence UX, pas UI :**
+
 - `create` : focus guidé section par section — quand identity est validée, focus passe à physical, etc.
 - `view` : navigation libre — pas de focus forcé, mais champs incomplets signalés visuellement (dirty state). L'utilisateur choisit ce qu'il complète.
 
@@ -679,22 +751,47 @@ Voir issue #10 pour les critères d'acceptance complets.
 
 ---
 
-### Issue #14 — Drawer aperçu rapide
+### Issue #14 — Drawer aperçu rapide (Vue Collection uniquement)
 
-**Titre** : `feat: drawer aperçu rapide au click sur une carte`
+**Titre** : `feat: drawer aperçu rapide — preview contextuel depuis la Vue Collection`
 
 **Description** :
-Click sur une carte dans l'étagère → panneau qui monte depuis le bas.
-Affiche les infos essentielles sans quitter la vue principale.
-Mobile-first : le drawer remplace la modale (inadaptée au mobile).
+La Vue Collection affiche des flacons à 40×60px. À cette échelle, le flacon encode
+trois informations visuelles (famille → couleur, remainingMl → niveau, concentration →
+densité) — tout le reste est invisible.
+
+Le drawer est la réponse au besoin de "peek" : l'utilisateur veut confirmer qu'il a
+trouvé le bon parfum sans quitter la vue d'ensemble. Ce n'est pas une interface
+d'exploration — c'est un outil de confirmation rapide.
+
+**Trois niveaux d'engagement distincts :**
+
+| Niveau   | Geste                            | Expérience                               |
+| -------- | -------------------------------- | ---------------------------------------- |
+| Glance   | Vue Collection passive           | silhouette · couleur · niveau            |
+| **Peek** | **Click dans la Vue Collection** | **drawer — infos clés**                  |
+| Explore  | Double-click → `/fragrance/:id`  | panneaux flottants · rotation · pyramide |
+
+Le drawer opère au niveau 2. Il ne remplace pas la FragrancePage — il évite une
+navigation inutile quand l'utilisateur veut juste vérifier une info avant de décider.
+
+**Scope strict** : uniquement depuis la Vue Collection (`/`).
+Pas depuis la ShelfPage, pas depuis la FragrancePage.
+
+**Navigation dans le drawer (si filtre actif)** :
+Flèche droite/gauche → parfum suivant/précédent dans les résultats filtrés.
+Sans filtre : parfum adjacent dans la grille.
 
 **Critères d'acceptance** :
 
-- [ ] Click sur une `FragranceCard` → drawer s'ouvre depuis le bas
-- [ ] Contenu : nom, marque, families, concentration, rating, tags
-- [ ] Bouton "Voir la fiche complète" → navigation vers `/fragrance/:id`
-- [ ] Fermeture : bouton fermer, click en dehors, touche Échap
+- [ ] Click sur un flacon dans Vue Collection → drawer monte depuis le bas
+- [ ] Contenu : flacon SVG miniature · nom · marque · famille · concentration · remainingMl · rating · tags
+- [ ] Double-click depuis le drawer → navigation vers `/fragrance/:id`
+- [ ] Flèches navigation → parfum suivant/précédent (filtre actif → prochain match)
+- [ ] Fermeture : click en dehors · touche Échap · swipe bas (mobile)
+- [ ] Le drawer ne s'ouvre pas depuis ShelfPage ni FragrancePage
 
+**Dépendances** : #20 (Vue Collection) ✅
 **Branche** : `feat/quick-drawer`
 
 ---
