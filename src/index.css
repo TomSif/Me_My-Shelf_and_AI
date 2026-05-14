@@ -1,1 +1,182 @@
 @import "tailwindcss";
+
+:root {
+  /* =========================================================
+     FOUNDATION
+     ========================================================= */
+
+  --bg-primary: #f7f4ef;
+  --bg-secondary: #f3eee7;
+  --bg-elevated: rgba(255, 255, 255, 0.42);
+
+  --surface-primary: rgba(255, 255, 255, 0.58);
+  --surface-secondary: rgba(255, 255, 255, 0.34);
+  --surface-glass: rgba(255, 255, 255, 0.22);
+
+  --border-soft: rgba(255, 255, 255, 0.48);
+  --border-light: rgba(255, 255, 255, 0.24);
+
+  /* =========================================================
+     TYPOGRAPHY
+     ========================================================= */
+
+  --text-primary: #1d1b19;
+  --text-secondary: #5f5a54;
+  --text-muted: #8e877f;
+  --text-ghost: rgba(29, 27, 25, 0.38);
+
+  /* =========================================================
+     LIGHTING SYSTEM
+     ========================================================= */
+
+  --light-warm: rgba(255, 223, 185, 0.42);
+  --light-soft: rgba(255, 236, 214, 0.18);
+  --light-focus: rgba(255, 210, 150, 0.24);
+
+  --shadow-soft:
+    0 4px 12px rgba(84, 63, 41, 0.04), 0 18px 42px rgba(84, 63, 41, 0.08);
+
+  --shadow-elevated:
+    0 10px 30px rgba(64, 44, 24, 0.06), 0 24px 64px rgba(64, 44, 24, 0.12);
+
+  --shadow-spot: 0 40px 60px rgba(255, 214, 163, 0.16);
+
+  /* =========================================================
+     SHELF SYSTEM
+     ========================================================= */
+
+  --shelf-active-overlay: rgba(255, 248, 238, 0.04);
+  --shelf-inactive-overlay: rgba(20, 24, 30, 0.12);
+  --shelf-inactive-blur: 1.5px;
+  --shelf-divider: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0),
+    rgba(215, 201, 184, 0.9),
+    rgba(255, 255, 255, 0)
+  );
+
+  /* =========================================================
+     PERFUME FAMILY COLORS
+     ========================================================= */
+
+  --family-hesperide: #d9c77f;
+  --family-floral: #cba7a6;
+  --family-herbace: #9fb49c;
+  --family-epice: #c79a6b;
+  --family-gourmand: #c5a184;
+  --family-boise: #9f7f67;
+  --family-resineux: #7f745e;
+  --family-musque: #b7afa5;
+  --family-alcoolise: #b89c87;
+  --family-mineral: #b7c8d6;
+  --family-artificiel: #c7bfd1;
+  --family-indefini: #d8d1c8;
+
+  /* =========================================================
+     ACTIVE FILTER STATES
+     ========================================================= */
+
+  --filter-glow-hesperide: rgba(217, 199, 127, 0.24);
+  --filter-glow-floral: rgba(203, 167, 166, 0.22);
+  --filter-glow-herbace: rgba(159, 180, 156, 0.22);
+  --filter-glow-epice: rgba(199, 154, 107, 0.22);
+  --filter-glow-boise: rgba(159, 127, 103, 0.22);
+  --filter-glow-mineral: rgba(183, 200, 214, 0.24);
+
+  /* =========================================================
+     COLLECTION WALL
+     ========================================================= */
+
+  --wall-ambient-top: rgba(255, 252, 247, 0.72);
+  --wall-ambient-bottom: rgba(232, 224, 214, 0.28);
+  --wall-fade: rgba(255, 255, 255, 0.38);
+  --wall-muted: rgba(255, 255, 255, 0.12);
+
+  /* =========================================================
+     BOTTLES
+     ========================================================= */
+
+  --bottle-glass: rgba(255, 255, 255, 0.14);
+  --bottle-outline: rgba(36, 30, 24, 0.22);
+  --bottle-highlight: rgba(255, 255, 255, 0.42);
+  --bottle-liquid-glow: rgba(255, 223, 160, 0.16);
+
+  /* =========================================================
+     UI STATES
+     ========================================================= */
+
+  --state-hover: rgba(255, 255, 255, 0.22);
+  --state-focus: rgba(255, 214, 145, 0.18);
+  --state-selected: rgba(255, 214, 145, 0.28);
+  --state-disabled: rgba(29, 27, 25, 0.08);
+
+  /* =========================================================
+     ICONOGRAPHY
+     ========================================================= */
+
+  --icon-primary: #24211d;
+  --icon-secondary: #857e76;
+  --icon-active: #d7a84b;
+
+  /* =========================================================
+     HEADER
+     ========================================================= */
+
+  --header-bg: rgba(255, 255, 255, 0.34);
+  --header-border: rgba(255, 255, 255, 0.42);
+  --search-bg: rgba(255, 255, 255, 0.52);
+
+  /* =========================================================
+     MOTION
+     ========================================================= */
+
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --duration-fast: 180ms;
+  --duration-medium: 280ms;
+  --duration-slow: 420ms;
+
+  /* =========================================================
+     GLASSMORPHISM
+     ========================================================= */
+
+  --glass-blur: 18px;
+  --glass-saturation: 140%;
+
+  /* =========================================================
+     RADIAL LIGHTS
+     ========================================================= */
+
+  --spotlight-radial: radial-gradient(
+    ellipse at top,
+    rgba(255, 223, 185, 0.28),
+    rgba(255, 223, 185, 0) 72%
+  );
+
+  --focus-radial: radial-gradient(
+    circle,
+    rgba(255, 214, 145, 0.18),
+    rgba(255, 214, 145, 0) 70%
+  );
+
+  /* =========================================================
+     ZOOM STATES
+     ========================================================= */
+
+  --zoom-wall-opacity: 0.88;
+  --zoom-detail-opacity: 1;
+
+  /* =========================================================
+     MINI MAP
+     ========================================================= */
+
+  --minimap-bg: rgba(255, 255, 255, 0.42);
+  --minimap-frame: rgba(215, 201, 184, 0.9);
+  --minimap-viewport: rgba(215, 168, 75, 0.22);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: system-ui, sans-serif;
+}

@@ -245,4 +245,135 @@ un filtre, ça entre dans le hook — pas dans le composant.
 
 ---
 
+## Session 2026-05-12 — Issues #7, #8, #7b + nettoyage
+
+### Ce qui était prévu
+
+- Démarrer v1 en attaquant l'issue #7 (React Router)
+
+### Ce qui a été fait
+
+**Avant de coder — mise en ordre**
+- PRODUCT.md mis à jour avec les issues v1 complètes (#7 à #19), commité sur `dev`
+- Branches locales mortes nettoyées (`feat/*`, `setup/init`) — toutes les branches v0 supprimées
+- Branches GitHub nettoyées via l'interface
+
+**Issue #7 — Setup React Router (`setup/router`, mergée)**
+- `react-router-dom` installé
+- `src/pages/` créé — `ShelfPage` (reprend `App.tsx`), `AddPage` (shell), `FragranceDetailPage` (shell avec `useParams`)
+- `App.tsx` réduit à son rôle de point d'entrée du router
+- `index.css` enrichi : variables CSS globales (`--color-bg`, `--max-width-app`, etc.) + classes de layout (`.app-layout`, `.app-header`, `.app-main`)
+- `CLAUDE.md` mis à jour : structure `pages/`, stack v1 en cours
+- `WORKFLOW.md` enrichi : recette nettoyage des branches mortes, explication PR
+
+**Issue #8 — Champ tags (`feat/fragrance-tags`, mergée)**
+- `tags: string[]` ajouté à l'interface `Fragrance` dans `types/fragrance.ts`
+- `tags: []` initialisé dans `FragranceForm`
+- `CLAUDE.md` et `PRODUCT.md` synchronisés
+
+**Issue #7b — Setup Zustand (`setup/zustand`, PR à créer)**
+- Scope réduit : `useSettingsStore`, `groupBy`, `getLiquidColor`, `getBottleSize` déplacés en backlog v2
+- `zustand` installé
+- `useFragrancesStore` créé dans `src/stores/fragrancesStore.ts` — expose `fragrances`, `add`, `remove`, persisté via middleware `persist`
+- `useFragrances` supprimé
+- `ShelfPage` migré vers le store
+- `CLAUDE.md` mis à jour : `src/stores/` ajouté à la structure, principe "store comme couche de données"
+
+### Décisions prises
+
+**`src/pages/` et `src/stores/` ajoutés à la structure.**
+Deux dossiers non prévus dans le CLAUDE.md initial, mais inévitables dès lors qu'on a React Router et Zustand. Structure mise à jour en conséquence.
+
+**Zustand remplace `useFragrances`, pas `fragranceService`.**
+Le hook `useFragrances` est supprimé — Zustand le remplace comme couche de données partagée entre les pages. `fragranceService.ts` reste : il représente le contrat d'interface bas niveau qui sera réimplémenté en Supabase en v2.
+
+**Scope de #7b réduit — groupBy et bottle utils en backlog v2.**
+`groupBy`, `useSettingsStore`, `getLiquidColor`, `getBottleSize` sont prérequis de l'étagère spatiale, pas des filtres ni du dirty state. Les coder maintenant = anticiper une feature sans composant consommateur. Principe : une idée hors scope va dans le backlog.
+
+**Format localStorage incompatible entre v0 et v1.**
+Zustand persist stocke `{"state":{"fragrances":[...]},"version":0}` — l'ancien format était un tableau brut. Les données de test v0 sont perdues. Acceptable en dev ; en v2 une migration Supabase remplacera le tout.
+
+### Bugs / blocages rencontrés
+
+**Commit PRODUCT.md fait sur `feat/fragrance-tags` au lieu de `dev`.**
+La modification du scope de #7b a été commitée sur la branche feature en cours. Résultat : git considérait la branche comme "non mergée" après la PR → `git branch -D` obligatoire au lieu de `-d`.
+Règle retenue : les commits de doc non liés à une feature vont directement sur `dev`.
+
+**Erreur SSL sur `git fetch --prune`.**
+`fatal: unable to get local issuer certificate` — résolu avec `git config --global http.sslBackend schannel` (Git utilise le gestionnaire de certificats Windows).
+
+### Apprentissages
+
+- `git branch -d` vs `-D` : minuscule vérifie que la branche est mergée, majuscule force la suppression. Si une branche a des commits non reconnus par git (squash merge, commits orphelins), `-D` est nécessaire même si le code est bien dans `dev`.
+- `git fetch --prune` : met à jour la carte locale des branches remote et supprime les entrées qui n'existent plus. Purement cosmétique — ne touche pas le code.
+- Zustand `partialize` : permet de ne persister que les données (pas les fonctions) dans localStorage. Sans `partialize`, Zustand tente de sérialiser tout le state, y compris les fonctions — ce qui ne fonctionne pas.
+
+### Prochaine session
+
+- Merger `setup/zustand → dev` via PR
+- Issue #9 : dirty state — fonction `isComplete()` + `incompleteCount` dans le store
+
+---
+
+## Session 2026-05-13 — Issues #20 et #9
+
+### Ce qui était prévu
+
+- Issue #20 : vue collection (mur de flacons SVG)
+- Issue #9 : dirty state
+
+### Ce qui a été fait
+
+**Modèle de données — `GenreOlfactif` (commit direct sur `dev`)**
+- Type `GenreOlfactif = -3 | -2 | -1 | 0 | 1 | 2 | 3` ajouté dans `types/fragrance.ts`
+- Champ optionnel `genre?: GenreOlfactif` ajouté à l'interface `Fragrance`
+- `CLAUDE.md` synchronisé avec le modèle mis à jour
+
+**Issue #20 — Vue Collection (`feat/collection-view`, mergée)**
+- Design system complet intégré dans `index.css` : tokens pour couleurs, ombres, glassmorphism, motion, familles olfactives (12 teintes désaturées), UI states, iconographie
+- `getLiquidColor()` dans `utils/fragrance.ts` : mappe les familles olfactives vers les variables CSS
+- Composants layout extraits en composants indépendants : `AppLayout`, `AppHeader`, `SideNav`, `GestureBar`
+- `FragranceBottle` : SVG 40×60px généré à la volée, coloré par famille (cap, col, épaules, corps, reflet)
+- `BottleWall` : grille CSS `auto-fill` de 40px, tooltip au hover, navigation au double-clic
+- `CollectionPage` branchée sur `/`, état vide géré proprement
+- `ShelfPage` déplacée sur `/shelf`
+
+**Issue #9 — Dirty state (`feat/dirty-state`, en cours)**
+- `isComplete(fragrance)` dans `utils/fragrance.ts` : vérifie name, brand, families, concentration, volumeMl
+- `incompleteCount` exposé dans `useFragrancesStore` comme getter calculé — jamais persisté en localStorage
+
+### Décisions prises
+
+**Composants layout extraits dès le départ, pas inline dans les pages.**
+Première version de `CollectionPage` écrivait le header et la nav directement dans la page.
+Thomas a corrigé : "pense DRY". Refactorisé en `AppLayout` wrappant `AppHeader + SideNav + GestureBar`.
+Règle retenue : les éléments chrome partagés (header, nav) sont des composants indépendants dès leur première occurrence.
+
+**`GenreOlfactif` ajouté directement sur `dev` avant la session.**
+Décision de Thomas : échelle -3 → +3 (très féminin ↔ très masculin, 0 = unisexe). Type union de littéraux numériques plutôt qu'un `number` pour contraindre les valeurs valides. Champ optionnel car non requis pour `isComplete`.
+
+**`incompleteCount` est un getter, pas une propriété stockée.**
+Zustand permet des getters JavaScript natifs dans le state object. `get incompleteCount()` appelle `get().fragrances.filter(...)` à chaque lecture — calculé en temps réel, rien à synchroniser, jamais persisté.
+
+**CSS Tailwind-first — pas de fichier CSS par composant.**
+Tous les styles sont en Tailwind utilities ou en `style={{ var(--token) }}` inline. `index.css` ne contient que les tokens `:root` et le `body`. Pas de fichiers `.module.css` — Tailwind v4 les rend superflus pour ce projet.
+
+### Bugs / blocages rencontrés
+
+**`Edit` tool échoue sur PRODUCT.md** (encodage CRLF).
+La substitution `useFragrances` → `useFragrancesStore` a nécessité un appel PowerShell `-replace` plutôt que l'outil Edit.
+
+### Apprentissages
+
+- SVG inline en React : les attributs snake_case CSS deviennent camelCase (`stroke-width` → `strokeWidth`), mais les attributs SVG natifs (`fill`, `stroke`, `rx`) restent en lowercase.
+- Zustand `get incompleteCount()` : un getter JS standard fonctionne dans le state object — Zustand ne le sérialise pas, il recalcule à chaque accès.
+- `gridTemplateColumns: "repeat(auto-fill, 40px)"` : grille CSS qui adapte automatiquement le nombre de colonnes à la largeur disponible, sans media queries.
+
+### Prochaine session
+
+- Merger `feat/dirty-state → dev` via PR
+- Issue #10 : page d'ajout complet — à concevoir avec Thomas (UI/UX à définir avant de coder)
+
+---
+
 _Créé le 2026-04-30_

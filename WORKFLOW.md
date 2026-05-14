@@ -96,6 +96,7 @@ git commit -m "feat: ajouter le formulaire d'ajout de parfum"
 | `chore:` | maintenance (dépendances, etc.) |
 
 **Exemples de bons messages :**
+
 ```
 feat: ajouter le formulaire d'ajout de parfum
 feat: afficher la liste des parfums avec FragranceCard
@@ -125,13 +126,40 @@ git merge feat/add-fragrance
 # Pousser dev sur GitHub
 git push origin dev
 
-# (Optionnel mais propre) Supprimer la branche locale
+# Supprimer la branche locale (mergée, elle ne sert plus)
 git branch -d feat/add-fragrance
 ```
 
 ---
 
-### 5. Créer une Pull Request sur GitHub (interface web)
+### 5. Nettoyer les branches mortes après merge
+
+Une branche mergée ne sert plus. La nettoyer localement et sur GitHub.
+
+```bash
+# Supprimer la branche LOCALE (après merge)
+git branch -d feat/add-fragrance
+
+# Supprimer la branche sur GITHUB (remote)
+git push origin -d feat/add-fragrance
+```
+
+**GitHub le fait aussi** : sur la page de la PR mergée, un bouton "Delete branch"
+apparaît — il supprime la branche remote. Il reste à supprimer la locale manuellement.
+
+**Branches locales mortes en une fois** (pratique pour nettoyer après plusieurs merges) :
+
+```bash
+# Voir ce qui est mergé dans dev
+git branch --merged dev
+
+# Supprimer tout ce qui est mergé (sauf main, dev, et la branche courante)
+git branch --merged dev | grep -v "^\* \|main\|dev" | xargs git branch -d
+```
+
+---
+
+### 6. Créer une Pull Request sur GitHub (interface web)
 
 > Une PR, même en solo, c'est la trace lisible de "voilà ce que j'ai fait et pourquoi".
 
@@ -143,7 +171,7 @@ git branch -d feat/add-fragrance
 
 ---
 
-### 6. Workflow complet — du début à la fin d'une feature
+### 7. Workflow complet — du début à la fin d'une feature
 
 ```
 1. Lire l'issue sur GitHub
@@ -163,24 +191,24 @@ git branch -d feat/add-fragrance
 
 > À compléter au fur et à mesure des bugs rencontrés.
 
-| Erreur | Cause | Solution |
-| ------ | ----- | -------- |
-| *(à venir)* | | |
+| Erreur      | Cause | Solution |
+| ----------- | ----- | -------- |
+| _(à venir)_ |       |          |
 
 ---
 
 ## Glossaire
 
-| Terme | Définition simple |
-| ----- | ----------------- |
-| **commit** | Une photo de l'état du code à un instant T, avec un message |
-| **branche** | Une copie parallèle du code où on travaille sans toucher le reste |
-| **merge** | Fusionner une branche dans une autre |
-| **PR (Pull Request)** | Demande formelle de merger une branche — la trace visible du travail |
-| **issue** | Ticket qui décrit une tâche à faire (feature, bug, etc.) |
-| **origin** | Le repo distant sur GitHub |
-| **HEAD** | Le commit où on est actuellement |
-| **staging** | Zone intermédiaire entre les fichiers modifiés et le commit (`git add`) |
+| Terme                 | Définition simple                                                       |
+| --------------------- | ----------------------------------------------------------------------- |
+| **commit**            | Une photo de l'état du code à un instant T, avec un message             |
+| **branche**           | Une copie parallèle du code où on travaille sans toucher le reste       |
+| **merge**             | Fusionner une branche dans une autre                                    |
+| **PR (Pull Request)** | Demande formelle de merger une branche — la trace visible du travail    |
+| **issue**             | Ticket qui décrit une tâche à faire (feature, bug, etc.)                |
+| **origin**            | Le repo distant sur GitHub                                              |
+| **HEAD**              | Le commit où on est actuellement                                        |
+| **staging**           | Zone intermédiaire entre les fichiers modifiés et le commit (`git add`) |
 
 ---
 

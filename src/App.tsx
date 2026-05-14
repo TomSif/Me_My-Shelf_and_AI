@@ -1,21 +1,18 @@
-import { FragranceForm } from "./components/fragrance/FragranceForm";
-import { FragranceList } from "./components/fragrance/FragranceList";
-import { useFragrances } from "./hooks/useFragrances";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { CollectionPage } from "./pages/CollectionPage";
+import { ShelfPage } from "./pages/ShelfPage";
+import { FragrancePage } from "./pages/FragrancePage";
 
 function App() {
-  const { fragrances, add, remove } = useFragrances();
-
   return (
-    <div className="min-h-screen bg-stone-50 p-8 max-w-xl mx-auto">
-      <h1 className="text-2xl font-medium text-stone-900">Me My Shelf and AI</h1>
-      <p className="text-stone-500 mt-1">Ta collection de parfums.</p>
-      <div className="mt-8">
-        <FragranceForm onSubmit={add} />
-      </div>
-      <div className="mt-8">
-        <FragranceList fragrances={fragrances} onDelete={remove} />
-      </div>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<CollectionPage />} />
+        <Route path="/shelf" element={<ShelfPage />} />
+        <Route path="/add" element={<FragrancePage mode="create" />} />
+        <Route path="/fragrance/:id" element={<FragrancePage mode="view" />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
