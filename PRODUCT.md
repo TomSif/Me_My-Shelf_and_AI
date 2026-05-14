@@ -330,6 +330,18 @@ Indicateur `%` en haut à droite, calculé via `getSectionCompletion()`.
 Chaque section affiche son propre ✓ quand elle est complète.
 Le `isDirty` global reste inchangé — il pilote le badge #12.
 
+#### Modes UX — même UI, comportement différent
+
+`FragrancePage` est un composant unique servi par deux routes.
+L'UI (layout, flacon, sections) est identique dans les deux modes.
+
+| | Mode `create` (`/add`) | Mode `view` (`/fragrance/:id`) |
+|---|---|---|
+| Focus | Guidé section par section | Libre |
+| Champs incomplets | Pas encore remplis — normal | Mis en évidence — invitation à compléter |
+| Sauvegarde | Bouton "Enregistrer" (actif dès identity complète) | Sauvegarde explicite ou auto |
+| Store | `store.add()` | `store.update(id, data)` |
+
 #### Motion — v2 uniquement
 
 Les animations (remplissage liquide, glow progressif, drag & drop familles,
@@ -565,33 +577,48 @@ distinct des `families` qui sont des classifications larges.
 
 ---
 
-### Issue #10 — AddPage
+### Issue #10 — FragrancePage (fusion AddPage + DetailPage)
 
-**Titre** : `feat: page d'ajout complet — formulaire 4 sections + flacon vivant`
+**Titre** : `feat: FragrancePage — page unifiée création et vue détaillée`
 
 **Description** :
-Page `/add` — point d'entrée pour saisir un nouveau parfum dans la collection.
-L'UX transforme l'ajout en expérience de collection, pas en tâche administrative.
-Le flacon central évolue visuellement via des classes CSS pilotées par `getSectionCompletion()`.
-Seule la Section 1 (nom + marque) est obligatoire — elle déclenche la création dans le store.
-Vision complète documentée dans `### AddPage` (section design) et `add_page_md_design_spec.md`.
+`AddPage` et `FragranceDetailPage` affichent exactement les mêmes informations.
+Les séparer reviendrait à dupliquer un layout complexe pour rien.
+La décision : un seul composant `FragrancePage`, deux modes UX distincts.
+
+**Deux routes, un composant :**
+```
+/add              → <FragrancePage mode="create" />
+/fragrance/:id    → <FragrancePage mode="view" />
+```
+
+**Différence UX, pas UI :**
+- `create` : focus guidé section par section — quand identity est validée, focus passe à physical, etc.
+- `view` : navigation libre — pas de focus forcé, mais champs incomplets signalés visuellement (dirty state). L'utilisateur choisit ce qu'il complète.
+
+**Store** : `update(id, data)` ajouté pour persister les modifications en mode `view`.
 
 **Critères d'acceptance** :
 
-- [ ] Layout desktop : flacon centré, 4 sections en quadrant, pyramide à droite
+- [ ] Composant `FragrancePage` remplace `AddPage` et `FragranceDetailPage`
+- [ ] Route `/add` → mode `create`, route `/fragrance/:id` → mode `view`
+- [ ] Layout : flacon hero centré, 4 sections en quadrant, pyramide à droite
 - [ ] Layout mobile : flacon en haut, sections empilées
-- [ ] Section 1 seule déclenche la création dans le store + active "Enregistrer"
-- [ ] Soumission → parfum ajouté → redirection vers `/`
-- [ ] Concentration : capsules horizontales (pas de radio buttons)
+- [ ] `store.update(id, data)` ajouté à `fragrancesStore`
+- [ ] Mode `create` : focus guidé section par section après validation de chaque section
+- [ ] Mode `view` : champs éditables librement, champs incomplets mis en évidence
+- [ ] Flacon : 5 états visuels pilotés par `getSectionCompletion()` via mapping données → SVG
+- [ ] Concentration : capsules horizontales
 - [ ] `remainingMl` : slider borné à `volumeMl`
-- [ ] `families` : chips multi-select (toutes les familles de la palette)
-- [ ] `genre` : slider discret -3/+3, labels "Très féminin" / "Très masculin"
+- [ ] `families` : chips multi-select (12 familles)
+- [ ] `genre` : slider discret -3/+3
 - [ ] `tags` : chips à saisie libre
-- [ ] Pyramide : 3 zones chips libres (top / heart / base), affichage statique v1
-- [ ] Flacon : 5 états CSS pilotés par `getSectionCompletion()`
+- [ ] Pyramide : 3 zones chips libres (top / heart / base)
+- [ ] `rating` : étoiles 1→5
 - [ ] Indicateur de complétion % en haut à droite
 - [ ] Chaque section affiche son ✓ quand complète
-- [ ] Boutons : "Annuler" (→ `/`) + "Enregistrer le parfum"
+- [ ] Mode `create` : boutons "Annuler" + "Enregistrer" (actif dès identity complète)
+- [ ] Mode `view` : bouton "Retour" + sauvegarde auto ou explicite
 
 **Dépendances** : #9b
 **Branche** : `feat/add-page`
@@ -638,20 +665,14 @@ Incite l'utilisateur à compléter ses fiches sans le forcer.
 
 ### Issue #13 — Vue détaillée d'un parfum
 
-**Titre** : `feat: page vue détaillée d'un parfum`
+**Titre** : ~~`feat: page vue détaillée d'un parfum`~~ — absorbée dans #10
 
 **Description** :
-Page dédiée `/fragrance/:id` affichant tous les champs d'un parfum.
-Permet aussi de compléter ou modifier la fiche.
+La vue détaillée est le mode `view` de `FragrancePage` (issue #10).
+Pas de composant séparé — même layout, comportement UX différent.
+Voir issue #10 pour les critères d'acceptance complets.
 
-**Critères d'acceptance** :
-
-- [ ] Tous les champs affichés (y compris tags, families, seasons, rating, comment)
-- [ ] Formulaire d'édition inline ou bouton "modifier"
-- [ ] Indicateur visuel si le parfum est incomplet + rappel des champs manquants
-- [ ] Bouton retour vers la vue principale
-
-**Branche** : `feat/detail-page`
+**Branche** : `feat/add-page` (même branche que #10)
 
 ---
 
