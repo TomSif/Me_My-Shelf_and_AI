@@ -15,6 +15,22 @@ const FAMILY_COLOR_VARS: Record<OlfactoryFamily, string> = {
   indéfini: "var(--family-indefini)",
 };
 
+export interface SectionCompletion {
+  identity: boolean;
+  physical: boolean;
+  olfactive: boolean;
+  memory: boolean;
+}
+
+export function getSectionCompletion(fragrance: Fragrance): SectionCompletion {
+  return {
+    identity: fragrance.name.trim().length > 0 && fragrance.brand.trim().length > 0,
+    physical: fragrance.concentration !== undefined && fragrance.volumeMl > 0,
+    olfactive: fragrance.families.length > 0,
+    memory: fragrance.rating !== undefined,
+  };
+}
+
 export function isComplete(fragrance: Fragrance): boolean {
   return (
     fragrance.name.trim().length > 0 &&
