@@ -376,12 +376,21 @@ Les couleurs restent toujours très désaturées — esthétique luxe minimalist
 | Niveau      | Contexte               | Geste        | Expérience                                    |
 | ----------- | ---------------------- | ------------ | --------------------------------------------- |
 | **Glance**  | Vue Collection 40×60px | passif       | silhouette · couleur · niveau                 |
-| **Peek**    | Vue Collection         | click        | drawer — infos clés, navigation entre parfums |
+| **Peek**    | Vue Collection         | click        | GestureBar s'élargit — infos clés, navigation |
 | **Explore** | FragrancePage          | double-click | panneaux flottants · rotation · pyramide      |
 
-Chaque niveau est adapté à l'échelle et à l'intention de l'utilisateur.
-Le drawer (Peek) et les panneaux flottants (Explore) ne sont pas deux philosophies
-contradictoires — ils opèrent à des échelles différentes.
+#### GestureBar — Dynamic Island
+
+La `GestureBar` est un élément permanent du bas de l'écran.
+Au lieu d'ajouter un drawer par-dessus le contenu, elle **change de nature** selon le contexte :
+
+- **État minimal** : raccourcis gestuels (Glisser · Cliquer · Double-cliquer)
+- **État élargi** : aperçu du parfum sélectionné, navigation ← →
+
+Le mur de flacons reste entièrement visible pendant le Peek.
+Clic ailleurs → retour à l'état minimal.
+
+Inspiré de la Dynamic Island d'Apple : un seul élément, deux états, zéro couche supplémentaire.
 
 #### Focus state — sensation recherchée
 
@@ -711,10 +720,10 @@ Le parfum créé est dirty par définition — l'app l'indique et incite à comp
 
 **Critères d'acceptance** :
 
-- [ ] Bouton "+" visible depuis la vue principale (header ou zone entre nav et liste)
-- [ ] Mini-formulaire : nom + marque + families uniquement
-- [ ] Soumission → parfum ajouté avec `isComplete = false` → confirmation visuelle
-- [ ] Lien vers la vue détaillée pour compléter la fiche immédiatement (optionnel)
+- [x] Bouton "+" visible depuis la vue principale (header ou zone entre nav et liste)
+- [x] Mini-formulaire : nom + marque + families uniquement
+- [x] Soumission → parfum ajouté avec `isComplete = false` → confirmation visuelle
+- [x] Lien vers la vue détaillée pour compléter la fiche immédiatement (optionnel)
 
 **Branche** : `feat/quick-add`
 
@@ -730,9 +739,9 @@ Incite l'utilisateur à compléter ses fiches sans le forcer.
 
 **Critères d'acceptance** :
 
-- [ ] Badge dans le header affichant `incompleteCount` (masqué si 0)
-- [ ] Click sur le badge → liste filtrée des parfums incomplets
-- [ ] Liste indique visuellement quels champs manquent sur chaque parfum
+- [x] Badge dans le header affichant `incompleteCount` (masqué si 0)
+- [x] Click sur le badge → liste filtrée des parfums incomplets
+- [x] Liste indique visuellement quels champs manquent sur chaque parfum
 
 **Branche** : `feat/incomplete-badge`
 
@@ -761,44 +770,57 @@ trois informations visuelles (famille → couleur, remainingMl → niveau, conce
 densité) — tout le reste est invisible.
 
 L'aperçu rapide est la réponse au besoin de "peek" : confirmer qu'on a trouvé le bon
-parfum sans quitter la vue d'ensemble.
+parfum sans quitter la vue d'ensemble. Le mur de flacons reste entièrement visible.
 
-**Approche — GestureBar comme Dynamic Island.**
-Pas de panneau qui monte par-dessus le contenu. La `GestureBar` (toujours présente en bas)
-se transforme en place : au clic sur un flacon, elle s'élargit pour afficher les infos clés.
-Le mur de flacons reste entièrement visible. Clic ailleurs → retour à l'état minimal.
+**Approche — la GestureBar est le conteneur, le peek en sort vers le haut.**
+Au clic sur un flacon, la GestureBar se déroule vers le haut pour révéler la PeekCard.
+Ce n'est pas une card flottante par-dessus — c'est la barre elle-même qui s'agrandit.
+Un seul élément, deux états. Clic ailleurs → retour à l'état minimal.
 
-Inspiré de la Dynamic Island d'Apple : un élément permanent qui change de nature
-selon le contexte, sans ajouter une nouvelle couche à l'interface.
+La GestureBar change ainsi de nature selon le contexte : barre de hints en mode passif,
+barre d'action complète en mode Peek. Sur desktop elle est riche, sur mobile elle reste légère.
 
 **Trois niveaux d'engagement distincts :**
 
-| Niveau   | Geste                            | Expérience                                      |
-| -------- | -------------------------------- | ----------------------------------------------- |
-| Glance   | Vue Collection passive           | silhouette · couleur · niveau                   |
-| **Peek** | **Click dans la Vue Collection** | **GestureBar élargie — infos clés horizontales**|
-| Explore  | Double-click → `/fragrance/:id`  | FragrancePage — panneaux flottants · pyramide   |
+| Niveau   | Geste                            | Expérience                                        |
+| -------- | -------------------------------- | ------------------------------------------------- |
+| Glance   | Vue Collection passive           | silhouette · couleur · niveau                     |
+| **Peek** | **Click dans la Vue Collection** | **GestureBar déroulée — flacon centré, infos clés** |
+| Explore  | Double-click → `/fragrance/:id`  | FragrancePage — édition · pyramide · détail complet |
 
-**Contenu de la GestureBar élargie (gauche → droite)** :
-Flacon SVG · Nom / Marque / Concentration · Famille principale · Concentration · Quantité restante · Saisons · Notation · Tags · [←] [→] · [icône étagère]
+**Layout de la GestureBar élargie :**
+Identité (nom / marque / concentration) à gauche · Flacon SVG centré (star du show) ·
+Volume + rating + tags à droite · Chevrons ← → pour naviguer · Icône étagère.
+Minimal par choix — si l'utilisateur veut plus, il va dans Explore.
+
+**Desktop vs Mobile :**
+- Desktop (v1) : GestureBar élargie complète — layout horizontal, flacon centré
+- Mobile (v1) : GestureBar reste hints de gestes, Peek simplifié (nom + marque + volume)
+- Mobile riche : v2
 
 **Scope strict** : uniquement depuis la Vue Collection (`/`).
+Pas depuis ShelfPage, pas depuis FragrancePage.
 
-**Navigation** :
-Chevrons ← → aux bords → parfum suivant/précédent (résultats filtrés si filtre actif, adjacent dans la grille sinon).
+**Navigation dans la barre élargie :**
+Chevrons ← → → parfum suivant/précédent dans les résultats filtrés.
+Sans filtre : parfum adjacent dans la grille.
 
-**Implémentation** :
-`GestureBar` accepte un `selectedFragrance?: Fragrance` — null = état minimal, défini = état élargi.
-Pas de composant Drawer séparé.
+**Implémentation :**
+`GestureBar` accepte `selectedFragrance?: Fragrance` — `undefined` = état minimal hints,
+défini = état élargi PeekCard. Pas de composant Drawer séparé, pas de portal.
+`CollectionPage` gère `selectedFragrance` en state local et le passe à `AppLayout` → `GestureBar`.
 
-**Critères d'acceptance** :
+**Critères d'acceptance :**
 
-- [ ] Click sur un flacon dans Vue Collection → `GestureBar` s'élargit avec les infos du parfum
-- [ ] Contenu : flacon SVG · nom · marque · famille · concentration · remainingMl · rating · tags
+- [ ] Click sur un flacon → GestureBar se déroule vers le haut (état élargi)
+- [ ] Layout élargi : identité à gauche · flacon SVG centré · volume + rating + tags à droite
+- [ ] Flacon centré dans la PeekCard — c'est lui l'élément principal, pas le texte
+- [ ] Pyramide absente du Peek — appartient à FragrancePage (Explore)
 - [ ] Chevrons ← → pour naviguer entre parfums adjacents (ou résultats filtrés)
 - [ ] Icône "Voir dans l'étagère" → navigation vers `/shelf`
-- [ ] Double-click sur un flacon → navigation directe vers `/fragrance/:id` (sans passer par le Peek)
+- [ ] Double-click sur un flacon (dans le mur) → navigation directe vers `/fragrance/:id`
 - [ ] Fermeture : click en dehors de la GestureBar · touche Échap
+- [ ] Desktop : layout complet · Mobile : simplifié (nom + marque + volume)
 - [ ] Le comportement élargi n'existe pas depuis ShelfPage ni FragrancePage
 
 **Dépendances** : #20 (Vue Collection) ✅
@@ -941,6 +963,40 @@ issues #15-16 (filtres) seront implémentées.
 
 ---
 
+### Issue #21 — Curation manuelle (pré-sélection)
+
+**Titre** : `feat: mode curation — sélection manuelle de parfums vers ShelfPage`
+
+**Description** :
+Les filtres (#15-16) permettent de trouver des parfums par critères communs.
+Mais certaines sélections sont intentionnelles et ne correspondent à aucun filtre :
+"parfums à vendre", "idées pour la soirée de Jessica", "cadeaux pour Thibault".
+
+La curation manuelle est une liste ad hoc que l'utilisateur constitue à la main,
+indépendamment de tout filtre. Elle est persistée et visible dans ShelfPage.
+
+**Gestes depuis la Vue Collection :**
+- Clic droit sur un flacon → menu contextuel → "Envoyer vers l'étagère"
+- Drag & drop du flacon vers une icône / zone dédiée (v2 — dépend des animations)
+
+**Dans ShelfPage :**
+Quand une sélection existe, ShelfPage affiche les parfums sélectionnés en priorité
+ou dans une vue dédiée "Ma sélection". L'utilisateur peut la vider ou la modifier.
+
+**Critères d'acceptance :**
+
+- [ ] Clic droit sur un flacon → "Ajouter à la sélection" dans le menu contextuel
+- [ ] `selectedIds: string[]` persisté dans le store (séparé de `fragrances`)
+- [ ] Indicateur visuel sur les flacons sélectionnés (dans la Vue Collection)
+- [ ] ShelfPage affiche la sélection active si elle existe
+- [ ] Bouton "Vider la sélection" dans ShelfPage
+- [ ] La sélection survit au rechargement (localStorage)
+
+**Dépendances** : #14 (menu contextuel depuis la PeekCard), #20 ✅
+**Branche** : `feat/curation`
+
+---
+
 ## Backlog — idées pour v2+
 
 > Ces idées sont bonnes. Elles n'entrent pas dans v1.
@@ -964,6 +1020,7 @@ issues #15-16 (filtres) seront implémentées.
 | `groupBy(criteria)` dans le store — retourne `Map<string, Fragrance[]>` pour l'étagère spatiale                              | v2            |
 | `getLiquidColor(fragrance, activeGroupBy)` dans `/utils/bottle.ts` — couleur du liquide par famille                          | v2            |
 | `getBottleSize(volumeMl, isSample)` dans `/utils/bottle.ts` — taille du flacon SVG                                           | v2            |
+| PeekCard — drag flacon vers icône étagère (remplace le bouton par un geste)                                                  | v2            |
 
 > **Pourquoi ces 4 items ont été retirés de l'issue #7b :**
 > Ils sont prérequis de l'étagère spatiale (v2), pas des filtres ou du dirty state (v1).
