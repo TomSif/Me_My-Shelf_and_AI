@@ -471,3 +471,68 @@ Note : l'entrée du 2026-05-13 indiquait que le getter fonctionnait — c'était
   - Fermeture : click dehors · Échap · swipe bas
 
 ---
+
+
+## Session 2026-05-16 — Issue #14 GestureBar Dynamic Island
+
+### Ce qui était prévu
+
+- Issue #14 : aperçu rapide depuis la Vue Collection
+
+### Ce qui a été fait
+
+**Issue #14 — GestureBar Dynamic Island (`feat/quick-drawer`, mergée)**
+
+- `RatingPicker` : `onChange` rendu optionnel → mode lecture seule (spans) vs mode interactif (buttons)
+- `GestureBar` : composant unique à deux états — minimal (hints + flèches) / élargi (peek content + hints + flèches)
+- `BottleWall` : click → sélectionner, double-click (via `e.detail`) → ouvrir fiche
+- `AppLayout` : passage des props peek (`selectedFragrance`, `hasPrev/hasNext`, callbacks)
+- `CollectionPage` : gestion de `selectedId`, calcul prev/next, câblage complet
+
+**Peek content :**
+Identité (nom · marque · concentration) à gauche · Flacon centré (`size=2`) · Volume + rating + tags à droite.
+Navigation ← › au clic et au clavier (Échap, ArrowLeft, ArrowRight via `window.addEventListener`).
+
+### Décisions prises
+
+**Un seul composant GestureBar, deux états.**
+Première itération : deux composants séparés (`GestureBar` hints + `PeekCard` flottante fixée au-dessus).
+Thomas a recadré : "c'est le même composant, il se déroule vers le haut". Résultat : une seule `<footer>`, le contenu peek apparaît en haut via un bloc conditionnel séparé par une bordure. La barre hints reste toujours en bas.
+
+**Le flacon est centré — "la star du show".**
+Layout peek : texte à gauche, flacon au centre (`flex-1 justify-center`), infos à droite. Ce n'est pas une carte de métadonnées avec une vignette — c'est un objet centré avec du contexte autour.
+
+**`e.detail >= 2` au lieu de `onDoubleClick`.**
+Avoir `onClick` ET `onDoubleClick` sur le même élément crée un conflit : React peut re-rendre entre le premier click (qui sélectionne) et le `dblclick`. En utilisant un seul handler `onClick` et en lisant `e.detail` (le navigateur incrémente le compteur avant de déclencher `dblclick`), on évite tout timing à gérer. Le deuxième click d'un double-clic arrive avec `e.detail === 2`.
+
+**Keyboard navigation dans `GestureBar` via `window.addEventListener`.**
+Le listener est sur `window`, pas sur un élément focusé — il fonctionne indépendamment du focus DOM. Monté quand `selectedFragrance` est défini, démonté au cleanup. Touches : Échap (fermer), ArrowLeft (prev), ArrowRight (next).
+
+**`RatingPicker` refactorisé pour le mode lecture.**
+Plutôt que de créer un composant `Stars` dupliqué dans GestureBar, `onChange` est rendu optionnel dans `RatingPicker`. Sans `onChange` → `<span>` non interactif. Avec `onChange` → `<button>` interactif. Un seul composant, deux usages.
+
+### Bugs / blocages rencontrés
+
+**Architecture initiale erronée — deux composants séparés.**
+Premier jet : `GestureBar` (toujours visible, hints) + `PeekCard` (fixed, flottante au-dessus). Thomas a corrigé : la GestureBar est le conteneur, le peek en sort vers le haut. Refactorisé en un seul composant.
+
+**Double-click non fonctionnel après l'ajout du click simple.**
+Avant : `BottleCell` avait seulement `onDoubleClick` → navigate. Après : `onClick` (sélectionner) + `onDoubleClick` (naviguer). React 18 peut re-rendre entre les deux events, cassant la séquence dblclick.
+Solution : `e.detail >= 2` dans un unique `onClick`. Simple, natif, sans timer.
+
+**Flèches clavier non fonctionnelles.**
+Causé par la séparation en deux composants (GestureBar + PeekCard avaient chacun leur listener). Une fois fusionnés en un seul composant avec un seul `useEffect` sur `window`, résolu automatiquement.
+
+### Apprentissages
+
+- **`e.detail` sur les événements de souris** : compteur de clics consécutifs rapides. Sur le deuxième click d'un double-clic, `e.detail === 2` avant même que `dblclick` ne se déclenche. Préférable à `onDoubleClick` quand `onClick` est aussi présent sur l'élément.
+- **`window.addEventListener` dans `useEffect`** : le listener clavier fonctionne indépendamment du focus DOM. Pattern propre pour les raccourcis globaux : monter au mount / sélection, démonter au cleanup.
+- **Un composant = une responsabilité, mais aussi une responsabilité complète.** La tentation de séparer GestureBar (layout) et PeekCard (fragrance) était architecturalement séduisante, mais elle cassait la cohésion visuelle et compliquait le keyboard. L'unité du composant reflète l'unité UX.
+
+### Prochaine session
+
+- Issues #15-16 : filtres mono-critère puis croisés
+- Issue #17 : recherche textuelle
+- Issue #19 : passe UI (shadcn, vraies icônes, responsive mobile)
+
+---
