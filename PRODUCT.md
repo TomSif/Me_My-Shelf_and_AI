@@ -526,7 +526,10 @@ Les champs `tags`, `seasons`, `rating`, `comment` et tous les champs optionnels 
 #9 `feat: définir et détecter un parfum incomplet (dirty state)` — mergée
 #9b `feat: étendre le modèle Fragrance — pyramide olfactive et complétion par section` — mergée
 #10 `feat: FragrancePage — page unifiée création et vue détaillée` — mergée
+#11 `feat: bouton ajout rapide — QuickAddModal` — mergée
+#12 `feat: badge incompleteCount + IncompletePanel` — mergée
 #13 `feat: vue détaillée d'un parfum` — absorbée dans #10, mergée
+#14 `feat: GestureBar Dynamic Island — peek déroulé` — mergée (mobile différé #19)
 #20 `feat: vue collection — mur de flacons SVG` — mergée
 
 ---
@@ -812,16 +815,16 @@ défini = état élargi PeekCard. Pas de composant Drawer séparé, pas de porta
 
 **Critères d'acceptance :**
 
-- [ ] Click sur un flacon → GestureBar se déroule vers le haut (état élargi)
-- [ ] Layout élargi : identité à gauche · flacon SVG centré · volume + rating + tags à droite
-- [ ] Flacon centré dans la PeekCard — c'est lui l'élément principal, pas le texte
-- [ ] Pyramide absente du Peek — appartient à FragrancePage (Explore)
-- [ ] Chevrons ← → pour naviguer entre parfums adjacents (ou résultats filtrés)
-- [ ] Icône "Voir dans l'étagère" → navigation vers `/shelf`
-- [ ] Double-click sur un flacon (dans le mur) → navigation directe vers `/fragrance/:id`
-- [ ] Fermeture : click en dehors de la GestureBar · touche Échap
-- [ ] Desktop : layout complet · Mobile : simplifié (nom + marque + volume)
-- [ ] Le comportement élargi n'existe pas depuis ShelfPage ni FragrancePage
+- [x] Click sur un flacon → GestureBar se déroule vers le haut (état élargi)
+- [x] Layout élargi : identité à gauche · flacon SVG centré · volume + rating + tags à droite
+- [x] Flacon centré dans la PeekCard — c'est lui l'élément principal, pas le texte
+- [x] Pyramide absente du Peek — appartient à FragrancePage (Explore)
+- [x] Chevrons ← → pour naviguer entre parfums adjacents (ou résultats filtrés)
+- [x] Icône "Voir dans l'étagère" → navigation vers `/shelf`
+- [x] Double-click sur un flacon (dans le mur) → navigation directe vers `/fragrance/:id`
+- [x] Fermeture : click en dehors de la GestureBar · touche Échap
+- [ ] Desktop : layout complet · Mobile : simplifié (nom + marque + volume) — différé #19
+- [x] Le comportement élargi n'existe pas depuis ShelfPage ni FragrancePage
 
 **Dépendances** : #20 (Vue Collection) ✅
 **Branche** : `feat/quick-drawer`
