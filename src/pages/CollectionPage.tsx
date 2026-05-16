@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import type { Fragrance } from "../types/fragrance";
 import { useFragrancesStore } from "../stores/fragrancesStore";
 import { AppLayout } from "../components/layout/AppLayout";
 import { BottleWall } from "../components/fragrance/BottleWall";
@@ -10,6 +11,30 @@ export function CollectionPage() {
   const { fragrances, incompleteCount } = useFragrancesStore();
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [incompletePanelOpen, setIncompletePanelOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const selectedIndex = selectedId ? fragrances.findIndex((f) => f.id === selectedId) : -1;
+  const selectedFragrance: Fragrance | undefined =
+    selectedIndex >= 0 ? fragrances[selectedIndex] : undefined;
+
+  const hasPrev = selectedIndex > 0;
+  const hasNext = selectedIndex >= 0 && selectedIndex < fragrances.length - 1;
+
+  function handleSelect(fragrance: Fragrance) {
+    setSelectedId(fragrance.id);
+  }
+
+  function handleDeselect() {
+    setSelectedId(null);
+  }
+
+  function handlePrev() {
+    if (hasPrev) setSelectedId(fragrances[selectedIndex - 1].id);
+  }
+
+  function handleNext() {
+    if (hasNext) setSelectedId(fragrances[selectedIndex + 1].id);
+  }
 
   if (fragrances.length === 0) {
     return (
@@ -34,8 +59,19 @@ export function CollectionPage() {
       incompleteCount={incompleteCount}
       onQuickAdd={() => setQuickAddOpen(true)}
       onIncompleteBadgeClick={() => setIncompletePanelOpen((o) => !o)}
+      selectedFragrance={selectedFragrance}
+      hasPrev={selectedFragrance ? hasPrev : undefined}
+      hasNext={selectedFragrance ? hasNext : undefined}
+      onGestureClose={handleDeselect}
+      onGesturePrev={handlePrev}
+      onGestureNext={handleNext}
     >
-      <BottleWall fragrances={fragrances} />
+      <BottleWall
+        fragrances={fragrances}
+        selectedId={selectedId ?? undefined}
+        onSelect={handleSelect}
+        onDeselect={handleDeselect}
+      />
       {quickAddOpen && <QuickAddModal onClose={() => setQuickAddOpen(false)} />}
       {incompletePanelOpen && (
         <IncompletePanel onClose={() => setIncompletePanelOpen(false)} />
