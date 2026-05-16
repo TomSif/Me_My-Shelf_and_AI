@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { Fragrance } from "../../types/fragrance";
 import { AppHeader } from "./AppHeader";
 import { SideNav } from "./SideNav";
 import { GestureBar } from "./GestureBar";
@@ -9,9 +10,27 @@ interface Props {
   incompleteCount?: number;
   onQuickAdd?: () => void;
   onIncompleteBadgeClick?: () => void;
+  selectedFragrance?: Fragrance;
+  hasPrev?: boolean;
+  hasNext?: boolean;
+  onGestureClose?: () => void;
+  onGesturePrev?: () => void;
+  onGestureNext?: () => void;
 }
 
-export function AppLayout({ children, headerCount, incompleteCount, onQuickAdd, onIncompleteBadgeClick }: Props) {
+export function AppLayout({
+  children,
+  headerCount,
+  incompleteCount,
+  onQuickAdd,
+  onIncompleteBadgeClick,
+  selectedFragrance,
+  hasPrev,
+  hasNext,
+  onGestureClose,
+  onGesturePrev,
+  onGestureNext,
+}: Props) {
   return (
     <div
       className="flex flex-col h-screen"
@@ -27,7 +46,14 @@ export function AppLayout({ children, headerCount, incompleteCount, onQuickAdd, 
         <SideNav />
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
-      <GestureBar />
+      <GestureBar
+        selectedFragrance={selectedFragrance}
+        hasPrev={hasPrev}
+        hasNext={hasNext}
+        onClose={onGestureClose}
+        onPrev={onGesturePrev}
+        onNext={onGestureNext}
+      />
     </div>
   );
 }

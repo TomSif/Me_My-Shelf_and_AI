@@ -4,13 +4,16 @@ import { FragranceBottle } from "./FragranceBottle";
 
 interface Props {
   fragrances: Fragrance[];
+  selectedId?: string;
+  onSelect: (fragrance: Fragrance) => void;
+  onDeselect: () => void;
 }
 
-export function BottleWall({ fragrances }: Props) {
+export function BottleWall({ fragrances, selectedId, onSelect, onDeselect }: Props) {
   const navigate = useNavigate();
 
   return (
-    <div className="px-6 py-4">
+    <div className="px-6 py-4" onClick={onDeselect}>
       <div
         className="grid gap-2"
         style={{ gridTemplateColumns: "repeat(auto-fill, 40px)" }}
@@ -19,6 +22,8 @@ export function BottleWall({ fragrances }: Props) {
           <BottleCell
             key={f.id}
             fragrance={f}
+            selected={f.id === selectedId}
+            onSelect={(e) => { e.stopPropagation(); onSelect(f); }}
             onOpen={() => navigate(`/fragrance/${f.id}`)}
           />
         ))}
@@ -29,9 +34,13 @@ export function BottleWall({ fragrances }: Props) {
 
 function BottleCell({
   fragrance,
+  selected,
+  onSelect,
   onOpen,
 }: {
   fragrance: Fragrance;
+  selected: boolean;
+  onSelect: (e: React.MouseEvent) => void;
   onOpen: () => void;
 }) {
   return (
@@ -41,8 +50,18 @@ function BottleCell({
         width: 40,
         height: 60,
         transition: `opacity var(--duration-fast) var(--ease-soft)`,
+        outline: selected ? "2px solid var(--icon-active)" : "none",
+        outlineOffset: 2,
+        borderRadius: 4,
       }}
-      onDoubleClick={onOpen}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (e.detail >= 2) {
+          onOpen();
+        } else {
+          onSelect(e);
+        }
+      }}
     >
       <FragranceBottle families={fragrance.families} />
 
