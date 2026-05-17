@@ -198,10 +198,11 @@ export function FilterPanel() {
           tags.length > 0 ? `${tags.length} tag${tags.length > 1 ? "s" : ""}` : undefined
         }
       >
-        <TagsFilter
-          allTags={allTags}
-          activeTags={tags}
-          onToggle={(tag) => setFilter("tags", toggle(tags, tag))}
+        <AutocompleteChipInput
+          values={tags}
+          suggestions={allTags}
+          placeholder="Rechercher un tag…"
+          onChange={(v) => setFilter("tags", v)}
         />
       </CollapsibleSection>
 
@@ -370,69 +371,6 @@ function ToggleRow({
           }}
         />
       </button>
-    </div>
-  );
-}
-
-function TagsFilter({
-  allTags,
-  activeTags,
-  onToggle,
-}: {
-  allTags: string[];
-  activeTags: string[];
-  onToggle: (tag: string) => void;
-}) {
-  const [search, setSearch] = useState("");
-  const filtered = search.trim()
-    ? allTags.filter((t) => t.toLowerCase().includes(search.toLowerCase()))
-    : allTags;
-
-  if (allTags.length === 0) {
-    return (
-      <span className="text-xs" style={{ color: "var(--text-ghost)" }}>
-        Aucun tag dans la collection.
-      </span>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-2">
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Rechercher un tag…"
-        className="w-full text-xs px-2.5 py-1.5 rounded-lg"
-        style={{
-          backgroundColor: "var(--surface-secondary)",
-          color: "var(--text-primary)",
-          border: "1px solid var(--border-light)",
-          outline: "none",
-        }}
-      />
-      {filtered.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {filtered.map((tag) => {
-            const active = activeTags.includes(tag);
-            return (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => onToggle(tag)}
-                className="px-2.5 py-0.5 rounded-full text-xs"
-                style={{
-                  backgroundColor: active ? "var(--icon-active)" : "transparent",
-                  color: active ? "#fff" : "var(--text-muted)",
-                  border: `1px solid ${active ? "var(--icon-active)" : "var(--border-light)"}`,
-                }}
-              >
-                {tag}
-              </button>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }
