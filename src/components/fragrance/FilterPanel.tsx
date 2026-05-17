@@ -389,11 +389,12 @@ function AutocompleteChipInput({
   const [input, setInput] = useState("");
   const [open, setOpen] = useState(false);
 
-  const filtered = suggestions.filter(
-    (s) =>
-      !values.includes(s) &&
-      (input.trim() === "" || s.toLowerCase().includes(input.toLowerCase()))
-  );
+  const filtered =
+    input.trim() === ""
+      ? []
+      : suggestions.filter(
+          (s) => !values.includes(s) && s.toLowerCase().includes(input.toLowerCase())
+        );
 
   function add(value: string) {
     if (!values.includes(value)) onChange([...values, value]);
