@@ -531,6 +531,10 @@ Les champs `tags`, `seasons`, `rating`, `comment` et tous les champs optionnels 
 #13 `feat: vue détaillée d'un parfum` — absorbée dans #10, mergée
 #14 `feat: GestureBar Dynamic Island — peek déroulé` — mergée (mobile différé #19)
 #20 `feat: vue collection — mur de flacons SVG` — mergée
+#22 `feat: ajouter isFavorite au modèle Fragrance` — mergée
+#23 `feat: L'Atelier — rail contextuel extensible` — mergée
+#24a `feat: Filter Atelier — store complet (filteredFragrances, AND/OR, pyramide)` — mergée
+#24b `feat: Filter Atelier — composants UI (chips, toggles, autocomplete)` — mergée
 
 ---
 
@@ -1008,189 +1012,91 @@ ou dans une vue dédiée "Ma sélection". L'utilisateur peut la vider ou la modi
 
 ---
 
-### Issue #22 — isFavorite
+### Issue #22 — isFavorite ✅
 
 **Titre** : `feat: ajouter isFavorite au modèle Fragrance`
-
-**Description** :
-Prérequis du Filter Atelier. Un collectionneur a naturellement des parfums
-favoris — ceux qu'il porte le plus, qu'il recommande, qu'il chérit.
-`isFavorite` est un booléen simple qui débloque le filtre "Favoris uniquement"
-et l'icône Favoris dans l'Atelier.
+**Statut** : mergée sur `dev` — 2026-05-17
 
 **Critères d'acceptance :**
 
-- [ ] `isFavorite: boolean` ajouté à l'interface `Fragrance` (défaut `false`)
-- [ ] Valeur par défaut dans `fragrancesStore` et `QuickAddModal`
-- [ ] Toggle "Favori" ajouté dans `FragrancePage` (mode view + create)
-- [ ] `store.update()` persiste la valeur
-- [ ] Aucune régression sur `isComplete()` — `isFavorite` n'est pas requis
+- [x] `isFavorite: boolean` ajouté à l'interface `Fragrance` (défaut `false`)
+- [x] Valeur par défaut dans `fragrancesStore` et `QuickAddModal`
+- [x] Toggle "Favori" ajouté dans `FragrancePage` (mode view + create)
+- [x] `store.update()` persiste la valeur
+- [x] Aucune régression sur `isComplete()` — `isFavorite` n'est pas requis
 
 **Dépendances** : aucune
 **Branche** : `feat/fragrance-favorite`
 
 ---
 
-### Issue #23 — L'Atelier (rail)
+### Issue #23 — L'Atelier (rail) ✅
 
 **Titre** : `feat: L'Atelier — rail contextuel extensible`
-
-**Description** :
-La `SideNav` actuelle est un rail d'icônes statique. Elle devient l'Atelier :
-un rail contextuel extensible qui pousse la collection quand il s'ouvre,
-sans overlay, sans rupture visuelle. Même fond, même matérialité.
-Le contenu principal reste toujours visible.
-
-C'est le conteneur de toute la zone gauche. Le Filter Atelier (issue #24b)
-se déploie à l'intérieur de ce rail.
-
-**Comportement :**
-
-- État fermé : rail fin, icônes + labels, identique à l'existant
-- État ouvert : rail à 340px, pousse la collection vers la droite
-- Transition : `width` CSS avec `ease-out`, pas de slide par-dessus
-- Bouton `<<` pour refermer
-
-**Structure du rail ouvert :**
-
-L'Atelier
-« Composez votre collection » [<<]
-● FILTER ATELIER
-(section filtre — issue #24b)
-──────────────────
-Icône Étagères
-Icône IA
-Icône Favoris
-Icône Stats
-Icône Réglages
+**Statut** : mergée sur `dev` — 2026-05-17
 
 **Critères d'acceptance :**
 
-- [ ] `SideNav` refactorisée en `Atelier` — même routes, même icônes
-- [ ] État ouvert/fermé géré en state local (ou store si persisté)
-- [ ] Largeur ouverte : 340px, transition CSS uniquement (pas Framer en v1)
-- [ ] La collection (`BottleWall`) se décale — pas d'overlay par-dessus
-- [ ] Bouton `<<` referme le rail
-- [ ] Titre "L'Atelier · Composez votre collection" en haut du rail ouvert
-- [ ] Section Filter Atelier en haut du rail (shell vide — contenu dans #24b)
-- [ ] Navigation (Étagères, Favoris, Stats, Réglages) toujours visible en bas
-- [ ] État ouvert/fermé persisté en localStorage
+- [x] `SideNav` refactorisée en `Atelier` — même routes, même icônes
+- [x] État ouvert/fermé géré en state local (ou store si persisté)
+- [x] Largeur ouverte : 340px, transition CSS uniquement (pas Framer en v1)
+- [x] La collection (`BottleWall`) se décale — pas d'overlay par-dessus
+- [x] Bouton `<<` referme le rail
+- [x] Titre "L'Atelier · Composez votre collection" en haut du rail ouvert
+- [x] Section Filter Atelier en haut du rail (shell vide — contenu dans #24b)
+- [x] Navigation (Étagères, Favoris, Stats, Réglages) toujours visible en bas
+- [x] État ouvert/fermé persisté en localStorage
 
 **Dépendances** : aucune (layout pur)
 **Branche** : `feat/atelier-rail`
 
 ---
 
-### Issue #24a — Filter Atelier (store)
+### Issue #24a — Filter Atelier (store) ✅
 
 **Titre** : `feat: Filter Atelier — logique de filtres dans le store`
-
-**Description** :
-Remplace et fusionne les issues #15 et #16 (fermées).
-Toute la logique métier des filtres dans `useFragrancesStore`.
-Aucun composant UI dans cette issue — uniquement le store et les utilitaires.
-L'UI vient dans #24b.
-
-**Logique de filtrage :**
-AND entre dimensions (famille ET saison ET marque).
-OR au sein d'une dimension (hespéridé OU boisé).
-Champs `undefined` exclus naturellement selon le filtre actif.
-
-**Structure du state :**
-
-```typescript
-interface ActiveFilters {
-  families: OlfactoryFamily[];
-  seasons: Season[];
-  concentrations: Concentration[];
-  brands: string[];
-  perfumers: string[];
-  tags: string[];
-  favoritesOnly: boolean;
-  neverWorn: boolean;
-  samplesOnly: boolean;
-  interface ActiveFilters {
-  pyramidNotes: {
-    top?: string
-    heart?: string
-    base?: string
-  }
-}
-}
-```
+**Statut** : mergée sur `dev` — 2026-05-17
 
 **Critères d'acceptance :**
 
-- [ ] `activeFilters: ActiveFilters` dans le store, persisté localStorage
-- [ ] `setFilter(key, value)` met à jour un critère
-- [ ] `clearFilters()` réinitialise tous les critères
-- [ ] `hasActiveFilters: boolean` — true si au moins un filtre actif
-- [ ] `filteredFragrances` recalculé automatiquement à chaque mutation
-- [ ] Logique AND entre dimensions, OR au sein d'une dimension
-- [ ] `neverWorn` → `lastUsed === undefined`
-- [ ] `filteredFragrances` transmis à `BottleWall` (opacité 20% sur non-matchants)
-- [ ] Compatible sans refactor avec le tri (#18)
+- [x] `activeFilters: ActiveFilters` dans le store, persisté localStorage
+- [x] `setFilter(key, value)` met à jour un critère
+- [x] `clearFilters()` réinitialise tous les critères
+- [x] `hasActiveFilters: boolean` — true si au moins un filtre actif
+- [x] `filteredFragrances` recalculé automatiquement à chaque mutation
+- [x] Logique AND entre dimensions, OR au sein d'une dimension
+- [x] `neverWorn` → `lastUsed === undefined`
+- [x] `filteredFragrances` transmis à `BottleWall` (opacité 20% sur non-matchants)
+- [x] Compatible sans refactor avec le tri (#18)
 
 **Dépendances** : #22 (isFavorite)
 **Branche** : `feat/filter-store`
 
 ---
 
-### Issue #24b — Filter Atelier (UI)
+### Issue #24b — Filter Atelier (UI) ✅
 
 **Titre** : `feat: Filter Atelier — composants UI`
-
-**Description** :
-L'interface du Filter Atelier dans le rail de l'Atelier.
-Les filtres doivent ressembler à des propriétés olfactives,
-pas à un formulaire administratif. Chips partout, pas de checkboxes.
-Filtrage en temps réel — aucun bouton Appliquer.
-
-**Sections et contrôles :**
-
-Niveau 1 — ouvertes par défaut :
-
-- Familles : chips avec icône colorée (12 options)
-- Saisons : chips avec icônes (printemps/été/automne/hiver)
-- Concentration : chips avec silhouette de flacon (5 options)
-
-Niveau 2 — repliées par défaut :
-
-- Tags : input recherche + chips parmi les tags existants
-- Favoris uniquement : toggle booléen
-- Jamais portés : toggle booléen
-- Échantillons uniquement : toggle booléen
-
-Niveau 3 — repliées par défaut :
-
-- Marque : input texte + autocomplete sur les marques de la collection
-- Parfumeur : input texte + autocomplete sur les parfumeurs de la collection
-
-**Règle des sections repliables :**
-Une section avec un filtre actif affiche son état dans le titre même repliée.
-
-FAMILLES · Boisé, Agrumes ∧ ← repliée mais active
-SAISONS ∨ ← repliée, inactive
+**Statut** : mergée sur `dev` — 2026-05-17
 
 **Critères d'acceptance :**
 
-- [ ] Sections Niveau 1 ouvertes par défaut, Niveaux 2 et 3 repliées
-- [ ] Titre de section cliquable → replie/déplie
-- [ ] Section active (filtre en cours) : état visible dans le titre replié
-- [ ] Chips Familles : icône colorée par famille (palette PRODUCT.md)
-- [ ] Chips Saisons : icônes printemps/été/automne/hiver
-- [ ] Chips Concentration : silhouettes de flacons (cohérence FragrancePage)
-- [ ] Inputs Marque et Parfumeur : autocomplete sur valeurs existantes
-- [ ] Tags : chips des tags existants + input recherche
-- [ ] Toggles (Favoris / Jamais portés / Échantillons) : style capsule minimal
-- [ ] Scroll sans scrollbar visible — fade haut et bas
-- [ ] Chaque interaction → `setFilter()` → `filteredFragrances` mis à jour
-- [ ] `clearFilters()` accessible en bas du panneau
-- [ ] Section "Pyramide olfactive" en Niveau 3 (repliée par défaut)
-- [ ] 3 inputs texte : Tête · Cœur · Fond
-- [ ] Recherche partielle, insensible à la casse
-- [ ] Section affiche son état dans le titre si un input est renseigné
-      ex: PYRAMIDE · tête: bergamote ∧
+- [x] Sections Niveau 1 ouvertes par défaut, Niveaux 2 et 3 repliées
+- [x] Titre de section cliquable → replie/déplie
+- [x] Section active (filtre en cours) : état visible dans le titre replié
+- [x] Chips Familles : icône colorée par famille (palette PRODUCT.md)
+- [x] Chips Saisons : icônes printemps/été/automne/hiver
+- [x] Chips Concentration : silhouettes de flacons (cohérence FragrancePage)
+- [x] Inputs Marque et Parfumeur : autocomplete sur valeurs existantes
+- [x] Tags : autocomplete + chips supprimables (suggestions à la frappe uniquement)
+- [x] Toggles (Favoris / Jamais portés / Échantillons) : style capsule minimal, groupés dans SÉLECTION
+- [x] Scroll sans scrollbar visible — fade haut et bas
+- [x] Chaque interaction → `setFilter()` → `filteredFragrances` mis à jour
+- [x] `clearFilters()` accessible en bas du panneau
+- [x] Section "Pyramide olfactive" en Niveau 3 (repliée par défaut)
+- [x] 3 inputs texte : Tête · Cœur · Fond
+- [x] Recherche partielle, insensible à la casse
+- [x] Section affiche son état dans le titre si un input est renseigné
 
 **Dépendances** : #23 (rail), #24a (store)
 **Branche** : `feat/filter-ui`
