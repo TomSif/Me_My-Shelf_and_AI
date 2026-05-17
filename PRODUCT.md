@@ -840,13 +840,19 @@ Permettre de filtrer la collection par un critère à la fois.
 Socle sur lequel le croisement de filtres (issue #16) sera construit.
 La structure doit être un tableau dès le départ pour éviter un refactor.
 
+> **Décision d'architecture (2026-05-17)** : cette issue ne fournit que la **logique store**.
+> L'UI de filtres (FilterPanel) ne sera PAS intégrée — elle sera remplacée par le
+> **Filter Atelier** dans le rail de L'Atelier (voir issues #23 + #24b).
+> `FilterPanel.tsx` créé sur `feat/filters` est à supprimer avant le merge.
+> Seuls `activeFilters`, `setFilter`, `filteredFragrances` survivent dans `fragrancesStore`.
+
 **Critères d'acceptance** :
 
-- [ ] `useFragrances` expose `activeFilters` et `setFilter(key, values[])`
+- [ ] `fragrancesStore` expose `activeFilters` et `setFilter(key, values[])`
 - [ ] Filtres disponibles : `families`, `seasons`, `concentration`, `brand`, `tags`
 - [ ] `filteredFragrances` recalculé automatiquement à chaque changement de filtre
-- [ ] UI minimale de sélection de filtre (selects ou boutons, pas encore soignée)
-- [ ] Réinitialisation des filtres possible
+- [ ] Réinitialisation des filtres possible (`clearAllFilters`)
+- [ ] `FilterPanel.tsx` supprimé — aucun composant UI de filtre dans le header
 
 **Branche** : `feat/filters`
 
