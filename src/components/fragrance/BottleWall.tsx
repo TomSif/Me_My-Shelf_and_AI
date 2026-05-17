@@ -4,12 +4,13 @@ import { FragranceBottle } from "./FragranceBottle";
 
 interface Props {
   fragrances: Fragrance[];
+  filteredIds?: Set<string>;
   selectedId?: string;
   onSelect: (fragrance: Fragrance) => void;
   onDeselect: () => void;
 }
 
-export function BottleWall({ fragrances, selectedId, onSelect, onDeselect }: Props) {
+export function BottleWall({ fragrances, filteredIds, selectedId, onSelect, onDeselect }: Props) {
   const navigate = useNavigate();
 
   return (
@@ -23,6 +24,7 @@ export function BottleWall({ fragrances, selectedId, onSelect, onDeselect }: Pro
             key={f.id}
             fragrance={f}
             selected={f.id === selectedId}
+            dimmed={filteredIds !== undefined && !filteredIds.has(f.id)}
             onSelect={(e) => { e.stopPropagation(); onSelect(f); }}
             onOpen={() => navigate(`/fragrance/${f.id}`)}
           />
@@ -35,11 +37,13 @@ export function BottleWall({ fragrances, selectedId, onSelect, onDeselect }: Pro
 function BottleCell({
   fragrance,
   selected,
+  dimmed,
   onSelect,
   onOpen,
 }: {
   fragrance: Fragrance;
   selected: boolean;
+  dimmed: boolean;
   onSelect: (e: React.MouseEvent) => void;
   onOpen: () => void;
 }) {
@@ -49,7 +53,9 @@ function BottleCell({
       style={{
         width: 40,
         height: 60,
-        transition: `opacity var(--duration-fast) var(--ease-soft)`,
+        opacity: dimmed ? 0.2 : 1,
+        filter: dimmed ? "saturate(0)" : "none",
+        transition: `opacity var(--duration-fast) var(--ease-soft), filter var(--duration-fast) var(--ease-soft)`,
         outline: selected ? "2px solid var(--icon-active)" : "none",
         outlineOffset: 2,
         borderRadius: 4,
