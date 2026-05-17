@@ -1,18 +1,74 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { Fragrance, NewFragrance } from "../types/fragrance";
+import type { Fragrance, NewFragrance, ActiveFilters, PyramidNotesFilter } from "../types/fragrance";
 import { isComplete } from "../utils/fragrance";
 
-interface FragrancesState {
-  fragrances: Fragrance[];
-  incompleteCount: number;
-  add: (data: NewFragrance) => string;
-  update: (id: string, data: Partial<NewFragrance>) => void;
-  remove: (id: string) => void;
+const DEFAULT_FILTERS: ActiveFilters = {
+  families: [],
+  seasons: [],
+  concentrations: [],
+  brands: [],
+  perfumers: [],
+  tags: [],
+  favoritesOnly: false,
+  neverWorn: false,
+  samplesOnly: false,
+  pyramidNotes: {},
+};
+
+function hasPyramidFilter(p: PyramidNotesFilter): boolean {
+  return Boolean(p.top || p.heart || p.base);
+}
+
+function hasActive(filters: ActiveFilters): boolean {
+  return (
+    filters.families.length > 0 ||
+    filters.seasons.length > 0 ||
+    filters.concentrations.length > 0 ||
+    filters.brands.length > 0 ||
+    filters.perfumers.length > 0 ||
+    filters.tags.length > 0 ||
+    filters.favoritesOnly ||
+    filters.neverWorn ||
+    filters.samplesOnly ||
+    hasPyramidFilter(filters.pyramidNotes)
+  );
+}
+
+function applyFilters(fragrances: Fragrance[], f: ActiveFilters): Fragrance[] {
+  if (!hasActive(f)) return fragrances;
+  return fragrances.filter((fr) => {
+    if (f.families.length > 0 && !f.families.some((fam) => fr.families.includes(fam))) return false;
+    if (f.seasons.length > 0 && !f.seasons.some((s) => fr.seasons.includes(s))) return false;
+    if (f.concentrations.length > 0 && !f.concentrations.includes(fr.concentration)) return false;
+    if (f.brands.length > 0 && !f.brands.some((b) => fr.brand.toLowerCase().includes(b.toLowerCase()))) return false;
+    if (f.perfumers.length > 0 && (!fr.perfumer || !f.perfumers.some((p) => fr.perfumer!.toLowerCase().includes(p.toLowerCase())))) return false;
+    if (f.tags.length > 0 && !f.tags.some((t) => fr.tags.includes(t))) return false;
+    if (f.favoritesOnly && !fr.isFavorite) return false;
+    if (f.neverWorn && fr.lastUsed !== undefined) return false;
+    if (f.samplesOnly && !fr.isSample) return false;
+    if (f.pyramidNotes.top && !fr.pyramid?.top.some((n) => n.toLowerCase().includes(f.pyramidNotes.top!.toLowerCase()))) return false;
+    if (f.pyramidNotes.heart && !fr.pyramid?.heart.some((n) => n.toLowerCase().includes(f.pyramidNotes.heart!.toLowerCase()))) return false;
+    if (f.pyramidNotes.base && !fr.pyramid?.base.some((n) => n.toLowerCase().includes(f.pyramidNotes.base!.toLowerCase()))) return false;
+    return true;
+  });
 }
 
 function countIncomplete(fragrances: Fragrance[]): number {
   return fragrances.filter((f) => !isComplete(f)).length;
+}
+
+interface FragrancesState {
+  fragrances: Fragrance[];
+  incompleteCount: number;
+  activeFilters: ActiveFilters;
+  filteredFragrances: Fragrance[];
+  hasActiveFilters: boolean;
+  add: (data: NewFragrance) => string;
+  update: (id: string, data: Partial<NewFragrance>) => void;
+  remove: (id: string) => void;
+  setFilter: <K extends keyof ActiveFilters>(key: K, value: ActiveFilters[K]) => void;
+  clearFilters: () => void;
 }
 
 export const useFragrancesStore = create<FragrancesState>()(
@@ -20,6 +76,9 @@ export const useFragrancesStore = create<FragrancesState>()(
     (set) => ({
       fragrances: [],
       incompleteCount: 0,
+      activeFilters: DEFAULT_FILTERS,
+      filteredFragrances: [],
+      hasActiveFilters: false,
       add: (data) => {
         const id = crypto.randomUUID();
         set((state) => {
@@ -27,7 +86,11 @@ export const useFragrancesStore = create<FragrancesState>()(
             ...state.fragrances,
             { ...data, id, createdAt: new Date().toISOString() },
           ];
-          return { fragrances, incompleteCount: countIncomplete(fragrances) };
+          return {
+            fragrances,
+            incompleteCount: countIncomplete(fragrances),
+            filteredFragrances: applyFilters(fragrances, state.activeFilters),
+          };
         });
         return id;
       },
@@ -36,21 +99,49 @@ export const useFragrancesStore = create<FragrancesState>()(
           const fragrances = state.fragrances.map((f) =>
             f.id === id ? { ...f, ...data } : f
           );
-          return { fragrances, incompleteCount: countIncomplete(fragrances) };
+          return {
+            fragrances,
+            incompleteCount: countIncomplete(fragrances),
+            filteredFragrances: applyFilters(fragrances, state.activeFilters),
+          };
         }),
       remove: (id) =>
         set((state) => {
           const fragrances = state.fragrances.filter((f) => f.id !== id);
-          return { fragrances, incompleteCount: countIncomplete(fragrances) };
+          return {
+            fragrances,
+            incompleteCount: countIncomplete(fragrances),
+            filteredFragrances: applyFilters(fragrances, state.activeFilters),
+          };
         }),
+      setFilter: (key, value) =>
+        set((state) => {
+          const activeFilters = { ...state.activeFilters, [key]: value };
+          return {
+            activeFilters,
+            filteredFragrances: applyFilters(state.fragrances, activeFilters),
+            hasActiveFilters: hasActive(activeFilters),
+          };
+        }),
+      clearFilters: () =>
+        set((state) => ({
+          activeFilters: DEFAULT_FILTERS,
+          filteredFragrances: state.fragrances,
+          hasActiveFilters: false,
+        })),
     }),
     {
       name: "fragrances",
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ fragrances: state.fragrances }),
+      partialize: (state) => ({
+        fragrances: state.fragrances,
+        activeFilters: state.activeFilters,
+      }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.incompleteCount = countIncomplete(state.fragrances);
+          state.filteredFragrances = applyFilters(state.fragrances, state.activeFilters);
+          state.hasActiveFilters = hasActive(state.activeFilters);
         }
       },
     }
