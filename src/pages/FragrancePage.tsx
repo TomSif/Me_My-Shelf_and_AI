@@ -30,6 +30,7 @@ interface FormState {
   perfumer: string;
   concentration?: Concentration;
   isSample: boolean;
+  isFavorite: boolean;
   volumeMl: number;
   remainingMl: number;
   families: OlfactoryFamily[];
@@ -50,6 +51,7 @@ const EMPTY_FORM: FormState = {
   perfumer: "",
   concentration: undefined,
   isSample: false,
+  isFavorite: false,
   volumeMl: 0,
   remainingMl: 0,
   families: [],
@@ -109,6 +111,7 @@ export function FragrancePage({ mode }: Props) {
           perfumer: f.perfumer ?? "",
           concentration: f.concentration,
           isSample: f.isSample,
+          isFavorite: f.isFavorite,
           volumeMl: f.volumeMl,
           remainingMl: f.remainingMl,
           families: f.families,
@@ -185,6 +188,7 @@ export function FragrancePage({ mode }: Props) {
       perfumer: form.perfumer.trim() || undefined,
       concentration: form.concentration ?? ("eau de parfum" as Concentration),
       isSample: form.isSample,
+      isFavorite: form.isFavorite,
       volumeMl: form.volumeMl,
       remainingMl: form.remainingMl,
       families: form.families,
@@ -494,11 +498,26 @@ export function FragrancePage({ mode }: Props) {
               {ICONS.memory}
               4. Collection & Mémoire
             </span>
-            {completion.memory && (
-              <span style={{ color: "var(--icon-active)", fontSize: "0.8rem" }}>
-                ✓
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => set("isFavorite", !form.isFavorite)}
+                className="flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors"
+                style={{
+                  backgroundColor: "var(--surface-secondary)",
+                  color: form.isFavorite ? "var(--icon-active)" : "var(--text-muted)",
+                  border: `1px solid ${form.isFavorite ? "var(--icon-active)" : "var(--border-light)"}`,
+                  opacity: form.isFavorite ? 1 : 0.7,
+                }}
+              >
+                {form.isFavorite ? "♥" : "♡"} Favori
+              </button>
+              {completion.memory && (
+                <span style={{ color: "var(--icon-active)", fontSize: "0.8rem" }}>
+                  ✓
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
