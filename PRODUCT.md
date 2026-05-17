@@ -1138,6 +1138,31 @@ Trier par
 
 ---
 
+### Issue #25 — Log d'utilisation
+
+**Titre** : `feat: log d'utilisation — marquer un parfum comme porté`
+
+**Description** :
+Le champ `lastUsed?: string` existe déjà sur le modèle.
+Il faut un moyen de le mettre à jour depuis l'UI.
+Point d'entrée naturel : la GestureBar (peek ouvert) et/ou la fiche parfum.
+Un clic sur "Porté aujourd'hui" écrit la date ISO courante dans `lastUsed`.
+
+Ce log débloque le tri par "dernière utilisation" (#18) et le filtre "jamais portés" (#24a).
+
+**Critères d'acceptance :**
+
+- [ ] Bouton "Porté aujourd'hui" dans le peek de la GestureBar (quand un parfum est sélectionné)
+- [ ] Même bouton dans la fiche `FragrancePage` (Section mémoire)
+- [ ] `store.update(id, { lastUsed: new Date().toISOString() })` au clic
+- [ ] Affichage de la date de dernière utilisation dans la fiche (ex: "Dernière fois : il y a 3 jours")
+- [ ] Si `lastUsed` est aujourd'hui, le bouton affiche "Porté aujourd'hui ✓" (désactivé)
+
+**Dépendances** : #18 (tri lastUsed), #24a (filtre neverWorn)
+**Branche** : `feat/log-usage`
+
+---
+
 ### Issue #21 (révisée) — Curation
 
 **Titre** : `feat: mode curation — sélection vers l'étagère`
