@@ -37,6 +37,7 @@ export interface Fragrance {
   perfumer?: string;
   concentration: Concentration;
   isSample: boolean;
+  isFavorite: boolean;
   volumeMl: number;
   remainingMl: number;
   purchaseDate?: string;

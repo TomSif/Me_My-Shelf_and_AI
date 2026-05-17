@@ -23,6 +23,7 @@ export function QuickAddModal({ onClose }: Props) {
       families,
       concentration: "eau de parfum",
       isSample: false,
+      isFavorite: false,
       volumeMl: 0,
       remainingMl: 0,
       seasons: [],
