@@ -785,9 +785,9 @@ barre d'action complète en mode Peek. Sur desktop elle est riche, sur mobile el
 
 **Trois niveaux d'engagement distincts :**
 
-| Niveau   | Geste                            | Expérience                                        |
-| -------- | -------------------------------- | ------------------------------------------------- |
-| Glance   | Vue Collection passive           | silhouette · couleur · niveau                     |
+| Niveau   | Geste                            | Expérience                                          |
+| -------- | -------------------------------- | --------------------------------------------------- |
+| Glance   | Vue Collection passive           | silhouette · couleur · niveau                       |
 | **Peek** | **Click dans la Vue Collection** | **GestureBar déroulée — flacon centré, infos clés** |
 | Explore  | Double-click → `/fragrance/:id`  | FragrancePage — édition · pyramide · détail complet |
 
@@ -797,6 +797,7 @@ Volume + rating + tags à droite · Chevrons ← → pour naviguer · Icône ét
 Minimal par choix — si l'utilisateur veut plus, il va dans Explore.
 
 **Desktop vs Mobile :**
+
 - Desktop (v1) : GestureBar élargie complète — layout horizontal, flacon centré
 - Mobile (v1) : GestureBar reste hints de gestes, Peek simplifié (nom + marque + volume)
 - Mobile riche : v2
@@ -985,6 +986,7 @@ La curation manuelle est une liste ad hoc que l'utilisateur constitue à la main
 indépendamment de tout filtre. Elle est persistée et visible dans ShelfPage.
 
 **Gestes depuis la Vue Collection :**
+
 - Clic droit sur un flacon → menu contextuel → "Envoyer vers l'étagère"
 - Drag & drop du flacon vers une icône / zone dédiée (v2 — dépend des animations)
 
@@ -1002,6 +1004,261 @@ ou dans une vue dédiée "Ma sélection". L'utilisateur peut la vider ou la modi
 - [ ] La sélection survit au rechargement (localStorage)
 
 **Dépendances** : #14 (menu contextuel depuis la PeekCard), #20 ✅
+**Branche** : `feat/curation`
+
+---
+
+### Issue #22 — isFavorite
+
+**Titre** : `feat: ajouter isFavorite au modèle Fragrance`
+
+**Description** :
+Prérequis du Filter Atelier. Un collectionneur a naturellement des parfums
+favoris — ceux qu'il porte le plus, qu'il recommande, qu'il chérit.
+`isFavorite` est un booléen simple qui débloque le filtre "Favoris uniquement"
+et l'icône Favoris dans l'Atelier.
+
+**Critères d'acceptance :**
+
+- [ ] `isFavorite: boolean` ajouté à l'interface `Fragrance` (défaut `false`)
+- [ ] Valeur par défaut dans `fragrancesStore` et `QuickAddModal`
+- [ ] Toggle "Favori" ajouté dans `FragrancePage` (mode view + create)
+- [ ] `store.update()` persiste la valeur
+- [ ] Aucune régression sur `isComplete()` — `isFavorite` n'est pas requis
+
+**Dépendances** : aucune
+**Branche** : `feat/fragrance-favorite`
+
+---
+
+### Issue #23 — L'Atelier (rail)
+
+**Titre** : `feat: L'Atelier — rail contextuel extensible`
+
+**Description** :
+La `SideNav` actuelle est un rail d'icônes statique. Elle devient l'Atelier :
+un rail contextuel extensible qui pousse la collection quand il s'ouvre,
+sans overlay, sans rupture visuelle. Même fond, même matérialité.
+Le contenu principal reste toujours visible.
+
+C'est le conteneur de toute la zone gauche. Le Filter Atelier (issue #24b)
+se déploie à l'intérieur de ce rail.
+
+**Comportement :**
+
+- État fermé : rail fin, icônes + labels, identique à l'existant
+- État ouvert : rail à 340px, pousse la collection vers la droite
+- Transition : `width` CSS avec `ease-out`, pas de slide par-dessus
+- Bouton `<<` pour refermer
+
+**Structure du rail ouvert :**
+
+L'Atelier
+« Composez votre collection » [<<]
+● FILTER ATELIER
+(section filtre — issue #24b)
+──────────────────
+Icône Étagères
+Icône IA
+Icône Favoris
+Icône Stats
+Icône Réglages
+
+**Critères d'acceptance :**
+
+- [ ] `SideNav` refactorisée en `Atelier` — même routes, même icônes
+- [ ] État ouvert/fermé géré en state local (ou store si persisté)
+- [ ] Largeur ouverte : 340px, transition CSS uniquement (pas Framer en v1)
+- [ ] La collection (`BottleWall`) se décale — pas d'overlay par-dessus
+- [ ] Bouton `<<` referme le rail
+- [ ] Titre "L'Atelier · Composez votre collection" en haut du rail ouvert
+- [ ] Section Filter Atelier en haut du rail (shell vide — contenu dans #24b)
+- [ ] Navigation (Étagères, Favoris, Stats, Réglages) toujours visible en bas
+- [ ] État ouvert/fermé persisté en localStorage
+
+**Dépendances** : aucune (layout pur)
+**Branche** : `feat/atelier-rail`
+
+---
+
+### Issue #24a — Filter Atelier (store)
+
+**Titre** : `feat: Filter Atelier — logique de filtres dans le store`
+
+**Description** :
+Remplace et fusionne les issues #15 et #16 (fermées).
+Toute la logique métier des filtres dans `useFragrancesStore`.
+Aucun composant UI dans cette issue — uniquement le store et les utilitaires.
+L'UI vient dans #24b.
+
+**Logique de filtrage :**
+AND entre dimensions (famille ET saison ET marque).
+OR au sein d'une dimension (hespéridé OU boisé).
+Champs `undefined` exclus naturellement selon le filtre actif.
+
+**Structure du state :**
+
+```typescript
+interface ActiveFilters {
+  families: OlfactoryFamily[];
+  seasons: Season[];
+  concentrations: Concentration[];
+  brands: string[];
+  perfumers: string[];
+  tags: string[];
+  favoritesOnly: boolean;
+  neverWorn: boolean;
+  samplesOnly: boolean;
+  interface ActiveFilters {
+  pyramidNotes: {
+    top?: string
+    heart?: string
+    base?: string
+  }
+}
+}
+```
+
+**Critères d'acceptance :**
+
+- [ ] `activeFilters: ActiveFilters` dans le store, persisté localStorage
+- [ ] `setFilter(key, value)` met à jour un critère
+- [ ] `clearFilters()` réinitialise tous les critères
+- [ ] `hasActiveFilters: boolean` — true si au moins un filtre actif
+- [ ] `filteredFragrances` recalculé automatiquement à chaque mutation
+- [ ] Logique AND entre dimensions, OR au sein d'une dimension
+- [ ] `neverWorn` → `lastUsed === undefined`
+- [ ] `filteredFragrances` transmis à `BottleWall` (opacité 20% sur non-matchants)
+- [ ] Compatible sans refactor avec le tri (#18)
+
+**Dépendances** : #22 (isFavorite)
+**Branche** : `feat/filter-store`
+
+---
+
+### Issue #24b — Filter Atelier (UI)
+
+**Titre** : `feat: Filter Atelier — composants UI`
+
+**Description** :
+L'interface du Filter Atelier dans le rail de l'Atelier.
+Les filtres doivent ressembler à des propriétés olfactives,
+pas à un formulaire administratif. Chips partout, pas de checkboxes.
+Filtrage en temps réel — aucun bouton Appliquer.
+
+**Sections et contrôles :**
+
+Niveau 1 — ouvertes par défaut :
+
+- Familles : chips avec icône colorée (12 options)
+- Saisons : chips avec icônes (printemps/été/automne/hiver)
+- Concentration : chips avec silhouette de flacon (5 options)
+
+Niveau 2 — repliées par défaut :
+
+- Tags : input recherche + chips parmi les tags existants
+- Favoris uniquement : toggle booléen
+- Jamais portés : toggle booléen
+- Échantillons uniquement : toggle booléen
+
+Niveau 3 — repliées par défaut :
+
+- Marque : input texte + autocomplete sur les marques de la collection
+- Parfumeur : input texte + autocomplete sur les parfumeurs de la collection
+
+**Règle des sections repliables :**
+Une section avec un filtre actif affiche son état dans le titre même repliée.
+
+FAMILLES · Boisé, Agrumes ∧ ← repliée mais active
+SAISONS ∨ ← repliée, inactive
+
+**Critères d'acceptance :**
+
+- [ ] Sections Niveau 1 ouvertes par défaut, Niveaux 2 et 3 repliées
+- [ ] Titre de section cliquable → replie/déplie
+- [ ] Section active (filtre en cours) : état visible dans le titre replié
+- [ ] Chips Familles : icône colorée par famille (palette PRODUCT.md)
+- [ ] Chips Saisons : icônes printemps/été/automne/hiver
+- [ ] Chips Concentration : silhouettes de flacons (cohérence FragrancePage)
+- [ ] Inputs Marque et Parfumeur : autocomplete sur valeurs existantes
+- [ ] Tags : chips des tags existants + input recherche
+- [ ] Toggles (Favoris / Jamais portés / Échantillons) : style capsule minimal
+- [ ] Scroll sans scrollbar visible — fade haut et bas
+- [ ] Chaque interaction → `setFilter()` → `filteredFragrances` mis à jour
+- [ ] `clearFilters()` accessible en bas du panneau
+- [ ] Section "Pyramide olfactive" en Niveau 3 (repliée par défaut)
+- [ ] 3 inputs texte : Tête · Cœur · Fond
+- [ ] Recherche partielle, insensible à la casse
+- [ ] Section affiche son état dans le titre si un input est renseigné
+      ex: PYRAMIDE · tête: bergamote ∧
+
+**Dépendances** : #23 (rail), #24a (store)
+**Branche** : `feat/filter-ui`
+
+---
+
+### Issue #18 (révisée) — Tri
+
+**Titre** : `feat: tri de la collection`
+
+**Description** :
+Dropdown dans le header. Chaque critère expose ses propres options
+de direction — l'utilisateur ne voit jamais une option qui n'a pas de sens.
+"Aléatoire" n'a pas de sous-menu direction. Le tri s'applique
+sur `filteredFragrances`, après le filtre.
+
+**Menu :**
+Trier par
+├── Alphabétique A→Z / Z→A
+├── Date d'ajout Récent→ancien / Ancien→récent
+├── Rating Meilleur→moins bon / Moins bon→meilleur
+├── Date d'achat Récent→ancien / Ancien→récent
+├── Dernière utilisation Récent→ancien / Ancien→récent
+├── Prix Moins cher→plus cher / Plus cher→moins cher
+└── Aléatoire (pas de sous-menu)
+
+**Critères d'acceptance :**
+
+- [ ] `sortState: { criterion, direction }` dans le store, persisté localStorage
+- [ ] Dropdown dans le header, sous-menu par critère
+- [ ] Critère actif visible dans le header (label du tri en cours)
+- [ ] Valeurs `undefined` toujours en fin de liste quelle que soit la direction
+- [ ] "Aléatoire" : nouveau shuffle à chaque sélection, pas de direction
+- [ ] `sortedFragrances` = résultat de `filteredFragrances` trié
+- [ ] `CollectionPage` consomme `sortedFragrances`
+
+**Dépendances** : #24a (store filtres — pipeline filter→sort)
+**Branche** : `feat/sort`
+
+---
+
+### Issue #21 (révisée) — Curation
+
+**Titre** : `feat: mode curation — sélection vers l'étagère`
+
+**Description** :
+La curation est la sélection intentionnelle d'un sous-ensemble
+de la collection vers ShelfPage. Deux déclencheurs :
+clic droit sur un flacon (existant) et sélection depuis
+une vue filtrée (nouveau).
+
+Cas d'usage principal : filtrer par parfumeur "Ellena",
+sélectionner 5 parfums depuis le résultat, les envoyer vers l'étagère.
+
+**Critères d'acceptance :**
+
+- [ ] `selectedIds: string[]` dans le store, persisté localStorage
+- [ ] Clic droit sur un flacon → menu contextuel → "Ajouter à la sélection"
+- [ ] Indicateur visuel sur les flacons sélectionnés dans `BottleWall`
+- [ ] Compteur de sélection visible (ex: "5 parfums sélectionnés")
+- [ ] `ShelfPage` affiche les parfums sélectionnés si sélection active
+- [ ] Bouton "Vider la sélection" dans `ShelfPage`
+- [ ] Bouton "Envoyer vers l'étagère" accessible depuis `GestureBar`
+      quand au moins un parfum est sélectionné
+
+**Hors scope (v2)** : étagères nommées et sauvegardées
+
+**Dépendances** : #24b (Filter Atelier UI), #20 ✅
 **Branche** : `feat/curation`
 
 ---
