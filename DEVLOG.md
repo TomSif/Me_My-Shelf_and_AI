@@ -536,3 +536,88 @@ Causé par la séparation en deux composants (GestureBar + PeekCard avaient chac
 - Issue #19 : passe UI (shadcn, vraies icônes, responsive mobile)
 
 ---
+
+## Session 2026-05-17 — Issues #22, #23, #24a, #24b — isFavorite + Filter Atelier complet
+
+### Ce qui était prévu
+
+- Issue #22 : champ `isFavorite` sur le modèle + toggle ♡/♥ dans FragrancePage
+- Issue #23 : refonte SideNav → Atelier rail extensible
+- Issue #24a : store de filtres complet (`filteredFragrances`, `hasActiveFilters`, logique AND/OR)
+- Issue #24b : Filter Atelier UI dans le rail
+
+### Ce qui a été fait
+
+**Issue #22 — `feat/fragrance-favorite` (mergée)**
+
+- `isFavorite: boolean` ajouté au modèle `Fragrance` et à `NewFragrance`
+- Valeur par défaut `false` dans `QuickAddModal` et `FragrancePage`
+- Toggle ♡/♥ dans la Section 4 de la fiche parfum, câblé sur `update()`
+
+**Issue #23 — `feat/atelier-rail` (mergée)**
+
+- `SideNav` supprimé, remplacé par `Atelier` — rail latéral extensible
+- Fermé : 48px (icônes condensées `»` + É/♡/S/R)
+- Ouvert : 340px (header "L'Atelier", zone content, nav labels)
+- Transition CSS `width` 200ms — pas de Framer Motion
+- État persisté dans `localStorage` clé `atelier-open`
+
+**Issue #24a — `feat/filter-store` (mergée)**
+
+- Types `PyramidNotesFilter` et `ActiveFilters` ajoutés à `fragrance.ts`
+- Store entièrement revu : `activeFilters`, `filteredFragrances`, `hasActiveFilters`
+- Logique AND entre dimensions, OR à l'intérieur de chaque dimension
+- Recherche pyramidale : includes partiel insensible à la casse (top/heart/base)
+- `applyFilters()` recalculée à chaque mutation (jamais persistée)
+- `onRehydrateStorage` recompute les valeurs dérivées au chargement
+- `BottleWall` : fragrances non-matchantes à opacity 20% + saturate(0) — collection toujours visible
+- Navigation prev/next de la GestureBar suit `displayList` (filtré si filtres actifs)
+
+**Issue #24b — `feat/filter-ui` (mergée)**
+
+- `FilterPanel` entièrement réécrit dans `src/components/fragrance/FilterPanel.tsx`
+- Niveau 1 ouvert : FAMILLES (dot coloré par famille + chips), SAISONS (✿☀◆✦ + chips), CONCENTRATION (Cologne/EDT/EDP/Parfum/Extrait)
+- Niveau 2 replié : TAGS (autocomplete + chips supprimables), SÉLECTION (3 toggles capsule : Favoris / Jamais portés / Échantillons)
+- Niveau 3 replié : MARQUE, PARFUMEUR (autocomplete multi-valeurs + chips), PYRAMIDE (3 inputs Tête/Cœur/Fond)
+- Titre replié avec résumé actif : `FAMILLES · boisé, floral ∧`
+- Autocomplete : suggestions uniquement à la frappe (input vide → rien affiché)
+- Scroll sans scrollbar visible + fade haut/bas via `mask-image`
+- "Tout effacer" en bas, visible uniquement si filtres actifs
+- Branché dans `Atelier.tsx` en remplacement du shell vide `#24b`
+
+### Décisions prises
+
+**`filteredFragrances` comme état dérivé, non persisté.**
+Calculé à chaque mutation du store. Seules `fragrances` et `activeFilters` sont persistées. `onRehydrateStorage` reconstruit les valeurs dérivées après le chargement localStorage. Avantage : source de vérité unique, jamais de désynchronisation.
+
+**BottleWall : dimming plutôt que masquage.**
+Quand des filtres sont actifs, les fragrances non-matchantes restent visibles à opacity 20% + saturate(0). La collection complète reste perceptible — on ne disparaît pas, on s'efface. C'est une décision de lecture : le filtrage dans ce contexte est une loupe, pas un masque.
+
+**Les filtres Favoris/Jamais portés/Échantillons groupés dans "SÉLECTION".**
+L'issue prévoyait 3 sections séparées. Regroupées en une seule section avec 3 toggles : réduit la liste de sections dans un rail de 340px, meilleure densité d'information.
+
+**Autocomplete vide → pas de suggestions.**
+Afficher tous les tags/marques/parfumeurs au focus cassait l'UI (liste trop longue). La dropdown n'apparaît que si l'input contient du texte — filtre dès la première lettre.
+
+### Bugs / blocages rencontrés
+
+**`git stash` a causé une perte de données dans PRODUCT.md.**
+En cours de travail sur `feat/filters`, un `git stash` a causé un switch vers `dev` avec une version antérieure de PRODUCT.md (sans les issues #22-#24b). Un commit `docs:` sur cette version incomplète a écrasé les nouvelles issues. Thomas a restauré manuellement.
+→ Décision : plus de `git stash`. WIP commit (`wip: description`) à la place, toujours en chronologique.
+
+**`pyramidNotes` ajouté en cours d'implémentation de #24a.**
+Thomas a ajouté la section "recherche par note pyramidale" à l'issue #24a après le début du développement. Nécessité d'ajouter l'interface `PyramidNotesFilter`, de modifier `DEFAULT_FILTERS`, `hasActive()` et `applyFilters()` — travail découpé proprement en commits atomiques.
+
+### Apprentissages
+
+- **`git stash` est risqué dans un workflow multi-fichiers avec docs versionnées.** Le stash inclut les modifications non commitées — si on commite un autre état entre-temps, les conflits peuvent être silencieux sur des fichiers comme PRODUCT.md. Le commit WIP est plus sûr et plus traçable.
+- **Computed state dans Zustand via `onRehydrateStorage`.** Les valeurs dérivées (`filteredFragrances`, `hasActiveFilters`, `incompleteCount`) ne peuvent pas être persistées et restituées directement — elles doivent être recalculées. `onRehydrateStorage` est le hook prévu pour ça : appelé après désérialisation, avant que les composants ne s'abonnent.
+- **`mask-image` CSS pour le fade de scroll.** La propriété masque visuellement le contenu au-delà des bords sans affecter le layout ni la scrollabilité. Nécessite le préfixe `-webkit-mask-image` pour Chrome/Safari.
+
+### Prochaine session
+
+- Issue #18 : tri de la collection
+- Issue #17 : recherche rapide
+- Issue #21 : curation (statut porté, notes d'usure)
+
+---
