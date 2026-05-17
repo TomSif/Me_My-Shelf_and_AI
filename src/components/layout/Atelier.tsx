@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FilterPanel } from "../fragrance/FilterPanel";
 
 const NAV_ITEMS = [
   { label: "Étagères", short: "É" },
@@ -79,24 +80,25 @@ function AtelierOpen({ onClose }: { onClose: () => void }) {
         </button>
       </div>
 
-      {/* Filter Atelier — shell vide (#24b) */}
-      <div className="flex-1 overflow-y-auto px-3 py-3">
+      {/* Filter Atelier */}
+      <div
+        className="flex-1 no-scrollbar px-3 py-3"
+        style={{
+          overflowY: "auto",
+          maskImage:
+            "linear-gradient(to bottom, transparent 0px, black 12px, black calc(100% - 12px), transparent 100%)",
+          WebkitMaskImage:
+            "linear-gradient(to bottom, transparent 0px, black 12px, black calc(100% - 12px), transparent 100%)",
+        }}
+      >
         <div
-          className="rounded-xl p-4 h-full flex flex-col gap-2"
+          className="rounded-xl p-4 flex flex-col"
           style={{
             border: "1px solid var(--border-light)",
             backgroundColor: "var(--surface-primary)",
           }}
         >
-          <span
-            className="text-xs font-semibold tracking-widest"
-            style={{ color: "var(--text-muted)" }}
-          >
-            FILTER ATELIER
-          </span>
-          <span className="text-xs" style={{ color: "var(--text-ghost)" }}>
-            Les filtres arrivent avec l'issue #24b.
-          </span>
+          <FilterPanel />
         </div>
       </div>
 
