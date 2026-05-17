@@ -54,3 +54,22 @@ export interface Fragrance {
 }
 
 export type NewFragrance = Omit<Fragrance, "id" | "createdAt">;
+
+export interface PyramidNotesFilter {
+  top?: string;
+  heart?: string;
+  base?: string;
+}
+
+export interface ActiveFilters {
+  families: OlfactoryFamily[];
+  seasons: Season[];
+  concentrations: Concentration[];
+  brands: string[];
+  perfumers: string[];
+  tags: string[];
+  favoritesOnly: boolean;
+  neverWorn: boolean;
+  samplesOnly: boolean;
+  pyramidNotes: PyramidNotesFilter;
+}

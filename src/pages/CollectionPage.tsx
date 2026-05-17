@@ -8,17 +8,20 @@ import { QuickAddModal } from "../components/fragrance/QuickAddModal";
 import { IncompletePanel } from "../components/fragrance/IncompletePanel";
 
 export function CollectionPage() {
-  const { fragrances, incompleteCount } = useFragrancesStore();
+  const { fragrances, filteredFragrances, hasActiveFilters, incompleteCount } = useFragrancesStore();
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [incompletePanelOpen, setIncompletePanelOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const selectedIndex = selectedId ? fragrances.findIndex((f) => f.id === selectedId) : -1;
+  const displayList = hasActiveFilters ? filteredFragrances : fragrances;
+  const filteredIds = hasActiveFilters ? new Set(filteredFragrances.map((f) => f.id)) : undefined;
+
+  const selectedIndex = selectedId ? displayList.findIndex((f) => f.id === selectedId) : -1;
   const selectedFragrance: Fragrance | undefined =
-    selectedIndex >= 0 ? fragrances[selectedIndex] : undefined;
+    selectedIndex >= 0 ? displayList[selectedIndex] : undefined;
 
   const hasPrev = selectedIndex > 0;
-  const hasNext = selectedIndex >= 0 && selectedIndex < fragrances.length - 1;
+  const hasNext = selectedIndex >= 0 && selectedIndex < displayList.length - 1;
 
   function handleSelect(fragrance: Fragrance) {
     setSelectedId(fragrance.id);
@@ -29,11 +32,11 @@ export function CollectionPage() {
   }
 
   function handlePrev() {
-    if (hasPrev) setSelectedId(fragrances[selectedIndex - 1].id);
+    if (hasPrev) setSelectedId(displayList[selectedIndex - 1].id);
   }
 
   function handleNext() {
-    if (hasNext) setSelectedId(fragrances[selectedIndex + 1].id);
+    if (hasNext) setSelectedId(displayList[selectedIndex + 1].id);
   }
 
   if (fragrances.length === 0) {
@@ -68,6 +71,7 @@ export function CollectionPage() {
     >
       <BottleWall
         fragrances={fragrances}
+        filteredIds={filteredIds}
         selectedId={selectedId ?? undefined}
         onSelect={handleSelect}
         onDeselect={handleDeselect}
