@@ -39,6 +39,24 @@ Application personnelle de gestion de collection de parfums.
 
 ---
 
+### Vocabulaire de l'app
+
+| Terme          | Définition                                                                     |
+| -------------- | ------------------------------------------------------------------------------ |
+| Vue Collection | Mur dense de flacons — vue satellite, homepage                                 |
+| Vue Étagère    | Navigation par étages — un actif, deux tronqués                                |
+| Vue Détail     | Le parfum seul, face à face — FragrancePage                                    |
+| L'Atelier      | Zone gauche — composition, filtres, curation                                   |
+| Filter Atelier | Section filtre dans l'Atelier                                                  |
+| GestureBar     | Barre basse fixe — découverte contextuelle, peek                               |
+| Glance         | Niveau 1 — flacon passif dans le mur, 40×60px                                  |
+| Peek           | Niveau 2 — GestureBar élargie, aperçu rapide                                   |
+| Explore        | Niveau 3 — FragrancePage, édition et détail complet                            |
+| La Mezzanine   | Zone permanente entre header et collection — Aujourd'hui · Filtre actif · Zoom |
+| Aujourd'hui    | Ruban permanent dans la Mezzanine — sélection curatoriale du jour              |
+
+---
+
 ### Principe fondateur
 
 **L'app, c'est l'étagère.** Pas l'IA, pas les filtres, pas les stats — l'étagère.
@@ -162,6 +180,78 @@ Présente dès v1 même sous forme simplifiée.
 Petit encart discret en haut à droite du contenu — "Suggestions IA · N parfums pour aujourd'hui".
 Accessible, pas imposé. L'IA est un outil parmi d'autres, pas la feature principale.
 Elle n'occupe jamais un étage entier ni le premier plan de l'écran.
+
+---
+
+### La Mezzanine
+
+Zone contextuelle permanente entre le header et la collection.
+Toujours visible — ancrée par le ruban Aujourd'hui.
+Les autres éléments apparaissent et disparaissent selon l'état de la session.
+
+| Élément      | Comportement                                                  |
+| ------------ | ------------------------------------------------------------- |
+| Aujourd'hui  | Permanent — même vide, sert de zone de drop                   |
+| Filtre actif | Conditionnel — disparaît si aucun filtre actif                |
+| Zoom         | Permanent — minimal à 100% (sans icône), expressif en dessous |
+
+┌──────────────────────────────────────────────────────────┐
+│ HEADER (fixe) │
+│ Logo · Recherche · Trier · Suggestions IA · + │
+├──────────────────────────────────────────────────────────┤
+│ MEZZANINE (permanente, éléments fluides) │
+│ [Filtre actif · X] [AUJOURD'HUI ∨] [Zoom 18% ⤢] │
+├──────────────────────────────────────────────────────────┤
+│ COLLECTION │
+└──────────────────────────────────────────────────────────┘
+
+---
+
+### Aujourd'hui
+
+**Philosophie :**
+Le cœur du produit n'est pas le flacon ni la collection brute.
+C'est le goût de l'utilisateur — son choix du jour parmi tous les autres.
+"Aujourd'hui" matérialise ce geste quotidien sans friction.
+
+**Concept :**
+Ruban contextuel permanent dans la Mezzanine.
+Vide → invitation ("Glissez un flacon ici pour commencer").
+Actif → miniatures des parfums portés aujourd'hui, compteur, chevron.
+
+**Deux états :**
+
+État vide (défaut)
+AUJOURD'HUI · Glissez un flacon ici pour commencer
+
+État actif (replié)
+AUJOURD'HUI · ▪ ▪ 2 parfums ∨
+
+État actif (développé) → s'ouvre depuis la Mezzanine,
+affiche les flacons du jour avec nom, marque, concentration.
+
+**Déclencheurs — v1 :**
+
+- Clic droit sur un flacon → "Porter aujourd'hui"
+- Bouton contextuel dans la GestureBar quand un flacon est sélectionné
+
+**Déclencheurs — v2 :**
+
+- Drag & drop du flacon vers le ruban
+
+**Effet de bord automatique :**
+"Porter aujourd'hui" met à jour `lastUsed` à la date du jour.
+Alimente silencieusement : fréquence d'usage · stats saisonnières ·
+filtre "jamais portés" · recommandations IA.
+Aucune friction supplémentaire pour l'utilisateur.
+
+**Reset :**
+Le ruban se vide automatiquement à minuit —
+`todayFragrances` = parfums dont `lastUsed === aujourd'hui`.
+
+**v2 uniquement :**
+Drag & drop avec animation physique · étincelles au drop ·
+réduction automatique du niveau restant selon concentration.
 
 ---
 
@@ -535,12 +625,13 @@ Les champs `tags`, `seasons`, `rating`, `comment` et tous les champs optionnels 
 #23 `feat: L'Atelier — rail contextuel extensible` — mergée
 #24a `feat: Filter Atelier — store complet (filteredFragrances, AND/OR, pyramide)` — mergée
 #24b `feat: Filter Atelier — composants UI (chips, toggles, autocomplete)` — mergée
+#18 `feat: tri de la collection — dropdown header, sortedFragrances, pipeline filter→sort` — mergée
 
 ---
 
 ## Issues v1 — en cours
 
-> **Prochaine issue à implémenter : #11 (Bouton ajout rapide)**
+> **Prochaine issue à implémenter : #25 (Log d'utilisation)**
 
 ---
 
@@ -1103,9 +1194,10 @@ ou dans une vue dédiée "Ma sélection". L'utilisateur peut la vider ou la modi
 
 ---
 
-### Issue #18 (révisée) — Tri
+### Issue #18 (révisée) — Tri ✅
 
 **Titre** : `feat: tri de la collection`
+**Statut** : mergée sur `dev` — 2026-06-01
 
 **Description** :
 Dropdown dans le header. Chaque critère expose ses propres options
@@ -1115,6 +1207,7 @@ sur `filteredFragrances`, après le filtre.
 
 **Menu :**
 Trier par
+├── Aucun tri (réinitialise — ordre d'insertion)
 ├── Alphabétique A→Z / Z→A
 ├── Date d'ajout Récent→ancien / Ancien→récent
 ├── Rating Meilleur→moins bon / Moins bon→meilleur
@@ -1125,13 +1218,14 @@ Trier par
 
 **Critères d'acceptance :**
 
-- [ ] `sortState: { criterion, direction }` dans le store, persisté localStorage
-- [ ] Dropdown dans le header, sous-menu par critère
-- [ ] Critère actif visible dans le header (label du tri en cours)
-- [ ] Valeurs `undefined` toujours en fin de liste quelle que soit la direction
-- [ ] "Aléatoire" : nouveau shuffle à chaque sélection, pas de direction
-- [ ] `sortedFragrances` = résultat de `filteredFragrances` trié
-- [ ] `CollectionPage` consomme `sortedFragrances`
+- [x] `sortState: { criterion, direction }` dans le store, persisté localStorage
+- [x] Dropdown dans le header, sous-menu par critère
+- [x] Critère actif visible dans le header (label du tri en cours)
+- [x] Valeurs `undefined` toujours en fin de liste quelle que soit la direction
+- [x] "Aléatoire" : nouveau shuffle à chaque sélection, pas de direction
+- [x] `sortedFragrances` = résultat de `filteredFragrances` trié
+- [x] `CollectionPage` consomme `sortedFragrances`
+- [x] "Aucun tri" : remet l'ordre d'insertion, bouton header revient à l'état neutre
 
 **Dépendances** : #24a (store filtres — pipeline filter→sort)
 **Branche** : `feat/sort`
@@ -1191,6 +1285,35 @@ sélectionner 5 parfums depuis le résultat, les envoyer vers l'étagère.
 
 **Dépendances** : #24b (Filter Atelier UI), #20 ✅
 **Branche** : `feat/curation`
+
+---
+
+### Issue #26 — Aujourd'hui
+
+**Titre** : `feat: Aujourd'hui — ruban de sélection du jour`
+
+**Description** :
+Ruban permanent dans la Mezzanine. Vide par défaut — invitation
+au drop. Actif quand au moins un parfum est porté aujourd'hui.
+Alimente lastUsed silencieusement sans friction supplémentaire.
+
+**Critères d'acceptance :**
+
+- [ ] Ruban toujours visible dans la Mezzanine
+- [ ] État vide : texte d'invitation
+- [ ] `wearToday(id)` dans le store → lastUsed = aujourd'hui
+- [ ] `todayFragrances` dérivé automatiquement (lastUsed === today)
+- [ ] État actif replié : miniatures + compteur + chevron
+- [ ] État actif développé : flacons du jour, nom, marque, concentration
+- [ ] Clic droit → "Porter aujourd'hui"
+- [ ] Bouton "Porter aujourd'hui" dans la GestureBar (fragrance sélectionnée)
+- [ ] Reset automatique à minuit
+
+**Hors scope (v2) :**
+Drag & drop · animations · réduction automatique du niveau restant
+
+**Dépendances** : #23 (Mezzanine dans AppLayout)
+**Branche** : `feat/aujourd-hui`
 
 ---
 
