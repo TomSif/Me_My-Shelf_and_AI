@@ -1,7 +1,33 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { Fragrance, NewFragrance, ActiveFilters, PyramidNotesFilter } from "../types/fragrance";
+import type { Fragrance, NewFragrance, ActiveFilters, PyramidNotesFilter, SortState } from "../types/fragrance";
 import { isComplete } from "../utils/fragrance";
+
+const DEFAULT_SORT: SortState = { criterion: "none", direction: "asc" };
+
+function applySort(fragrances: Fragrance[], sort: SortState): Fragrance[] {
+  if (sort.criterion === "none") return [...fragrances];
+  if (sort.criterion === "random") {
+    return [...fragrances].sort(() => Math.random() - 0.5);
+  }
+  return [...fragrances].sort((a, b) => {
+    let aVal: string | number | undefined;
+    let bVal: string | number | undefined;
+    switch (sort.criterion) {
+      case "alphabetic":    aVal = a.name.toLowerCase();  bVal = b.name.toLowerCase();  break;
+      case "createdAt":     aVal = a.createdAt;           bVal = b.createdAt;           break;
+      case "rating":        aVal = a.rating;              bVal = b.rating;              break;
+      case "purchaseDate":  aVal = a.purchaseDate;        bVal = b.purchaseDate;        break;
+      case "lastUsed":      aVal = a.lastUsed;            bVal = b.lastUsed;            break;
+      case "purchasePrice": aVal = a.purchasePrice;       bVal = b.purchasePrice;       break;
+    }
+    if (aVal === undefined && bVal === undefined) return 0;
+    if (aVal === undefined) return 1;
+    if (bVal === undefined) return -1;
+    const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+    return sort.direction === "asc" ? cmp : -cmp;
+  });
+}
 
 const DEFAULT_FILTERS: ActiveFilters = {
   families: [],
@@ -64,11 +90,14 @@ interface FragrancesState {
   activeFilters: ActiveFilters;
   filteredFragrances: Fragrance[];
   hasActiveFilters: boolean;
+  sortState: SortState;
+  sortedFragrances: Fragrance[];
   add: (data: NewFragrance) => string;
   update: (id: string, data: Partial<NewFragrance>) => void;
   remove: (id: string) => void;
   setFilter: <K extends keyof ActiveFilters>(key: K, value: ActiveFilters[K]) => void;
   clearFilters: () => void;
+  setSortState: (sort: SortState) => void;
 }
 
 export const useFragrancesStore = create<FragrancesState>()(
@@ -79,6 +108,8 @@ export const useFragrancesStore = create<FragrancesState>()(
       activeFilters: DEFAULT_FILTERS,
       filteredFragrances: [],
       hasActiveFilters: false,
+      sortState: DEFAULT_SORT,
+      sortedFragrances: [],
       add: (data) => {
         const id = crypto.randomUUID();
         set((state) => {
@@ -86,10 +117,12 @@ export const useFragrancesStore = create<FragrancesState>()(
             ...state.fragrances,
             { ...data, id, createdAt: new Date().toISOString() },
           ];
+          const filteredFragrances = applyFilters(fragrances, state.activeFilters);
           return {
             fragrances,
             incompleteCount: countIncomplete(fragrances),
-            filteredFragrances: applyFilters(fragrances, state.activeFilters),
+            filteredFragrances,
+            sortedFragrances: applySort(filteredFragrances, state.sortState),
           };
         });
         return id;
@@ -99,35 +132,50 @@ export const useFragrancesStore = create<FragrancesState>()(
           const fragrances = state.fragrances.map((f) =>
             f.id === id ? { ...f, ...data } : f
           );
+          const filteredFragrances = applyFilters(fragrances, state.activeFilters);
           return {
             fragrances,
             incompleteCount: countIncomplete(fragrances),
-            filteredFragrances: applyFilters(fragrances, state.activeFilters),
+            filteredFragrances,
+            sortedFragrances: applySort(filteredFragrances, state.sortState),
           };
         }),
       remove: (id) =>
         set((state) => {
           const fragrances = state.fragrances.filter((f) => f.id !== id);
+          const filteredFragrances = applyFilters(fragrances, state.activeFilters);
           return {
             fragrances,
             incompleteCount: countIncomplete(fragrances),
-            filteredFragrances: applyFilters(fragrances, state.activeFilters),
+            filteredFragrances,
+            sortedFragrances: applySort(filteredFragrances, state.sortState),
           };
         }),
       setFilter: (key, value) =>
         set((state) => {
           const activeFilters = { ...state.activeFilters, [key]: value };
+          const filteredFragrances = applyFilters(state.fragrances, activeFilters);
           return {
             activeFilters,
-            filteredFragrances: applyFilters(state.fragrances, activeFilters),
+            filteredFragrances,
             hasActiveFilters: hasActive(activeFilters),
+            sortedFragrances: applySort(filteredFragrances, state.sortState),
           };
         }),
       clearFilters: () =>
+        set((state) => {
+          const filteredFragrances = state.fragrances;
+          return {
+            activeFilters: DEFAULT_FILTERS,
+            filteredFragrances,
+            hasActiveFilters: false,
+            sortedFragrances: applySort(filteredFragrances, state.sortState),
+          };
+        }),
+      setSortState: (sort) =>
         set((state) => ({
-          activeFilters: DEFAULT_FILTERS,
-          filteredFragrances: state.fragrances,
-          hasActiveFilters: false,
+          sortState: sort,
+          sortedFragrances: applySort(state.filteredFragrances, sort),
         })),
     }),
     {
@@ -136,12 +184,14 @@ export const useFragrancesStore = create<FragrancesState>()(
       partialize: (state) => ({
         fragrances: state.fragrances,
         activeFilters: state.activeFilters,
+        sortState: state.sortState,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.incompleteCount = countIncomplete(state.fragrances);
           state.filteredFragrances = applyFilters(state.fragrances, state.activeFilters);
           state.hasActiveFilters = hasActive(state.activeFilters);
+          state.sortedFragrances = applySort(state.filteredFragrances, state.sortState);
         }
       },
     }

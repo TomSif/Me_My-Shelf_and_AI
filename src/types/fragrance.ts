@@ -55,6 +55,23 @@ export interface Fragrance {
 
 export type NewFragrance = Omit<Fragrance, "id" | "createdAt">;
 
+export type SortCriterion =
+  | "none"
+  | "alphabetic"
+  | "createdAt"
+  | "rating"
+  | "purchaseDate"
+  | "lastUsed"
+  | "purchasePrice"
+  | "random";
+
+export type SortDirection = "asc" | "desc";
+
+export interface SortState {
+  criterion: SortCriterion;
+  direction: SortDirection;
+}
+
 export interface PyramidNotesFilter {
   top?: string;
   heart?: string;
