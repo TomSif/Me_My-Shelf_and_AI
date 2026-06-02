@@ -4,7 +4,7 @@ import { useFragrancesStore } from "../../stores/fragrancesStore";
 
 const FAMILIES: OlfactoryFamily[] = [
   "hespéridé", "floral", "herbacé", "épicé", "gourmand",
-  "boisé", "résineux", "musqué", "alcoolisé", "minéral",
+  "boisé", "résineux", "musqué", "cuiré", "alcoolisé", "minéral",
   "artificiel", "indéfini",
 ];
 
@@ -36,6 +36,7 @@ const FAMILY_COLOR: Record<OlfactoryFamily, string> = {
   boisé: "var(--family-boise)",
   résineux: "var(--family-resineux)",
   musqué: "var(--family-musque)",
+  cuiré: "var(--family-cuire)",
   alcoolisé: "var(--family-alcoolise)",
   minéral: "var(--family-mineral)",
   artificiel: "var(--family-artificiel)",
