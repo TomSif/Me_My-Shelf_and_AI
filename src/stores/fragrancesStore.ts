@@ -84,6 +84,18 @@ function countIncomplete(fragrances: Fragrance[]): number {
   return fragrances.filter((f) => !isComplete(f)).length;
 }
 
+function todayPrefix(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function isWornToday(f: Fragrance): boolean {
+  return !!f.lastUsed && f.lastUsed.startsWith(todayPrefix());
+}
+
+function computeTodayFragrances(fragrances: Fragrance[]): Fragrance[] {
+  return fragrances.filter(isWornToday);
+}
+
 interface FragrancesState {
   fragrances: Fragrance[];
   incompleteCount: number;
@@ -92,12 +104,15 @@ interface FragrancesState {
   hasActiveFilters: boolean;
   sortState: SortState;
   sortedFragrances: Fragrance[];
+  todayFragrances: Fragrance[];
   add: (data: NewFragrance) => string;
   update: (id: string, data: Partial<NewFragrance>) => void;
   remove: (id: string) => void;
   setFilter: <K extends keyof ActiveFilters>(key: K, value: ActiveFilters[K]) => void;
   clearFilters: () => void;
   setSortState: (sort: SortState) => void;
+  wearToday: (id: string) => void;
+  unwearToday: (id: string) => void;
 }
 
 export const useFragrancesStore = create<FragrancesState>()(
@@ -110,6 +125,7 @@ export const useFragrancesStore = create<FragrancesState>()(
       hasActiveFilters: false,
       sortState: DEFAULT_SORT,
       sortedFragrances: [],
+      todayFragrances: [],
       add: (data) => {
         const id = crypto.randomUUID();
         set((state) => {
@@ -123,6 +139,7 @@ export const useFragrancesStore = create<FragrancesState>()(
             incompleteCount: countIncomplete(fragrances),
             filteredFragrances,
             sortedFragrances: applySort(filteredFragrances, state.sortState),
+            todayFragrances: computeTodayFragrances(fragrances),
           };
         });
         return id;
@@ -138,6 +155,7 @@ export const useFragrancesStore = create<FragrancesState>()(
             incompleteCount: countIncomplete(fragrances),
             filteredFragrances,
             sortedFragrances: applySort(filteredFragrances, state.sortState),
+            todayFragrances: computeTodayFragrances(fragrances),
           };
         }),
       remove: (id) =>
@@ -149,6 +167,7 @@ export const useFragrancesStore = create<FragrancesState>()(
             incompleteCount: countIncomplete(fragrances),
             filteredFragrances,
             sortedFragrances: applySort(filteredFragrances, state.sortState),
+            todayFragrances: computeTodayFragrances(fragrances),
           };
         }),
       setFilter: (key, value) =>
@@ -177,6 +196,32 @@ export const useFragrancesStore = create<FragrancesState>()(
           sortState: sort,
           sortedFragrances: applySort(state.filteredFragrances, sort),
         })),
+      wearToday: (id) =>
+        set((state) => {
+          const fragrances = state.fragrances.map((f) =>
+            f.id === id ? { ...f, lastUsed: new Date().toISOString() } : f
+          );
+          const filteredFragrances = applyFilters(fragrances, state.activeFilters);
+          return {
+            fragrances,
+            filteredFragrances,
+            sortedFragrances: applySort(filteredFragrances, state.sortState),
+            todayFragrances: computeTodayFragrances(fragrances),
+          };
+        }),
+      unwearToday: (id) =>
+        set((state) => {
+          const fragrances = state.fragrances.map((f) =>
+            f.id === id ? { ...f, lastUsed: undefined } : f
+          );
+          const filteredFragrances = applyFilters(fragrances, state.activeFilters);
+          return {
+            fragrances,
+            filteredFragrances,
+            sortedFragrances: applySort(filteredFragrances, state.sortState),
+            todayFragrances: computeTodayFragrances(fragrances),
+          };
+        }),
     }),
     {
       name: "fragrances",
@@ -192,6 +237,7 @@ export const useFragrancesStore = create<FragrancesState>()(
           state.filteredFragrances = applyFilters(state.fragrances, state.activeFilters);
           state.hasActiveFilters = hasActive(state.activeFilters);
           state.sortedFragrances = applySort(state.filteredFragrances, state.sortState);
+          state.todayFragrances = computeTodayFragrances(state.fragrances);
         }
       },
     }
