@@ -1,0 +1,240 @@
+{
+  "state": {
+    "fragrances": [
+      {
+        "id": "b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e",
+        "name": "Memoir Woman",
+        "brand": "Amouage",
+        "perfumer": "Daniel Maurel",
+        "concentration": "eau de parfum",
+        "isSample": true,
+        "isFavorite": false,
+        "volumeMl": 5,
+        "remainingMl": 5,
+        "purchasePrice": 11,
+        "families": ["épicé", "boisé", "cuiré"],
+        "pyramid": {
+          "top": ["absinthe", "cardamome", "poivre rose", "mandarine"],
+          "heart": ["encens", "clou de girofle", "rose", "fleurs blanches", "poivre", "jasmin"],
+          "base": ["cuir", "ciste de France", "castoréum", "styrax", "mousse de chêne", "musc"]
+        },
+        "seasons": ["automne", "hiver"],
+        "genre": 1,
+        "tags": ["animalic", "vintage-style", "niche"],
+        "createdAt": "2026-06-02T10:00:00.000Z"
+      },
+      {
+        "id": "c2d3e4f5-a6b7-8c9d-0e1f-2a3b4c5d6e7f",
+        "name": "L'Eau Scandaleuse",
+        "brand": "Anatole Lebreton",
+        "perfumer": "Anatole Lebreton",
+        "concentration": "eau de parfum",
+        "isSample": true,
+        "isFavorite": false,
+        "volumeMl": 5,
+        "remainingMl": 5,
+        "purchasePrice": 14,
+        "families": ["floral", "cuiré", "boisé"],
+        "pyramid": {
+          "top": ["bergamote", "armoise"],
+          "heart": ["tubéreuse", "ylang-ylang", "pêche"],
+          "base": ["cuir", "castoréum", "mousse de chêne", "huile essentielle de cypriol"]
+        },
+        "seasons": ["automne", "hiver"],
+        "genre": 0,
+        "tags": ["animalic", "cuir", "niche"],
+        "createdAt": "2026-06-02T10:00:00.000Z"
+      },
+      {
+        "id": "d3e4f5a6-b7c8-9d0e-1f2a-3b4c5d6e7f8a",
+        "name": "Ella (first edition)",
+        "brand": "Arquiste",
+        "perfumer": "Rodrigo Flores-Roux",
+        "concentration": "eau de parfum",
+        "isSample": true,
+        "isFavorite": false,
+        "volumeMl": 5,
+        "remainingMl": 5,
+        "purchasePrice": 11,
+        "families": ["floral", "épicé"],
+        "pyramid": {
+          "top": ["jasmin", "graines de carotte", "cardamome"],
+          "heart": ["rose de Turquie", "miel", "angélique", "fumée"],
+          "base": ["civette", "patchouli", "vétiver", "ambre gris"]
+        },
+        "seasons": ["automne", "hiver"],
+        "genre": 0,
+        "tags": ["animalic", "floral-animal", "niche"],
+        "createdAt": "2026-06-02T10:00:00.000Z"
+      },
+      {
+        "id": "e4f5a6b7-c8d9-0e1f-2a3b-4c5d6e7f8a9b",
+        "name": "Oud Maximus 2020",
+        "brand": "Bortnikoff",
+        "perfumer": "Dmitry Bortnikoff",
+        "concentration": "extrait",
+        "isSample": true,
+        "isFavorite": false,
+        "volumeMl": 5,
+        "remainingMl": 5,
+        "purchasePrice": 30,
+        "families": ["épicé", "boisé", "floral"],
+        "pyramid": {
+          "top": ["orange douce", "jasmin sambac", "cardamome", "bergamote", "poivre rose"],
+          "heart": ["rose", "rose de Mai", "frangipanier", "clou de girofle", "magnolia", "fève de tonka"],
+          "base": ["civette", "oud indien", "musc naturel", "goudron de bouleau", "vanille", "baume de Tolu"]
+        },
+        "seasons": ["automne", "hiver"],
+        "genre": 0,
+        "tags": ["animalic", "oud", "luxe"],
+        "createdAt": "2026-06-02T10:00:00.000Z"
+      },
+      {
+        "id": "f5a6b7c8-d9e0-1f2a-3b4c-5d6e7f8a9b0c",
+        "name": "Oud Monarch",
+        "brand": "Bortnikoff",
+        "perfumer": "Dmitry Bortnikoff",
+        "concentration": "extrait",
+        "isSample": true,
+        "isFavorite": false,
+        "volumeMl": 5,
+        "remainingMl": 5,
+        "purchasePrice": 30,
+        "families": ["épicé", "boisé", "floral"],
+        "pyramid": {
+          "top": ["frangipanier", "magnolia"],
+          "heart": ["rose de Mai", "rose", "tabac", "cannelle"],
+          "base": ["oud", "cosse de cacao", "castoréum", "civette", "vanille", "ciste"]
+        },
+        "seasons": ["automne", "hiver"],
+        "genre": 0,
+        "tags": ["animalic", "oud", "luxe"],
+        "createdAt": "2026-06-02T10:00:00.000Z"
+      },
+      {
+        "id": "a6b7c8d9-e0f1-2a3b-4c5d-6e7f8a9b0c1d",
+        "name": "Tabac Blond Parfum",
+        "brand": "Caron",
+        "perfumer": "Ernest Daltroff",
+        "concentration": "parfum",
+        "isSample": true,
+        "isFavorite": false,
+        "volumeMl": 5,
+        "remainingMl": 5,
+        "purchasePrice": 15,
+        "families": ["cuiré", "floral", "épicé"],
+        "pyramid": {
+          "top": ["cuir", "œillet", "citron vert"],
+          "heart": ["iris", "ylang-ylang", "vétiver"],
+          "base": ["musc", "vanille", "cèdre", "patchouli"]
+        },
+        "seasons": ["automne", "hiver"],
+        "genre": 1,
+        "tags": ["vintage", "cuir", "tabac", "classique"],
+        "createdAt": "2026-06-02T10:00:00.000Z"
+      },
+      {
+        "id": "b7c8d9e0-f1a2-3b4c-5d6e-7f8a9b0c1d2e",
+        "name": "No 19 (EdT)",
+        "brand": "Chanel",
+        "perfumer": "Henri Robert",
+        "concentration": "eau de toilette",
+        "isSample": true,
+        "isFavorite": false,
+        "volumeMl": 5,
+        "remainingMl": 5,
+        "purchasePrice": 9,
+        "families": ["herbacé", "floral", "boisé"],
+        "pyramid": {
+          "top": ["férule gommeuse", "jacinthe", "bergamote", "néroli"],
+          "heart": ["iris", "racine d'iris", "rose", "muguet", "narcissus", "jasmin", "ylang-ylang"],
+          "base": ["mousse de chêne", "vétiver", "cuir", "cèdre", "musc", "bois de santal"]
+        },
+        "seasons": ["printemps", "automne"],
+        "genre": 1,
+        "tags": ["vintage", "iris", "vert", "classique"],
+        "createdAt": "2026-06-02T10:00:00.000Z"
+      },
+      {
+        "id": "c8d9e0f1-a2b3-4c5d-6e7f-8a9b0c1d2e3f",
+        "name": "Coco Eau de Parfum",
+        "brand": "Chanel",
+        "perfumer": "Jacques Polge",
+        "concentration": "eau de parfum",
+        "isSample": true,
+        "isFavorite": false,
+        "volumeMl": 5,
+        "remainingMl": 5,
+        "purchasePrice": 7,
+        "families": ["épicé", "floral"],
+        "pyramid": {
+          "top": ["rose de Bulgarie", "coriandre", "pêche", "jasmin", "mandarine"],
+          "heart": ["clou de girofle", "rose", "fleur d'oranger", "mimosa", "trèfle"],
+          "base": ["ambre", "bois de santal", "fève de tonka", "opoponax", "civette", "vanille", "ciste"]
+        },
+        "seasons": ["automne", "hiver"],
+        "genre": 1,
+        "tags": ["oriental", "animalic", "classique"],
+        "createdAt": "2026-06-02T10:00:00.000Z"
+      },
+      {
+        "id": "d9e0f1a2-b3c4-5d6e-7f8a-9b0c1d2e3f4a",
+        "name": "Miss Dior EDT vintage",
+        "brand": "Dior",
+        "perfumer": "Jean Carles",
+        "concentration": "eau de toilette",
+        "isSample": true,
+        "isFavorite": false,
+        "volumeMl": 5,
+        "remainingMl": 5,
+        "purchasePrice": 10,
+        "families": ["boisé", "hespéridé", "herbacé", "floral", "cuiré"],
+        "pyramid": {
+          "top": ["aldéhydes", "férule gommeuse", "sauge sclarée", "gardénia", "bergamote"],
+          "heart": ["narcissus", "iris", "œillet", "racine d'iris", "muguet", "jasmin", "rose", "néroli"],
+          "base": ["mousse de chêne", "cuir", "vétiver", "patchouli", "ciste", "bois de santal", "ambre"]
+        },
+        "seasons": ["printemps", "automne"],
+        "genre": 1,
+        "tags": ["vintage", "chypré", "cuir", "classique"],
+        "createdAt": "2026-06-02T10:00:00.000Z"
+      },
+      {
+        "id": "e0f1a2b3-c4d5-6e7f-8a9b-0c1d2e3f4a5b",
+        "name": "Tabu",
+        "brand": "Dana",
+        "perfumer": "Jean Carles",
+        "concentration": "eau de toilette",
+        "isSample": true,
+        "isFavorite": false,
+        "volumeMl": 5,
+        "remainingMl": 5,
+        "purchasePrice": 5,
+        "families": ["épicé", "floral"],
+        "pyramid": {
+          "top": ["épices", "orange", "coriandre", "néroli", "bergamote"],
+          "heart": ["clou de girofle", "ylang-ylang", "rose", "jasmin", "narcissus"],
+          "base": ["ambre", "civette", "benjoin", "bois de santal", "patchouli", "musc", "mousse de chêne", "vétiver", "cèdre"]
+        },
+        "seasons": ["automne", "hiver"],
+        "genre": 1,
+        "tags": ["animalic", "vintage", "oriental", "classique"],
+        "createdAt": "2026-06-02T10:00:00.000Z"
+      }
+    ],
+    "activeFilters": {
+      "families": [],
+      "seasons": [],
+      "concentrations": [],
+      "brands": [],
+      "perfumers": [],
+      "tags": [],
+      "favoritesOnly": false,
+      "neverWorn": false,
+      "samplesOnly": false,
+      "pyramidNotes": {}
+    },
+    "sortState": { "criterion": "none", "direction": "asc" }
+  },
+  "version": 0
+}

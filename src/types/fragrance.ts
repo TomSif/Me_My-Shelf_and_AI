@@ -7,6 +7,7 @@ export type OlfactoryFamily =
   | "boisé"
   | "résineux"
   | "musqué"
+  | "cuiré"
   | "alcoolisé"
   | "minéral"
   | "artificiel"

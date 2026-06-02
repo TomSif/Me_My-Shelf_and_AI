@@ -9,6 +9,7 @@ const FAMILY_COLOR_VARS: Record<OlfactoryFamily, string> = {
   boisé: "var(--family-boise)",
   résineux: "var(--family-resineux)",
   musqué: "var(--family-musque)",
+  cuiré: "var(--family-cuire)",
   alcoolisé: "var(--family-alcoolise)",
   minéral: "var(--family-mineral)",
   artificiel: "var(--family-artificiel)",

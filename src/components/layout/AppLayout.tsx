@@ -3,6 +3,7 @@ import type { Fragrance } from "../../types/fragrance";
 import { AppHeader } from "./AppHeader";
 import { Atelier } from "./Atelier";
 import { GestureBar } from "./GestureBar";
+import { Mezzanine } from "./Mezzanine";
 
 interface Props {
   children: ReactNode;
@@ -42,6 +43,7 @@ export function AppLayout({
         onQuickAdd={onQuickAdd}
         onIncompleteBadgeClick={onIncompleteBadgeClick}
       />
+      <Mezzanine />
       <div className="flex flex-1 overflow-hidden">
         <Atelier />
         <main className="flex-1 overflow-y-auto">{children}</main>

@@ -2,7 +2,7 @@ import type { OlfactoryFamily } from "../../types/fragrance";
 
 const FAMILIES: OlfactoryFamily[] = [
   "hespéridé", "floral", "herbacé", "épicé", "gourmand",
-  "boisé", "résineux", "musqué", "alcoolisé", "minéral",
+  "boisé", "résineux", "musqué", "cuiré", "alcoolisé", "minéral",
   "artificiel", "indéfini",
 ];
 

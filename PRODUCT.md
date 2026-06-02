@@ -627,6 +627,7 @@ Les champs `tags`, `seasons`, `rating`, `comment` et tous les champs optionnels 
 #24b `feat: Filter Atelier — composants UI (chips, toggles, autocomplete)` — mergée
 #18 `feat: tri de la collection — dropdown header, sortedFragrances, pipeline filter→sort` — mergée
 #25 `feat: log d'utilisation — wearToday/unwearToday, todayFragrances, boutons toggle` — mergée
+#26 `feat: Aujourd'hui — Mezzanine, ruban du jour, clic droit flacons` — mergée
 
 ---
 
@@ -1294,31 +1295,31 @@ sélectionner 5 parfums depuis le résultat, les envoyer vers l'étagère.
 
 ---
 
-### Issue #26 — Aujourd'hui
+### Issue #26 — Aujourd'hui ✅
 
 **Titre** : `feat: Aujourd'hui — ruban de sélection du jour`
+**Statut** : mergée sur `dev` — 2026-06-02
 
 **Description** :
-Ruban permanent dans la Mezzanine. Vide par défaut — invitation
-au drop. Actif quand au moins un parfum est porté aujourd'hui.
-Alimente lastUsed silencieusement sans friction supplémentaire.
+Ruban permanent dans la Mezzanine. Vide par défaut — invitation.
+Actif quand au moins un parfum est porté aujourd'hui.
 
 **Critères d'acceptance :**
 
-- [ ] Ruban toujours visible dans la Mezzanine
-- [ ] État vide : texte d'invitation
-- [ ] `wearToday(id)` dans le store → lastUsed = aujourd'hui
-- [ ] `todayFragrances` dérivé automatiquement (lastUsed === today)
-- [ ] État actif replié : miniatures + compteur + chevron
-- [ ] État actif développé : flacons du jour, nom, marque, concentration
-- [ ] Clic droit → "Porter aujourd'hui"
-- [ ] Bouton "Porter aujourd'hui" dans la GestureBar (fragrance sélectionnée)
-- [ ] Reset automatique à minuit
+- [x] Ruban toujours visible dans la Mezzanine (entre header et contenu)
+- [x] État vide : "Aucun parfum porté aujourd'hui"
+- [x] `wearToday(id)` dans le store → lastUsed = aujourd'hui (posé en #25)
+- [x] `todayFragrances` dérivé automatiquement (lastUsed === today) (posé en #25)
+- [x] État actif replié : dots colorés par famille + compteur + chevron
+- [x] État actif développé : nom · marque · concentration + × pour retirer
+- [x] Clic droit sur un flacon → "Porter aujourd'hui" / "Porté aujourd'hui ✓" (toggle)
+- [x] Bouton "Porter aujourd'hui" dans la GestureBar (posé en #25)
+- [x] Reset automatique à minuit — filtre local `isWornToday` dans Mezzanine
 
 **Hors scope (v2) :**
 Drag & drop · animations · réduction automatique du niveau restant
 
-**Dépendances** : #23 (Mezzanine dans AppLayout)
+**Dépendances** : #23 (AppLayout), #25 (wearToday/unwearToday/todayFragrances)
 **Branche** : `feat/aujourd-hui`
 
 ---
