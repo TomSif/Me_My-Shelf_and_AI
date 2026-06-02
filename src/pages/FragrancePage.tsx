@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useFragrancesStore } from "../stores/fragrancesStore";
-import { getSectionCompletion } from "../utils/fragrance";
+import { useFragrancesStore, isWornToday } from "../stores/fragrancesStore";
+import { getSectionCompletion, formatLastUsed } from "../utils/fragrance";
 import { AppLayout } from "../components/layout/AppLayout";
 import { FragranceBottle } from "../components/fragrance/FragranceBottle";
 import { ConcentrationPicker } from "../components/fragrance/ConcentrationPicker";
@@ -99,7 +99,7 @@ function calcCompletion(form: FormState): number {
 export function FragrancePage({ mode }: Props) {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { fragrances, add, update } = useFragrancesStore();
+  const { fragrances, add, update, wearToday, unwearToday } = useFragrancesStore();
 
   const [form, setForm] = useState<FormState>(() => {
     if (mode === "view" && id) {
@@ -551,6 +551,40 @@ export function FragrancePage({ mode }: Props) {
             </div>
             <div className="flex flex-col gap-1">
               <label style={labelStyle}>Dernière utilisation</label>
+              {mode === "view" && id && (() => {
+                const fragrance = fragrances.find((f) => f.id === id);
+                const worn = fragrance ? isWornToday(fragrance) : false;
+                const label = formatLastUsed(fragrance?.lastUsed);
+                return (
+                  <div className="flex flex-col gap-1">
+                    {label && (
+                      <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                        {label}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (worn) {
+                          unwearToday(id);
+                          set("lastUsed", "");
+                        } else {
+                          wearToday(id);
+                          set("lastUsed", new Date().toISOString().slice(0, 10));
+                        }
+                      }}
+                      className="px-3 py-2 rounded-lg text-sm text-left transition-colors"
+                      style={{
+                        backgroundColor: worn ? "var(--surface-secondary)" : "var(--surface-primary)",
+                        color: worn ? "var(--text-muted)" : "var(--icon-active)",
+                        border: `1px solid ${worn ? "var(--border-light)" : "var(--icon-active)"}`,
+                      }}
+                    >
+                      {worn ? "Porté aujourd'hui ✓" : "Porter aujourd'hui"}
+                    </button>
+                  </div>
+                );
+              })()}
               <input
                 type="date"
                 value={form.lastUsed}

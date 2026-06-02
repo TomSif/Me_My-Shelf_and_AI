@@ -41,6 +41,22 @@ export function isComplete(fragrance: Fragrance): boolean {
   );
 }
 
+export function formatLastUsed(lastUsed?: string): string | null {
+  if (!lastUsed) return null;
+  const date = new Date(lastUsed);
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "Porté aujourd'hui";
+  if (diffDays === 1) return "Porté hier";
+  if (diffDays < 30) return `Porté il y a ${diffDays} jours`;
+  if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    return `Porté il y a ${months} mois`;
+  }
+  const years = Math.floor(diffDays / 365);
+  return `Porté il y a ${years} an${years > 1 ? "s" : ""}`;
+}
+
 export function getLiquidColor(families: OlfactoryFamily[]): string {
   return families.length > 0
     ? (FAMILY_COLOR_VARS[families[0]] ?? "var(--family-indefini)")

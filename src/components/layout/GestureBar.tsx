@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Fragrance } from "../../types/fragrance";
+import { useFragrancesStore, isWornToday } from "../../stores/fragrancesStore";
 import { FragranceBottle } from "../fragrance/FragranceBottle";
 import { RatingPicker } from "../fragrance/RatingPicker";
 
@@ -21,6 +22,7 @@ const HINTS = [
 
 export function GestureBar({ selectedFragrance, hasPrev, hasNext, onClose, onPrev, onNext }: Props) {
   const navigate = useNavigate();
+  const { wearToday, unwearToday } = useFragrancesStore();
 
   useEffect(() => {
     if (!selectedFragrance) return;
@@ -38,6 +40,7 @@ export function GestureBar({ selectedFragrance, hasPrev, hasNext, onClose, onPre
   const bottleState = f && f.families.length > 0 ? "olfactive" : "identity";
   const volumeLabel = f && f.volumeMl > 0 ? `${f.remainingMl} / ${f.volumeMl} ml` : null;
   const visibleTags = f ? f.tags.slice(0, 3) : [];
+  const wornToday = f ? isWornToday(f) : false;
 
   return (
     <footer
@@ -110,6 +113,17 @@ export function GestureBar({ selectedFragrance, hasPrev, hasNext, onClose, onPre
                 ))}
               </div>
             )}
+            <button
+              type="button"
+              onClick={() => f && (wornToday ? unwearToday(f.id) : wearToday(f.id))}
+              className="text-xs transition-opacity"
+              style={{
+                color: wornToday ? "var(--text-muted)" : "var(--icon-active)",
+                opacity: 0.85,
+              }}
+            >
+              {wornToday ? "Porté aujourd'hui ✓" : "Porter aujourd'hui"}
+            </button>
             <button
               type="button"
               onClick={() => navigate("/shelf")}
