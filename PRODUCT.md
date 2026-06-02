@@ -626,12 +626,13 @@ Les champs `tags`, `seasons`, `rating`, `comment` et tous les champs optionnels 
 #24a `feat: Filter Atelier — store complet (filteredFragrances, AND/OR, pyramide)` — mergée
 #24b `feat: Filter Atelier — composants UI (chips, toggles, autocomplete)` — mergée
 #18 `feat: tri de la collection — dropdown header, sortedFragrances, pipeline filter→sort` — mergée
+#25 `feat: log d'utilisation — wearToday/unwearToday, todayFragrances, boutons toggle` — mergée
 
 ---
 
 ## Issues v1 — en cours
 
-> **Prochaine issue à implémenter : #25 (Log d'utilisation)**
+> **Prochaine issue à implémenter : #26 (Aujourd'hui — Mezzanine)**
 
 ---
 
@@ -1232,25 +1233,30 @@ Trier par
 
 ---
 
-### Issue #25 — Log d'utilisation
+### Issue #25 — Log d'utilisation ✅
 
 **Titre** : `feat: log d'utilisation — marquer un parfum comme porté`
+**Statut** : mergée sur `dev` — 2026-06-02
 
 **Description** :
 Le champ `lastUsed?: string` existe déjà sur le modèle.
 Il faut un moyen de le mettre à jour depuis l'UI.
 Point d'entrée naturel : la GestureBar (peek ouvert) et/ou la fiche parfum.
-Un clic sur "Porté aujourd'hui" écrit la date ISO courante dans `lastUsed`.
 
 Ce log débloque le tri par "dernière utilisation" (#18) et le filtre "jamais portés" (#24a).
+Les actions store `wearToday`/`unwearToday` et l'état `todayFragrances` posés ici
+servent de socle pour la Mezzanine (#26) — aucun refactor store nécessaire en #26.
 
 **Critères d'acceptance :**
 
-- [ ] Bouton "Porté aujourd'hui" dans le peek de la GestureBar (quand un parfum est sélectionné)
-- [ ] Même bouton dans la fiche `FragrancePage` (Section mémoire)
-- [ ] `store.update(id, { lastUsed: new Date().toISOString() })` au clic
-- [ ] Affichage de la date de dernière utilisation dans la fiche (ex: "Dernière fois : il y a 3 jours")
-- [ ] Si `lastUsed` est aujourd'hui, le bouton affiche "Porté aujourd'hui ✓" (désactivé)
+- [x] Bouton "Porter aujourd'hui" dans le peek de la GestureBar (quand un parfum est sélectionné)
+- [x] Même bouton dans la fiche `FragrancePage` (Section mémoire)
+- [x] `wearToday(id)` dans le store — action sémantique (pas un `update` brut)
+- [x] `unwearToday(id)` dans le store — annule l'action, retire le parfum de `todayFragrances`
+- [x] Bouton toggle : "Porter aujourd'hui" ↔ "Porté aujourd'hui ✓" (annulable)
+- [x] `todayFragrances: Fragrance[]` état dérivé — parfums dont `lastUsed === aujourd'hui`
+- [x] `formatLastUsed()` — affichage lisible ("Porté hier", "il y a 3 jours"…)
+- [x] Affichage dans FragrancePage (mode view) au-dessus du champ date
 
 **Dépendances** : #18 (tri lastUsed), #24a (filtre neverWorn)
 **Branche** : `feat/log-usage`
