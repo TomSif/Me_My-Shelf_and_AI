@@ -70,33 +70,57 @@ export function ShelfPage() {
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [activeShelfId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Repositionnement silencieux quand on atteint un clone
+  // scrollend : repositionnement clone + sync activeShelfId avec la slide visible
   useEffect(() => {
     const el = ribbonRef.current;
-    if (!el || !loop) return;
+    if (!el || shelves.length === 0) return;
 
     function onScrollEnd() {
       const h = el.clientHeight;
       if (!h) return;
-      const top = Math.round(el.scrollTop);
-      const last = Math.round(h * (shelves.length + 1));
+      let top = Math.round(el.scrollTop);
 
-      if (top <= 0) {
-        // clone du dernier → sauter au vrai dernier
-        el.style.scrollBehavior = "auto";
-        el.scrollTop = h * shelves.length;
-        el.style.scrollBehavior = "";
-      } else if (top >= last) {
-        // clone du premier → sauter au vrai premier
-        el.style.scrollBehavior = "auto";
-        el.scrollTop = h;
-        el.style.scrollBehavior = "";
+      // Clone loop : repositionner silencieusement
+      if (loop) {
+        const last = Math.round(h * (shelves.length + 1));
+        if (top <= 0) {
+          el.style.scrollBehavior = "auto";
+          el.scrollTop = h * shelves.length;
+          el.style.scrollBehavior = "";
+          top = h * shelves.length;
+        } else if (top >= last) {
+          el.style.scrollBehavior = "auto";
+          el.scrollTop = h;
+          el.style.scrollBehavior = "";
+          top = h;
+        }
+      }
+
+      // Synchroniser activeShelfId avec la slide visible
+      const slideIndex = Math.round(top / h);
+      const realIndex = loop ? slideIndex - 1 : slideIndex;
+      const clamped = Math.max(0, Math.min(realIndex, shelves.length - 1));
+      const visibleShelf = shelves[clamped];
+      if (visibleShelf && visibleShelf.id !== activeShelfId) {
+        prevActiveId.current = visibleShelf.id; // évite le re-scroll
+        setActiveShelf(visibleShelf.id);
       }
     }
 
     el.addEventListener("scrollend", onScrollEnd);
     return () => el.removeEventListener("scrollend", onScrollEnd);
-  }, [loop, shelves.length]);
+  }, [loop, shelves, activeShelfId, setActiveShelf]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Navigation prev/next avec loop
+  function navigateShelf(direction: "prev" | "next") {
+    if (shelves.length === 0) return;
+    const current = activeShelfId ? shelves.findIndex((s) => s.id === activeShelfId) : 0;
+    const base = current >= 0 ? current : 0;
+    const next = direction === "next"
+      ? (base + 1) % shelves.length
+      : (base - 1 + shelves.length) % shelves.length;
+    setActiveShelf(shelves[next].id);
+  }
 
   function handleDelete(shelfId: string) {
     deleteShelf(shelfId);
@@ -107,21 +131,58 @@ export function ShelfPage() {
       {shelves.length === 0 ? (
         <EmptyState />
       ) : (
-        <div
-          ref={ribbonRef}
-          className="h-full overflow-y-auto"
-          style={{ scrollSnapType: "y mandatory" }}
-        >
-          {slides.map((shelf, idx) => (
-            <ShelfSlide
-              key={`${shelf.id}-${idx}`}
-              shelf={shelf}
-              fragrances={fragrances}
-              isActive={shelf.id === activeShelfId}
-              onActivate={() => setActiveShelf(shelf.id)}
-              onDelete={() => handleDelete(shelf.id)}
-            />
-          ))}
+        <div className="relative h-full">
+          <div
+            ref={ribbonRef}
+            className="h-full overflow-y-auto"
+            style={{ scrollSnapType: "y mandatory" }}
+          >
+            {slides.map((shelf, idx) => (
+              <ShelfSlide
+                key={`${shelf.id}-${idx}`}
+                shelf={shelf}
+                fragrances={fragrances}
+                isActive={shelf.id === activeShelfId}
+                onActivate={() => setActiveShelf(shelf.id)}
+                onDelete={() => handleDelete(shelf.id)}
+              />
+            ))}
+          </div>
+
+          {/* Flèches de navigation */}
+          <div
+            className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 pointer-events-none"
+            style={{ zIndex: 10 }}
+          >
+            <button
+              type="button"
+              onClick={() => navigateShelf("prev")}
+              className="pointer-events-auto w-8 h-8 rounded-full flex items-center justify-center text-sm transition-opacity"
+              style={{
+                backgroundColor: "var(--surface-primary)",
+                color: "var(--text-secondary)",
+                boxShadow: "var(--shadow-soft)",
+                border: "1px solid var(--border-light)",
+              }}
+              title="Étagère précédente"
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateShelf("next")}
+              className="pointer-events-auto w-8 h-8 rounded-full flex items-center justify-center text-sm transition-opacity"
+              style={{
+                backgroundColor: "var(--surface-primary)",
+                color: "var(--text-secondary)",
+                boxShadow: "var(--shadow-soft)",
+                border: "1px solid var(--border-light)",
+              }}
+              title="Étagère suivante"
+            >
+              ↓
+            </button>
+          </div>
         </div>
       )}
     </AppLayout>
