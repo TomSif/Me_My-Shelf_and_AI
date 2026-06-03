@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { BookMarked, SlidersHorizontal, Heart, BarChart2, Settings } from "lucide-react";
 import { FilterPanel } from "../fragrance/FilterPanel";
 import { ShelfPanel } from "../fragrance/ShelfPanel";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
 
 const NAV_ITEMS = [
-  { label: "Étagères", short: "É" },
-  { label: "Favoris", short: "♡" },
-  { label: "Stats", short: "S" },
-  { label: "Réglages", short: "R" },
+  { label: "Étagères", icon: BookMarked },
+  { label: "Favoris", icon: Heart },
+  { label: "Stats", icon: BarChart2 },
+  { label: "Réglages", icon: Settings },
 ];
 
 type Section = "filtres" | "etageres";
@@ -141,7 +142,7 @@ function AtelierOpen({ section, onSectionChange, onClose }: {
         className="flex flex-col gap-1 px-2 pb-4 pt-3 shrink-0"
         style={{ borderTop: "1px solid var(--border-light)" }}
       >
-        {NAV_ITEMS.map(({ label }) => {
+        {NAV_ITEMS.map(({ label, icon: Icon }) => {
           const isEtageres = label === "Étagères";
           const isActive = (isEtageres && section === "etageres") || (!isEtageres && section === "filtres" && label === "Filtrer");
           return (
@@ -155,7 +156,10 @@ function AtelierOpen({ section, onSectionChange, onClose }: {
                 backgroundColor: isActive ? "color-mix(in srgb, var(--icon-active) 8%, transparent)" : "transparent",
               }}
             >
-              <span>{label}</span>
+              <div className="flex items-center gap-2.5">
+                <Icon size={15} strokeWidth={1.5} />
+                <span>{label}</span>
+              </div>
               {isEtageres && selectionCount > 0 && (
                 <span
                   className="h-5 min-w-5 px-1.5 rounded-full flex items-center justify-center text-xs font-medium leading-none"
@@ -189,16 +193,16 @@ function AtelierClosed({ onOpen }: { onOpen: (s?: Section) => void }) {
       >
         »
       </button>
-      {NAV_ITEMS.map(({ label, short }) => (
+      {NAV_ITEMS.map(({ label, icon: Icon }) => (
         <button
           key={label}
           type="button"
           onClick={() => label === "Étagères" ? onOpen("etageres") : onOpen("filtres")}
-          className="relative w-8 h-8 rounded-lg flex items-center justify-center text-xs"
+          className="relative w-8 h-8 rounded-lg flex items-center justify-center"
           style={{ color: "var(--icon-secondary)" }}
           title={label}
         >
-          {short}
+          <Icon size={16} strokeWidth={1.5} />
           {label === "Étagères" && selectionCount > 0 && (
             <span
               className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full flex items-center justify-center text-[10px] font-medium leading-none"

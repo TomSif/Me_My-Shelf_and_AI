@@ -106,23 +106,24 @@ export function FilterPanel() {
                 key={f}
                 type="button"
                 onClick={() => setFilter("families", toggle(families, f))}
-                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs capitalize"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs capitalize transition-opacity"
                 style={{
-                  backgroundColor: active ? FAMILY_COLOR[f] : "transparent",
-                  color: active ? "var(--text-primary)" : "var(--text-muted)",
-                  border: `1px solid ${active ? FAMILY_COLOR[f] : "var(--border-light)"}`,
+                  backgroundColor: active ? FAMILY_COLOR[f] : "var(--surface-primary)",
+                  color: active ? "#fff" : "var(--text-secondary)",
+                  border: `1px solid ${active ? FAMILY_COLOR[f] : "var(--border-chip)"}`,
                   fontWeight: active ? 500 : 400,
+                  opacity: active ? 1 : 0.85,
                 }}
               >
                 <span
                   style={{
-                    width: 6,
-                    height: 6,
+                    width: 8,
+                    height: 8,
                     borderRadius: "50%",
                     backgroundColor: FAMILY_COLOR[f],
                     display: "inline-block",
                     flexShrink: 0,
-                    opacity: active ? 1 : 0.5,
+                    opacity: active ? 0.9 : 0.7,
                   }}
                 />
                 {f}
@@ -145,11 +146,12 @@ export function FilterPanel() {
                 key={value}
                 type="button"
                 onClick={() => setFilter("seasons", toggle(seasons, value))}
-                className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs capitalize"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs capitalize transition-opacity"
                 style={{
-                  backgroundColor: active ? "var(--icon-active)" : "transparent",
-                  color: active ? "#fff" : "var(--text-muted)",
-                  border: `1px solid ${active ? "var(--icon-active)" : "var(--border-light)"}`,
+                  backgroundColor: active ? "var(--icon-active)" : "var(--surface-primary)",
+                  color: active ? "#fff" : "var(--text-secondary)",
+                  border: `1px solid ${active ? "var(--icon-active)" : "var(--border-chip)"}`,
+                  opacity: active ? 1 : 0.85,
                 }}
               >
                 {icon} {value}
@@ -176,12 +178,13 @@ export function FilterPanel() {
                 key={c}
                 type="button"
                 onClick={() => setFilter("concentrations", toggle(concentrations, c))}
-                className="px-2.5 py-0.5 rounded-full text-xs"
+                className="px-2.5 py-1 rounded-full text-xs transition-opacity"
                 style={{
-                  backgroundColor: active ? "var(--icon-active)" : "transparent",
-                  color: active ? "#fff" : "var(--text-muted)",
-                  border: `1px solid ${active ? "var(--icon-active)" : "var(--border-light)"}`,
+                  backgroundColor: active ? "var(--icon-active)" : "var(--surface-primary)",
+                  color: active ? "#fff" : "var(--text-secondary)",
+                  border: `1px solid ${active ? "var(--icon-active)" : "var(--border-chip)"}`,
                   fontWeight: active ? 500 : 400,
+                  opacity: active ? 1 : 0.85,
                 }}
               >
                 {CONC_LABEL[c]}
