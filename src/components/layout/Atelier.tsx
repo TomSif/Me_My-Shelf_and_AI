@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookMarked, SlidersHorizontal, Heart, BarChart2, Settings } from "lucide-react";
+import { Home, Filter, BookMarked, Heart, BarChart2, Settings, ChevronLeft } from "lucide-react";
 import { FilterPanel } from "../fragrance/FilterPanel";
 import { ShelfPanel } from "../fragrance/ShelfPanel";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
@@ -106,11 +106,11 @@ function AtelierOpen({ section, onSectionChange, onClose }: {
         <button
           type="button"
           onClick={onClose}
-          className="text-sm px-2 py-1 rounded-md mt-0.5 leading-none"
+          className="w-7 h-7 rounded-md flex items-center justify-center mt-0.5"
           style={{ color: "var(--text-muted)" }}
           title="Fermer l'Atelier"
         >
-          «
+          <ChevronLeft size={16} strokeWidth={1.5} />
         </button>
       </div>
 
@@ -181,18 +181,35 @@ function AtelierClosed({ onOpen }: { onOpen: (s?: Section) => void }) {
   const { selectionCount } = useFragrancesStore();
   return (
     <div
-      className="flex flex-col items-center gap-4 py-4"
+      className="flex flex-col items-center gap-2 py-4"
       style={{ width: 48, minWidth: 48 }}
     >
+      {/* Home */}
       <button
         type="button"
-        onClick={onOpen}
-        className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
+        onClick={() => navigate("/")}
+        className="w-8 h-8 rounded-lg flex items-center justify-center"
         style={{ color: "var(--icon-secondary)" }}
-        title="Ouvrir l'Atelier"
+        title="Collection"
       >
-        »
+        <Home size={16} strokeWidth={1.5} />
       </button>
+
+      {/* Filtrer — ouvre l'Atelier */}
+      <button
+        type="button"
+        onClick={() => onOpen("filtres")}
+        className="w-8 h-8 rounded-lg flex items-center justify-center"
+        style={{ color: "var(--icon-secondary)" }}
+        title="Filtrer"
+      >
+        <Filter size={16} strokeWidth={1.5} />
+      </button>
+
+      {/* Séparateur */}
+      <div className="w-5 my-1" style={{ height: 1, backgroundColor: "var(--border-chip)" }} />
+
+      {/* Nav items */}
       {NAV_ITEMS.map(({ label, icon: Icon }) => (
         <button
           key={label}
