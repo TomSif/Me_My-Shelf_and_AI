@@ -6,7 +6,7 @@ import { AppLayout } from "../components/layout/AppLayout";
 import { FragranceBottle } from "../components/fragrance/FragranceBottle";
 
 export function ShelfPage() {
-  const { shelves, activeShelfId, fragrances, filteredFragrances, hasActiveFilters, deleteShelf, setActiveShelf } = useFragrancesStore();
+  const { shelves, activeShelfId, fragrances, filteredFragrances, sortedFragrances, hasActiveFilters, deleteShelf, setActiveShelf } = useFragrancesStore();
   const ribbonRef = useRef<HTMLDivElement>(null);
 
   // Slides = [clone-last, ...real, clone-first] pour le loop infini
@@ -142,6 +142,7 @@ export function ShelfPage() {
                 key={`${shelf.id}-${idx}`}
                 shelf={shelf}
                 fragrances={fragrances}
+                sortedFragrances={sortedFragrances}
                 filteredIds={hasActiveFilters ? new Set(filteredFragrances.map(f => f.id)) : null}
                 isActive={shelf.id === activeShelfId}
                 onActivate={() => setActiveShelf(shelf.id)}
@@ -193,6 +194,7 @@ export function ShelfPage() {
 function ShelfSlide({
   shelf,
   fragrances,
+  sortedFragrances,
   filteredIds,
   isActive,
   onActivate,
@@ -200,15 +202,22 @@ function ShelfSlide({
 }: {
   shelf: Shelf;
   fragrances: ReturnType<typeof useFragrancesStore>["fragrances"];
+  sortedFragrances: ReturnType<typeof useFragrancesStore>["fragrances"];
   filteredIds: Set<string> | null;
   isActive: boolean;
   onActivate: () => void;
   onDelete: () => void;
 }) {
   const navigate = useNavigate();
-  const allShelfFragrances = shelf.fragranceIds
+  const shelfIdSet = new Set(shelf.fragranceIds);
+  // Parfums de l'étagère dans l'ordre du tri actif
+  const fromSorted = sortedFragrances.filter((f) => shelfIdSet.has(f.id));
+  const sortedIdSet = new Set(fromSorted.map((f) => f.id));
+  // Parfums hors-filtre (présents dans l'étagère mais pas dans sortedFragrances)
+  const remaining = shelf.fragranceIds
     .map((id) => fragrances.find((f) => f.id === id))
-    .filter(Boolean) as typeof fragrances;
+    .filter((f): f is typeof fragrances[number] => !!f && !sortedIdSet.has(f.id));
+  const allShelfFragrances = [...fromSorted, ...remaining];
   const shelfFragrances = filteredIds
     ? allShelfFragrances.filter((f) => filteredIds.has(f.id))
     : allShelfFragrances;
