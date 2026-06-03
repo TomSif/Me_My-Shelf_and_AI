@@ -15,12 +15,17 @@ export function ShelfPage() {
     ? [shelves[shelves.length - 1], ...shelves, shelves[0]]
     : shelves;
 
-  // Scroll initial : sauter le clone du dessus
+  // Scroll initial : aller directement à l'étagère active (ou la première)
   useLayoutEffect(() => {
     const el = ribbonRef.current;
-    if (!el || !loop) return;
-    el.scrollTop = el.clientHeight;
-  }, [loop]);
+    if (!el || shelves.length === 0) return;
+    const activeIndex = activeShelfId
+      ? shelves.findIndex((s) => s.id === activeShelfId)
+      : 0;
+    const realIndex = activeIndex >= 0 ? activeIndex : 0;
+    const slideIndex = loop ? realIndex + 1 : realIndex;
+    el.scrollTop = el.clientHeight * slideIndex;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Repositionnement silencieux quand on atteint un clone
   useEffect(() => {

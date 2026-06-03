@@ -11,6 +11,8 @@ const NAV_ITEMS = [
   { label: "Réglages", short: "R" },
 ];
 
+type Section = "filtres" | "etageres";
+
 function getInitialOpen(): boolean {
   try {
     return localStorage.getItem("atelier-open") === "true";
@@ -25,21 +27,39 @@ function saveOpen(value: boolean) {
   } catch {}
 }
 
-type Section = "filtres" | "etageres";
+function getInitialSection(): Section {
+  try {
+    const v = localStorage.getItem("atelier-section");
+    return v === "etageres" ? "etageres" : "filtres";
+  } catch {
+    return "filtres";
+  }
+}
+
+function saveSection(value: Section) {
+  try {
+    localStorage.setItem("atelier-section", value);
+  } catch {}
+}
 
 export function Atelier() {
   const [isOpen, setIsOpen] = useState(getInitialOpen);
-  const [section, setSection] = useState<Section>("filtres");
+  const [section, setSection] = useState<Section>(getInitialSection);
 
   function open(s?: Section) {
     setIsOpen(true);
     saveOpen(true);
-    if (s) setSection(s);
+    if (s) { setSection(s); saveSection(s); }
   }
 
   function close() {
     setIsOpen(false);
     saveOpen(false);
+  }
+
+  function changeSection(s: Section) {
+    setSection(s);
+    saveSection(s);
   }
 
   return (
@@ -53,7 +73,7 @@ export function Atelier() {
       }}
     >
       {isOpen
-        ? <AtelierOpen section={section} onSectionChange={setSection} onClose={close} />
+        ? <AtelierOpen section={section} onSectionChange={changeSection} onClose={close} />
         : <AtelierClosed onOpen={open} />}
     </aside>
   );
