@@ -143,6 +143,8 @@ interface FragrancesState {
   removeFromShelf: (fragranceId: string, shelfId?: string) => void;
   deleteShelf: (shelfId: string) => void;
   setActiveShelf: (shelfId: string | null) => void;
+  createShelf: (name: string) => void;
+  renameShelf: (shelfId: string, name: string) => void;
 }
 
 export const useFragrancesStore = create<FragrancesState>()(
@@ -276,6 +278,7 @@ export const useFragrancesStore = create<FragrancesState>()(
             const newShelf: Shelf = {
               id: crypto.randomUUID(),
               name: todayShelfName(),
+              type: "daily",
               createdAt: new Date().toISOString(),
               fragranceIds: [fragranceId],
             };
@@ -307,6 +310,24 @@ export const useFragrancesStore = create<FragrancesState>()(
         set((state) => {
           const activeShelf = computeActiveShelf(state.shelves, shelfId);
           return { activeShelfId: shelfId, activeShelf, activeShelfCount: activeShelf?.fragranceIds.length ?? 0 };
+        }),
+      createShelf: (name) =>
+        set((state) => {
+          const newShelf: Shelf = {
+            id: crypto.randomUUID(),
+            name,
+            type: "named",
+            createdAt: new Date().toISOString(),
+            fragranceIds: [],
+          };
+          const shelves = [...state.shelves, newShelf];
+          return { shelves, activeShelfId: newShelf.id, activeShelf: newShelf, activeShelfCount: 0 };
+        }),
+      renameShelf: (shelfId, name) =>
+        set((state) => {
+          const shelves = state.shelves.map((s) => s.id === shelfId ? { ...s, name } : s);
+          const activeShelf = computeActiveShelf(shelves, state.activeShelfId);
+          return { shelves, activeShelf };
         }),
     }),
     {

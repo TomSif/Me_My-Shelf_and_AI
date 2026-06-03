@@ -95,6 +95,7 @@ export interface ActiveFilters {
 export interface Shelf {
   id: string;
   name: string;
+  type: "named" | "daily";
   createdAt: string;
   fragranceIds: string[];
 }
