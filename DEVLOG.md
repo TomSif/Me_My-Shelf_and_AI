@@ -716,6 +716,85 @@ Thomas anticipe l'import depuis Fragrantica et autres. Approche : un adaptateur 
 
 ---
 
+## Session 2026-06-03 — Issues #21 + #27 : curation, étagères, panneau my-shelfs
+
+### Ce qui était prévu
+
+- Issue #21 : mode curation — étagères, sélection courante
+- Issue #27 : panneau my-shelfs dans l'Atelier
+
+### Ce qui a été fait
+
+**Issue #21 — Curation (`feat/curation`, mergée)**
+
+Architecture finale après plusieurs itérations de réflexion UX :
+
+- `Shelf { id, name, createdAt, fragranceIds[] }` dans le store, persisté
+- `currentSelection: string[]` — sélection temporaire, séparée des étagères sauvegardées
+- `addToSelection` / `removeFromSelection` / `saveSelection(name)` / `clearSelection`
+- `saveSelection` : crée une Shelf depuis currentSelection, vide la sélection
+- Badge Atelier = `selectionCount` (longueur de la sélection courante)
+- BottleWall / GestureBar : "Ajouter à la sélection" / "Dans la sélection ✓"
+- ShelfPage : carousel vertical snap-scroll avec loop infini (clone first/last)
+  Boutons ↑↓ flottants, navigation synchronisée avec le panneau via `activeShelfId`
+- Tri actif dans les slides : `sortedFragrances` comme référence d'ordre
+- Filtres dans les slides : visibilité seulement, composition inchangée
+  Indicateur "Filtre actif · X/Y parfums" dans chaque slide
+
+**Issue #27 — Panneau my-shelfs (`feat/curation`, même branche)**
+
+- Panneau "my-shelfs" dans l'Atelier, switch avec FilterPanel via section persistée en localStorage
+- 4 onglets : SÉLECTION | ÉTAGÈRES | FILTRE | AUCUN
+  SÉLECTION : liste des parfums courants avec × par item + Sauvegarder avec nom
+  ÉTAGÈRES : étagères sauvegardées, cliquables vers le carousel, ⋮ Renommer/Supprimer
+  FILTRE : ajoute les résultats filtrés à la sélection (ne modifie pas les étagères)
+  AUCUN : désélectionne l'étagère active
+- Onglet par défaut selon la route (/shelf → ÉTAGÈRES, sinon SÉLECTION)
+- Section Atelier persistée en localStorage (survit à la navigation)
+
+**Fixes transversaux**
+
+- AppHeader z-index 100 : stacking context du header au-dessus de tout → dropdown tri fonctionnel
+- FragrancePage : `navigate(-1)` partout — retour vers la vue précédente
+- Logo my-shelf and AI → Link vers /
+- "Vue étagères →" remplace "Voir dans l'étagère" dans la GestureBar
+
+### Décisions prises
+
+**`currentSelection` séparé des étagères.**
+Après plusieurs itérations confuses (auto-création à l'ajout, `type: "daily"`, etc.), la bonne
+séparation est : sélection temporaire (panier de travail) vs étagères nommées (permanentes).
+L'utilisateur voit ce qu'il a mis dans sa sélection avant de la nommer et sauvegarder.
+
+**`sortedFragrances` comme référence d'ordre dans les slides.**
+Les parfums d'une étagère s'affichent dans l'ordre du tri actif en filtrant `sortedFragrances`
+par les IDs de l'étagère. Les hors-filtre s'ajoutent à la fin, masqués si filtre actif.
+
+**Synchronisation carousel ↔ panneau via `activeShelfId`.**
+Un seul état partagé dans le store. `scrollend` met à jour `activeShelfId` quand l'utilisateur
+scrolle manuellement. `setActiveShelf` déclenche un `scrollIntoView` dans le carousel.
+Pas de boucle infinie : appeler `setActiveShelf` avec la même valeur est un no-op.
+
+### Bugs rencontrés en session
+
+**stacking context du header.**
+`backdrop-filter` crée un stacking context sans z-index → le dropdown tri était recouvert
+par les éléments suivants dans le DOM. Fix : `position: relative; z-index: 100` sur le header.
+
+**scroll initial vers la mauvaise étagère.**
+`clientHeight` pouvait être 0 au moment du `useLayoutEffect`. Fix : `ResizeObserver` qui
+attend des dimensions non-nulles, puis `scrollIntoView({ behavior: 'instant' })`.
+
+**`currentSelection` remplace un modèle progressivement incohérent.**
+Trois itérations avant d'arriver au bon modèle. La leçon : s'arrêter et réfléchir au modèle
+mental de l'utilisateur avant de coder, surtout pour une feature aussi centrale.
+
+### Prochaine session
+
+- À définir selon les priorités
+
+---
+
 ## Session 2026-06-03 — Issue #17 recherche textuelle
 
 ### Ce qui était prévu
@@ -744,3 +823,82 @@ La recherche textuelle s’intercale entre `filteredFragrances` et `applySort`. 
 ### Prochaine session
 
 - Issue #21 : mode curation — sélection manuelle vers ShelfPage
+
+---
+
+## Session 2026-06-03 — Issues #21 + #27 : curation, étagères, panneau my-shelfs
+
+### Ce qui était prévu
+
+- Issue #21 : mode curation — étagères, sélection courante
+- Issue #27 : panneau my-shelfs dans l'Atelier
+
+### Ce qui a été fait
+
+**Issue #21 — Curation (`feat/curation`, mergée)**
+
+Architecture finale après plusieurs itérations de réflexion UX :
+
+- `Shelf { id, name, createdAt, fragranceIds[] }` dans le store, persisté
+- `currentSelection: string[]` — sélection temporaire, séparée des étagères sauvegardées
+- `addToSelection` / `removeFromSelection` / `saveSelection(name)` / `clearSelection`
+- `saveSelection` : crée une Shelf depuis currentSelection, vide la sélection
+- Badge Atelier = `selectionCount` (longueur de la sélection courante)
+- BottleWall / GestureBar : "Ajouter à la sélection" / "Dans la sélection ✓"
+- ShelfPage : carousel vertical snap-scroll avec loop infini (clone first/last)
+  Boutons ↑↓ flottants, navigation synchronisée avec le panneau via `activeShelfId`
+- Tri actif dans les slides : `sortedFragrances` comme référence d'ordre
+- Filtres dans les slides : visibilité seulement, composition inchangée
+  Indicateur "Filtre actif · X/Y parfums" dans chaque slide
+
+**Issue #27 — Panneau my-shelfs (`feat/curation`, même branche)**
+
+- Panneau "my-shelfs" dans l'Atelier, switch avec FilterPanel via section persistée en localStorage
+- 4 onglets : SÉLECTION | ÉTAGÈRES | FILTRE | AUCUN
+  SÉLECTION : liste des parfums courants avec × par item + Sauvegarder avec nom
+  ÉTAGÈRES : étagères sauvegardées, cliquables vers le carousel, ⋮ Renommer/Supprimer
+  FILTRE : ajoute les résultats filtrés à la sélection (ne modifie pas les étagères)
+  AUCUN : désélectionne l'étagère active
+- Onglet par défaut selon la route (/shelf → ÉTAGÈRES, sinon SÉLECTION)
+- Section Atelier persistée en localStorage (survit à la navigation)
+
+**Fixes transversaux**
+
+- AppHeader z-index 100 : stacking context du header au-dessus de tout → dropdown tri fonctionnel
+- FragrancePage : `navigate(-1)` partout — retour vers la vue précédente
+- Logo my-shelf and AI → Link vers /
+- "Vue étagères →" remplace "Voir dans l'étagère" dans la GestureBar
+
+### Décisions prises
+
+**`currentSelection` séparé des étagères.**
+Après plusieurs itérations confuses (auto-création à l'ajout, `type: "daily"`, etc.), la bonne
+séparation est : sélection temporaire (panier de travail) vs étagères nommées (permanentes).
+L'utilisateur voit ce qu'il a mis dans sa sélection avant de la nommer et sauvegarder.
+
+**`sortedFragrances` comme référence d'ordre dans les slides.**
+Les parfums d'une étagère s'affichent dans l'ordre du tri actif en filtrant `sortedFragrances`
+par les IDs de l'étagère. Les hors-filtre s'ajoutent à la fin, masqués si filtre actif.
+
+**Synchronisation carousel ↔ panneau via `activeShelfId`.**
+Un seul état partagé dans le store. `scrollend` met à jour `activeShelfId` quand l'utilisateur
+scrolle manuellement. `setActiveShelf` déclenche un `scrollIntoView` dans le carousel.
+Pas de boucle infinie : appeler `setActiveShelf` avec la même valeur est un no-op.
+
+### Bugs rencontrés en session
+
+**stacking context du header.**
+`backdrop-filter` crée un stacking context sans z-index → le dropdown tri était recouvert
+par les éléments suivants dans le DOM. Fix : `position: relative; z-index: 100` sur le header.
+
+**scroll initial vers la mauvaise étagère.**
+`clientHeight` pouvait être 0 au moment du `useLayoutEffect`. Fix : `ResizeObserver` qui
+attend des dimensions non-nulles, puis `scrollIntoView({ behavior: 'instant' })`.
+
+**`currentSelection` remplace un modèle progressivement incohérent.**
+Trois itérations avant d'arriver au bon modèle. La leçon : s'arrêter et réfléchir au modèle
+mental de l'utilisateur avant de coder, surtout pour une feature aussi centrale.
+
+### Prochaine session
+
+- À définir selon les priorités
