@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import type { OlfactoryFamily, Season, Concentration } from "../../types/fragrance";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
 
@@ -77,15 +78,13 @@ export function FilterPanel() {
     .join(", ");
 
   return (
-    <div className="flex flex-col gap-0.5">
-      <div className="flex items-center justify-between mb-1">
-        <span
-          className="text-xs font-semibold tracking-widest"
-          style={{ color: "var(--text-muted)" }}
-        >
-          FILTER ATELIER
-        </span>
-      </div>
+    <div className="flex flex-col">
+      <p
+        className="text-[9px] font-semibold tracking-[0.18em] uppercase mb-3"
+        style={{ color: "var(--text-ghost)" }}
+      >
+        Filter Atelier
+      </p>
 
       {/* Niveau 1 — ouvertes par défaut */}
       <CollapsibleSection
@@ -315,31 +314,37 @@ function CollapsibleSection({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div>
+    <div
+      className="border-b last:border-b-0"
+      style={{ borderColor: "rgba(29,27,25,0.06)" }}
+    >
       <button
         type="button"
-        className="w-full flex items-center justify-between py-2 text-left"
+        className="w-full flex items-center justify-between py-2.5 text-left"
         onClick={() => setOpen((o) => !o)}
       >
         <span
-          className="text-xs font-semibold tracking-widest leading-none"
+          className="text-[10px] font-semibold tracking-[0.12em] leading-none uppercase"
           style={{ color: "var(--text-muted)" }}
         >
           {title}
           {!open && activeSummary && (
             <span
-              className="ml-1 font-normal normal-case tracking-normal"
+              className="ml-1.5 font-normal normal-case tracking-normal text-xs"
               style={{ color: "var(--text-secondary)" }}
             >
               · {activeSummary}
             </span>
           )}
         </span>
-        <span className="text-xs ml-2 shrink-0" style={{ color: "var(--text-ghost)" }}>
-          {open ? "∧" : "∨"}
+        <span className="ml-2 shrink-0" style={{ color: "var(--text-ghost)" }}>
+          {open
+            ? <ChevronUp size={13} strokeWidth={1.5} />
+            : <ChevronDown size={13} strokeWidth={1.5} />
+          }
         </span>
       </button>
-      {open && <div className="pb-2">{children}</div>}
+      {open && <div className="pb-3">{children}</div>}
     </div>
   );
 }
@@ -441,9 +446,9 @@ function AutocompleteChipInput({
           placeholder={placeholder}
           className="w-full text-xs px-2.5 py-1.5 rounded-lg"
           style={{
-            backgroundColor: "var(--surface-secondary)",
+            backgroundColor: "var(--surface-primary)",
             color: "var(--text-primary)",
-            border: "1px solid var(--border-light)",
+            border: "1px solid var(--border-chip)",
             outline: "none",
           }}
         />

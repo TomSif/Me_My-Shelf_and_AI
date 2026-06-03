@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Home, Filter, BookMarked, Heart, BarChart2, Settings, ChevronLeft } from "lucide-react";
+import { Home, Filter, BookMarked, Sparkles, Heart, BarChart2, Settings, ChevronLeft } from "lucide-react";
 import { FilterPanel } from "../fragrance/FilterPanel";
 import { ShelfPanel } from "../fragrance/ShelfPanel";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
 
 const NAV_ITEMS = [
-  { label: "Étagères", icon: BookMarked },
-  { label: "Favoris", icon: Heart },
-  { label: "Stats", icon: BarChart2 },
-  { label: "Réglages", icon: Settings },
+  { label: "Étagères", icon: BookMarked, section: "etageres" as Section | null },
+  { label: "IA", icon: Sparkles, section: null },
+  { label: "Favoris", icon: Heart, section: null },
+  { label: "Stats", icon: BarChart2, section: null },
+  { label: "Réglages", icon: Settings, section: null },
 ];
 
 type Section = "filtres" | "etageres";
@@ -120,49 +121,40 @@ function AtelierOpen({ section, onSectionChange, onClose }: {
           <ShelfPanel />
         ) : (
           <div
-            className="h-full no-scrollbar px-3 py-3"
-            style={{
-              overflowY: "auto",
-              maskImage: "linear-gradient(to bottom, transparent 0px, black 12px, black calc(100% - 12px), transparent 100%)",
-              WebkitMaskImage: "linear-gradient(to bottom, transparent 0px, black 12px, black calc(100% - 12px), transparent 100%)",
-            }}
+            className="h-full no-scrollbar px-4 py-2"
+            style={{ overflowY: "auto" }}
           >
-            <div
-              className="rounded-xl p-4 flex flex-col"
-              style={{ border: "1px solid var(--border-light)", backgroundColor: "var(--surface-primary)" }}
-            >
-              <FilterPanel />
-            </div>
+            <FilterPanel />
           </div>
         )}
       </div>
 
       {/* Navigation */}
       <div
-        className="flex flex-col gap-1 px-2 pb-4 pt-3 shrink-0"
-        style={{ borderTop: "1px solid var(--border-light)" }}
+        className="flex flex-col gap-0.5 px-2 pb-4 pt-2 shrink-0"
+        style={{ borderTop: "1px solid rgba(29,27,25,0.06)" }}
       >
-        {NAV_ITEMS.map(({ label, icon: Icon }) => {
-          const isEtageres = label === "Étagères";
-          const isActive = (isEtageres && section === "etageres") || (!isEtageres && section === "filtres" && label === "Filtrer");
+        {NAV_ITEMS.map(({ label, icon: Icon, section: itemSection }) => {
+          const isActive = itemSection !== null && itemSection === section;
           return (
             <button
               key={label}
               type="button"
-              onClick={() => isEtageres ? onSectionChange("etageres") : onSectionChange("filtres")}
-              className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-sm text-left w-full"
+              onClick={() => itemSection ? onSectionChange(itemSection) : undefined}
+              className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-xs text-left w-full"
               style={{
                 color: isActive ? "var(--icon-active)" : "var(--icon-secondary)",
-                backgroundColor: isActive ? "color-mix(in srgb, var(--icon-active) 8%, transparent)" : "transparent",
+                backgroundColor: isActive ? "color-mix(in srgb, var(--icon-active) 10%, transparent)" : "transparent",
+                opacity: itemSection ? 1 : 0.45,
               }}
             >
               <div className="flex items-center gap-2.5">
-                <Icon size={15} strokeWidth={1.5} />
+                <Icon size={14} strokeWidth={1.5} />
                 <span>{label}</span>
               </div>
-              {isEtageres && selectionCount > 0 && (
+              {label === "Étagères" && selectionCount > 0 && (
                 <span
-                  className="h-5 min-w-5 px-1.5 rounded-full flex items-center justify-center text-xs font-medium leading-none"
+                  className="h-4 min-w-4 px-1 rounded-full flex items-center justify-center text-[10px] font-medium leading-none"
                   style={{ backgroundColor: "var(--icon-active)", color: "#fff" }}
                 >
                   {selectionCount}
@@ -177,58 +169,57 @@ function AtelierOpen({ section, onSectionChange, onClose }: {
 }
 
 function AtelierClosed({ onOpen }: { onOpen: (s?: Section) => void }) {
-  const navigate = useNavigate();
+  const routerNavigate = useNavigate();
   const { selectionCount } = useFragrancesStore();
+
+  function NavIcon({
+    icon: Icon, title, onClick, active = false, badge,
+  }: {
+    icon: React.ElementType; title: string; onClick: () => void;
+    active?: boolean; badge?: number;
+  }) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="relative w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+        style={{
+          color: active ? "var(--icon-active)" : "var(--icon-secondary)",
+          backgroundColor: active ? "color-mix(in srgb, var(--icon-active) 12%, transparent)" : "transparent",
+        }}
+        title={title}
+      >
+        <Icon size={16} strokeWidth={1.5} />
+        {badge !== undefined && badge > 0 && (
+          <span
+            className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full flex items-center justify-center text-[10px] font-medium leading-none"
+            style={{ backgroundColor: "var(--icon-active)", color: "#fff" }}
+          >
+            {badge}
+          </span>
+        )}
+      </button>
+    );
+  }
+
   return (
     <div
       className="flex flex-col items-center gap-2 py-4"
       style={{ width: 48, minWidth: 48 }}
     >
-      {/* Home */}
-      <button
-        type="button"
-        onClick={() => navigate("/")}
-        className="w-8 h-8 rounded-lg flex items-center justify-center"
-        style={{ color: "var(--icon-secondary)" }}
-        title="Collection"
-      >
-        <Home size={16} strokeWidth={1.5} />
-      </button>
+      <NavIcon icon={Home} title="Collection" onClick={() => routerNavigate("/")} />
+      <NavIcon icon={Filter} title="Filtrer" onClick={() => onOpen("filtres")} />
 
-      {/* Filtrer — ouvre l'Atelier */}
-      <button
-        type="button"
-        onClick={() => onOpen("filtres")}
-        className="w-8 h-8 rounded-lg flex items-center justify-center"
-        style={{ color: "var(--icon-secondary)" }}
-        title="Filtrer"
-      >
-        <Filter size={16} strokeWidth={1.5} />
-      </button>
-
-      {/* Séparateur */}
       <div className="w-5 my-1" style={{ height: 1, backgroundColor: "var(--border-chip)" }} />
 
-      {/* Nav items */}
-      {NAV_ITEMS.map(({ label, icon: Icon }) => (
-        <button
+      {NAV_ITEMS.map(({ label, icon: Icon, section: itemSection }) => (
+        <NavIcon
           key={label}
-          type="button"
-          onClick={() => label === "Étagères" ? onOpen("etageres") : onOpen("filtres")}
-          className="relative w-8 h-8 rounded-lg flex items-center justify-center"
-          style={{ color: "var(--icon-secondary)" }}
+          icon={Icon}
           title={label}
-        >
-          <Icon size={16} strokeWidth={1.5} />
-          {label === "Étagères" && selectionCount > 0 && (
-            <span
-              className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full flex items-center justify-center text-[10px] font-medium leading-none"
-              style={{ backgroundColor: "var(--icon-active)", color: "#fff" }}
-            >
-              {selectionCount}
-            </span>
-          )}
-        </button>
+          onClick={() => itemSection ? onOpen(itemSection) : undefined}
+          badge={label === "Étagères" ? selectionCount : undefined}
+        />
       ))}
     </div>
   );
