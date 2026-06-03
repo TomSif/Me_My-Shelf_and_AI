@@ -34,7 +34,8 @@ function getSortLabel(criterion: SortCriterion, direction: SortDirection): strin
 }
 
 export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadgeClick }: Props) {
-  const { sortState, setSortState } = useFragrancesStore();
+  const { sortState, setSortState, searchQuery, setSearchQuery } = useFragrancesStore();
+  const searchRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   // subMenuCriterion : quel sous-menu est affiché — verrouillé sur le dernier critère survolé
   // Ne se réinitialise PAS quand la souris quitte un bouton individuel (fix diagonal cursor)
@@ -87,12 +88,29 @@ export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadg
       </span>
 
       <div
-        className="flex-1 max-w-xs h-7 rounded-full px-3 flex items-center"
+        className="flex-1 max-w-xs h-7 rounded-full px-3 flex items-center gap-1.5"
         style={{ backgroundColor: "var(--search-bg)" }}
       >
-        <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-          Rechercher un parfum…
-        </span>
+        <input
+          ref={searchRef}
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Rechercher un parfum…"
+          className="flex-1 bg-transparent text-xs outline-none min-w-0 placeholder:text-(--text-muted)"
+          style={{ color: "var(--text-primary)" }}
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => { setSearchQuery(""); searchRef.current?.focus(); }}
+            className="shrink-0 text-xs leading-none"
+            style={{ color: "var(--text-muted)" }}
+            aria-label="Effacer la recherche"
+          >
+            ×
+          </button>
+        )}
       </div>
 
       {/* Sort dropdown */}

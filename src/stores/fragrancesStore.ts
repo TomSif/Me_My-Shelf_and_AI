@@ -80,6 +80,14 @@ function applyFilters(fragrances: Fragrance[], f: ActiveFilters): Fragrance[] {
   });
 }
 
+function applySearch(fragrances: Fragrance[], query: string): Fragrance[] {
+  if (!query.trim()) return fragrances;
+  const q = query.trim().toLowerCase();
+  return fragrances.filter(
+    (f) => f.name.toLowerCase().includes(q) || f.brand.toLowerCase().includes(q)
+  );
+}
+
 function countIncomplete(fragrances: Fragrance[]): number {
   return fragrances.filter((f) => !isComplete(f)).length;
 }
@@ -103,6 +111,7 @@ interface FragrancesState {
   filteredFragrances: Fragrance[];
   hasActiveFilters: boolean;
   sortState: SortState;
+  searchQuery: string;
   sortedFragrances: Fragrance[];
   todayFragrances: Fragrance[];
   add: (data: NewFragrance) => string;
@@ -111,6 +120,7 @@ interface FragrancesState {
   setFilter: <K extends keyof ActiveFilters>(key: K, value: ActiveFilters[K]) => void;
   clearFilters: () => void;
   setSortState: (sort: SortState) => void;
+  setSearchQuery: (query: string) => void;
   wearToday: (id: string) => void;
   unwearToday: (id: string) => void;
 }
@@ -124,6 +134,7 @@ export const useFragrancesStore = create<FragrancesState>()(
       filteredFragrances: [],
       hasActiveFilters: false,
       sortState: DEFAULT_SORT,
+      searchQuery: "",
       sortedFragrances: [],
       todayFragrances: [],
       add: (data) => {
@@ -138,7 +149,7 @@ export const useFragrancesStore = create<FragrancesState>()(
             fragrances,
             incompleteCount: countIncomplete(fragrances),
             filteredFragrances,
-            sortedFragrances: applySort(filteredFragrances, state.sortState),
+            sortedFragrances: applySort(applySearch(filteredFragrances, state.searchQuery), state.sortState),
             todayFragrances: computeTodayFragrances(fragrances),
           };
         });
@@ -154,7 +165,7 @@ export const useFragrancesStore = create<FragrancesState>()(
             fragrances,
             incompleteCount: countIncomplete(fragrances),
             filteredFragrances,
-            sortedFragrances: applySort(filteredFragrances, state.sortState),
+            sortedFragrances: applySort(applySearch(filteredFragrances, state.searchQuery), state.sortState),
             todayFragrances: computeTodayFragrances(fragrances),
           };
         }),
@@ -166,7 +177,7 @@ export const useFragrancesStore = create<FragrancesState>()(
             fragrances,
             incompleteCount: countIncomplete(fragrances),
             filteredFragrances,
-            sortedFragrances: applySort(filteredFragrances, state.sortState),
+            sortedFragrances: applySort(applySearch(filteredFragrances, state.searchQuery), state.sortState),
             todayFragrances: computeTodayFragrances(fragrances),
           };
         }),
@@ -178,7 +189,7 @@ export const useFragrancesStore = create<FragrancesState>()(
             activeFilters,
             filteredFragrances,
             hasActiveFilters: hasActive(activeFilters),
-            sortedFragrances: applySort(filteredFragrances, state.sortState),
+            sortedFragrances: applySort(applySearch(filteredFragrances, state.searchQuery), state.sortState),
           };
         }),
       clearFilters: () =>
@@ -188,13 +199,18 @@ export const useFragrancesStore = create<FragrancesState>()(
             activeFilters: DEFAULT_FILTERS,
             filteredFragrances,
             hasActiveFilters: false,
-            sortedFragrances: applySort(filteredFragrances, state.sortState),
+            sortedFragrances: applySort(applySearch(filteredFragrances, state.searchQuery), state.sortState),
           };
         }),
       setSortState: (sort) =>
         set((state) => ({
           sortState: sort,
-          sortedFragrances: applySort(state.filteredFragrances, sort),
+          sortedFragrances: applySort(applySearch(state.filteredFragrances, state.searchQuery), sort),
+        })),
+      setSearchQuery: (query) =>
+        set((state) => ({
+          searchQuery: query,
+          sortedFragrances: applySort(applySearch(state.filteredFragrances, query), state.sortState),
         })),
       wearToday: (id) =>
         set((state) => {
@@ -205,7 +221,7 @@ export const useFragrancesStore = create<FragrancesState>()(
           return {
             fragrances,
             filteredFragrances,
-            sortedFragrances: applySort(filteredFragrances, state.sortState),
+            sortedFragrances: applySort(applySearch(filteredFragrances, state.searchQuery), state.sortState),
             todayFragrances: computeTodayFragrances(fragrances),
           };
         }),
@@ -218,7 +234,7 @@ export const useFragrancesStore = create<FragrancesState>()(
           return {
             fragrances,
             filteredFragrances,
-            sortedFragrances: applySort(filteredFragrances, state.sortState),
+            sortedFragrances: applySort(applySearch(filteredFragrances, state.searchQuery), state.sortState),
             todayFragrances: computeTodayFragrances(fragrances),
           };
         }),
@@ -236,7 +252,8 @@ export const useFragrancesStore = create<FragrancesState>()(
           state.incompleteCount = countIncomplete(state.fragrances);
           state.filteredFragrances = applyFilters(state.fragrances, state.activeFilters);
           state.hasActiveFilters = hasActive(state.activeFilters);
-          state.sortedFragrances = applySort(state.filteredFragrances, state.sortState);
+          state.searchQuery = "";
+          state.sortedFragrances = applySort(applySearch(state.filteredFragrances, ""), state.sortState);
           state.todayFragrances = computeTodayFragrances(state.fragrances);
         }
       },

@@ -621,3 +621,96 @@ Thomas a ajouté la section "recherche par note pyramidale" à l'issue #24a apr�
 - Issue #21 : curation (statut porté, notes d'usure)
 
 ---
+
+## Session 2026-06-02 — Issues #18, #25, #26 + modèle cuiré + base de test
+
+### Ce qui était prévu
+
+- Issue #18 : tri de la collection
+- Issue #25 : log d'utilisation
+- Issue #26 : Aujourd'hui (Mezzanine)
+
+### Ce qui a été fait
+
+**Issue #18 — Tri de la collection (`feat/sort`, mergée)**
+
+- Types `SortCriterion`, `SortDirection`, `SortState` ajoutés dans `fragrance.ts`
+- `applySort()` dans le store : 7 critères + `"none"` + `"random"`, valeurs `undefined` toujours en fin de liste
+- `sortState` persisté en localStorage, `sortedFragrances` recalculé à chaque mutation
+- Dropdown `AppHeader` : deux colonnes (critères ↔ directions), sous-menu verrouillé sur le dernier critère survolé (fix diagonal cursor), hover + focus sur les boutons de direction
+- `"Aucun tri"` en tête de liste : remet l'ordre d'insertion, bouton header neutre
+- `CollectionPage` consomme `sortedFragrances` pour l'affichage et la navigation prev/next
+
+**Issue #25 — Log d'utilisation (`feat/log-usage`, mergée)**
+
+- `wearToday(id)` / `unwearToday(id)` dans le store — actions sémantiques exportées
+- `todayFragrances[]` état dérivé, recalculé à chaque mutation et à la réhydratation
+- `isWornToday(f)` exporté depuis le store
+- `formatLastUsed()` dans `utils/fragrance.ts` — "Porté hier", "il y a 3 jours", "il y a 2 mois"…
+- GestureBar (peek) : bouton toggle "Porter/Porté aujourd'hui ✓"
+- FragrancePage (mode view) : bouton toggle + label lisible au-dessus du champ date
+- Décision : store de #26 (`wearToday`/`unwearToday`/`todayFragrances`) posé dans #25 pour éviter le refactor
+
+**Issue #26 — Aujourd'hui / Mezzanine (`feat/aujourd-hui`, mergée)**
+
+- `Mezzanine.tsx` : composant permanent entre header et contenu dans `AppLayout`
+- 3 états : vide (invitation), replié (dots colorés + compteur + chevron), déplié (liste nom · marque · concentration + × pour retirer)
+- Clic droit sur un flacon → menu contextuel "Porter/Porté aujourd'hui ✓" (toggle), fermeture au clic extérieur ou Échap
+- Filtre local `isWornToday` dans la Mezzanine : exact à minuit sans timer
+
+**Extension du modèle — `"cuiré"` (`OlfactoryFamily`)**
+
+- Famille "cuiré" ajoutée au type, couleur `#a0705a` (brun cuir chaud), variable CSS `--family-cuire`
+- `FamilyChips`, `FilterPanel`, `utils/fragrance.ts` mis à jour
+- Discussion préalable : "oriental", "oud", "vert", "chypré" sont des accords ou mappings, pas des familles manquantes — seul "cuiré" était un vrai oubli
+
+**Base de données de test (`public/fragrances_import.json`)**
+
+- 10 parfums réels représentatifs de la collection de Thomas (Amouage, Bortnikoff, Caron, Chanel, Dior, Dana…)
+- Familles normalisées : `"oriental"` → `"épicé"`, `"oud"` → `"boisé"`, `"vert"` → `"herbacé"`, `"chypré"` → `["boisé", "hespéridé", "herbacé"]` (spread), `"extrait de parfum"` → `"extrait"`
+- Commande d'injection : `fetch('/fragrances_import.json').then(r=>r.json()).then(d=>{localStorage.setItem('fragrances',JSON.stringify(d));location.reload()})`
+
+### Décisions prises
+
+**Store #26 anticipé dans #25 — `wearToday`/`unwearToday`/`todayFragrances`.**
+Avant de coder #25, Thomas a fait observer que "Porter aujourd'hui" et "glisser dans la Mezzanine" sont la même action. Décision : poser les actions sémantiques et l'état dérivé dans #25 pour que #26 soit uniquement de l'UI. Zéro refactor store en #26.
+
+**`unwearToday` pour annuler l'action — bouton toggle.**
+Thomas : "comment annuler si on clique par erreur ?" Solution : le bouton ne se désactive pas, il s'inverse. "Porter aujourd'hui" → `wearToday`, "Porté aujourd'hui ✓" → `unwearToday`. Même logique que le toggle Favori. Retirer depuis la Mezzanine appelle la même `unwearToday`.
+
+**"Aucun tri" comme état par défaut (ordre d'insertion), pas "Alphabétique".**
+La collection s'affichait triée alphabétiquement au démarrage sans que l'utilisateur ait rien demandé. Corrigé : `DEFAULT_SORT = { criterion: "none", direction: "asc" }`. L'ordre alphabétique est un choix explicite, pas une valeur par défaut silencieuse.
+
+**"Chypré" = accord, pas une famille.**
+Thomas : "chypré n'est pas vraiment une famille, c'est un mélange". Miss Dior (chypré) traduit en `["boisé", "hespéridé", "herbacé"]` — les vraies familles présentes dans un chypre classique. Confirmation que `families` est bien un tableau multi-valeurs pour ce cas.
+
+**Reset minuit par filtre local, pas par timer.**
+`todayFragrances.filter(isWornToday)` dans la Mezzanine est recalculé à chaque render. Exact à tout moment sans `setTimeout` complexe. Si l'app est ouverte à minuit, la liste se vide à la prochaine interaction de l'utilisateur.
+
+### Bugs / blocages rencontrés
+
+**`activeCriterion` non défini — crash au démarrage du dropdown.**
+Renommé en `subMenuCriterion` lors du refactor pour fixer le diagonal cursor, mais une référence à `activeCriterion` avait été oubliée dans le sous-menu directions. Crash runtime immédiat. Détecté à l'exécution (TypeScript ne peut pas détecter les variables de fermeture JSX non typées dans certains contextes).
+
+**Diagonal cursor dans le dropdown de tri.**
+Symptôme : déplacer la souris vers la colonne droite (directions) réinitialisait le sous-menu sur "Alphabétique" (le tri par défaut du store). Cause : `onMouseLeave` sur chaque bouton critère remettait `hoveredCriterion` à `null`, ce qui déclenchait le fallback `activeCriterion = null ?? sortState.criterion`.
+Fix : deux états séparés — `highlightedCriterion` (highlight visuel, reset au leave) et `subMenuCriterion` (sous-menu affiché, jamais reset au leave d'un bouton individuel).
+
+### Discussions architecturales
+
+**Stockage Supabase en v2.**
+Thomas : "les parfums se stockeront dans le même type d'objet ?" Oui — `Fragrance` reste identique. `fragranceService.ts` gère la traduction entre rows PostgreSQL et objets TypeScript. Champs tableaux (`families`, `seasons`, `tags`) → colonnes `text[]` ou `jsonb`. `pyramid` → colonne `jsonb`. Les composants ne voient rien.
+
+**Import CSV/JSON v3 — adapter pattern.**
+Thomas anticipe l'import depuis Fragrantica et autres. Approche : un adaptateur par source (`fragranticaAdapter.ts`, etc.) qui prend les données brutes et retourne `NewFragrance[]`. Les vocabulaires fermés (`OlfactoryFamily`, `Concentration`) sont normalisés via des tables de correspondance. Ce qui ne mappe pas → champ vide → parfum dirty. Le dirty state existant fait le reste.
+
+### Apprentissages
+
+- **La validation TypeScript ne bloque pas le JSON à l'exécution.** Des familles invalides (`"oriental"`, `"cuiré"`) dans le JSON de test passaient silencieusement — le flacon s'affichait juste en gris. La vérification de conformité des données externes est un problème de couche service, pas de compilation.
+- **`families: OlfactoryFamily[]` est un tableau multi-valeurs.** "Chypré" traduit en 3 familles simultanément a confirmé que le modèle supporte naturellement les accords complexes sans nouveau champ.
+- **Deux états distincts pour deux responsabilités.** Le dropdown de tri avait besoin de distinguer "quelle rangée est visuellement surlignée" (reset au mouseLeave) de "quel sous-menu est ouvert" (sticks to last hover). Un seul état faisait les deux et créait le bug diagonal.
+
+### Prochaine session
+
+- Issue #17 : barre de recherche textuelle
+- Issue #21 : mode curation — sélection vers l'étagère
