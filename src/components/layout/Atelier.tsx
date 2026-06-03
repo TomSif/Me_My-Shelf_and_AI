@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FilterPanel } from "../fragrance/FilterPanel";
+import { useFragrancesStore } from "../../stores/fragrancesStore";
 
 const NAV_ITEMS = [
   { label: "Étagères", short: "É" },
@@ -51,6 +53,8 @@ export function Atelier() {
 }
 
 function AtelierOpen({ onClose }: { onClose: () => void }) {
+  const navigate = useNavigate();
+  const { activeShelfCount } = useFragrancesStore();
   return (
     <div className="flex flex-col h-full" style={{ width: 340, minWidth: 340 }}>
       {/* En-tête */}
@@ -111,10 +115,19 @@ function AtelierOpen({ onClose }: { onClose: () => void }) {
           <button
             key={label}
             type="button"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left w-full"
+            onClick={() => label === "Étagères" ? navigate("/shelf") : undefined}
+            className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-sm text-left w-full"
             style={{ color: "var(--icon-secondary)" }}
           >
-            {label}
+            <span>{label}</span>
+            {label === "Étagères" && activeShelfCount > 0 && (
+              <span
+                className="h-5 min-w-5 px-1.5 rounded-full flex items-center justify-center text-xs font-medium leading-none"
+                style={{ backgroundColor: "var(--icon-active)", color: "#fff" }}
+              >
+                {activeShelfCount}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -123,6 +136,8 @@ function AtelierOpen({ onClose }: { onClose: () => void }) {
 }
 
 function AtelierClosed({ onOpen }: { onOpen: () => void }) {
+  const navigate = useNavigate();
+  const { activeShelfCount } = useFragrancesStore();
   return (
     <div
       className="flex flex-col items-center gap-4 py-4"
@@ -141,11 +156,20 @@ function AtelierClosed({ onOpen }: { onOpen: () => void }) {
         <button
           key={label}
           type="button"
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-xs"
+          onClick={() => label === "Étagères" ? navigate("/shelf") : undefined}
+          className="relative w-8 h-8 rounded-lg flex items-center justify-center text-xs"
           style={{ color: "var(--icon-secondary)" }}
           title={label}
         >
           {short}
+          {label === "Étagères" && activeShelfCount > 0 && (
+            <span
+              className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full flex items-center justify-center text-[10px] font-medium leading-none"
+              style={{ backgroundColor: "var(--icon-active)", color: "#fff" }}
+            >
+              {activeShelfCount}
+            </span>
+          )}
         </button>
       ))}
     </div>

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { Fragrance, NewFragrance, ActiveFilters, PyramidNotesFilter, SortState } from "../types/fragrance";
+import type { Fragrance, NewFragrance, ActiveFilters, PyramidNotesFilter, SortState, Shelf } from "../types/fragrance";
 import { isComplete } from "../utils/fragrance";
 
 const DEFAULT_SORT: SortState = { criterion: "none", direction: "asc" };
@@ -104,6 +104,18 @@ function computeTodayFragrances(fragrances: Fragrance[]): Fragrance[] {
   return fragrances.filter(isWornToday);
 }
 
+function todayShelfName(): string {
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `Sélection du jour · ${dd}/${mm}/${yyyy}`;
+}
+
+function computeActiveShelf(shelves: Shelf[], activeShelfId: string | null): Shelf | undefined {
+  return shelves.find((s) => s.id === activeShelfId);
+}
+
 interface FragrancesState {
   fragrances: Fragrance[];
   incompleteCount: number;
@@ -114,6 +126,10 @@ interface FragrancesState {
   searchQuery: string;
   sortedFragrances: Fragrance[];
   todayFragrances: Fragrance[];
+  shelves: Shelf[];
+  activeShelfId: string | null;
+  activeShelf: Shelf | undefined;
+  activeShelfCount: number;
   add: (data: NewFragrance) => string;
   update: (id: string, data: Partial<NewFragrance>) => void;
   remove: (id: string) => void;
@@ -123,6 +139,10 @@ interface FragrancesState {
   setSearchQuery: (query: string) => void;
   wearToday: (id: string) => void;
   unwearToday: (id: string) => void;
+  addToShelf: (fragranceId: string) => void;
+  removeFromShelf: (fragranceId: string, shelfId?: string) => void;
+  deleteShelf: (shelfId: string) => void;
+  setActiveShelf: (shelfId: string | null) => void;
 }
 
 export const useFragrancesStore = create<FragrancesState>()(
@@ -137,6 +157,10 @@ export const useFragrancesStore = create<FragrancesState>()(
       searchQuery: "",
       sortedFragrances: [],
       todayFragrances: [],
+      shelves: [],
+      activeShelfId: null,
+      activeShelf: undefined,
+      activeShelfCount: 0,
       add: (data) => {
         const id = crypto.randomUUID();
         set((state) => {
@@ -238,6 +262,52 @@ export const useFragrancesStore = create<FragrancesState>()(
             todayFragrances: computeTodayFragrances(fragrances),
           };
         }),
+      addToShelf: (fragranceId) =>
+        set((state) => {
+          const existing = computeActiveShelf(state.shelves, state.activeShelfId);
+          if (existing && existing.fragranceIds.includes(fragranceId)) return {};
+          let shelves: Shelf[];
+          let activeShelfId: string;
+          if (existing) {
+            const updated = { ...existing, fragranceIds: [...existing.fragranceIds, fragranceId] };
+            shelves = state.shelves.map((s) => s.id === updated.id ? updated : s);
+            activeShelfId = updated.id;
+          } else {
+            const newShelf: Shelf = {
+              id: crypto.randomUUID(),
+              name: todayShelfName(),
+              createdAt: new Date().toISOString(),
+              fragranceIds: [fragranceId],
+            };
+            shelves = [...state.shelves, newShelf];
+            activeShelfId = newShelf.id;
+          }
+          const activeShelf = computeActiveShelf(shelves, activeShelfId);
+          return { shelves, activeShelfId, activeShelf, activeShelfCount: activeShelf?.fragranceIds.length ?? 0 };
+        }),
+      removeFromShelf: (fragranceId, shelfId) =>
+        set((state) => {
+          const targetId = shelfId ?? state.activeShelfId;
+          const shelves = state.shelves.map((s) =>
+            s.id === targetId ? { ...s, fragranceIds: s.fragranceIds.filter((id) => id !== fragranceId) } : s
+          );
+          const activeShelf = computeActiveShelf(shelves, state.activeShelfId);
+          return { shelves, activeShelf, activeShelfCount: activeShelf?.fragranceIds.length ?? 0 };
+        }),
+      deleteShelf: (shelfId) =>
+        set((state) => {
+          const shelves = state.shelves.filter((s) => s.id !== shelfId);
+          const activeShelfId = state.activeShelfId === shelfId
+            ? (shelves[0]?.id ?? null)
+            : state.activeShelfId;
+          const activeShelf = computeActiveShelf(shelves, activeShelfId);
+          return { shelves, activeShelfId, activeShelf, activeShelfCount: activeShelf?.fragranceIds.length ?? 0 };
+        }),
+      setActiveShelf: (shelfId) =>
+        set((state) => {
+          const activeShelf = computeActiveShelf(state.shelves, shelfId);
+          return { activeShelfId: shelfId, activeShelf, activeShelfCount: activeShelf?.fragranceIds.length ?? 0 };
+        }),
     }),
     {
       name: "fragrances",
@@ -246,6 +316,8 @@ export const useFragrancesStore = create<FragrancesState>()(
         fragrances: state.fragrances,
         activeFilters: state.activeFilters,
         sortState: state.sortState,
+        shelves: state.shelves,
+        activeShelfId: state.activeShelfId,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -255,6 +327,8 @@ export const useFragrancesStore = create<FragrancesState>()(
           state.searchQuery = "";
           state.sortedFragrances = applySort(applySearch(state.filteredFragrances, ""), state.sortState);
           state.todayFragrances = computeTodayFragrances(state.fragrances);
+          state.activeShelf = computeActiveShelf(state.shelves, state.activeShelfId);
+          state.activeShelfCount = state.activeShelf?.fragranceIds.length ?? 0;
         }
       },
     }
