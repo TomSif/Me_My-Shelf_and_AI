@@ -1296,6 +1296,40 @@ sélectionner 5 parfums depuis le résultat, les envoyer vers l'étagère.
 
 ---
 
+### Issue #27 — Panneau my-shelfs dans l'Atelier
+
+**Titre** : `feat: panneau my-shelfs — gestion des étagères dans l'Atelier`
+
+**Description** :
+Le panneau "my-shelfs" remplace l'affichage dans l'Atelier quand l'onglet
+Étagères est actif. Il permet de créer, nommer, renommer et supprimer des
+étagères, de naviguer entre elles, et de voir la sélection du jour.
+
+**Critères d'acceptance :**
+
+- [ ] `type: "named" | "daily"` ajouté au type `Shelf`
+- [ ] `createShelf(name)` dans le store — crée une étagère nommée vide, la set active
+- [ ] `renameShelf(id, name)` dans le store
+- [ ] `addToShelf` crée les étagères avec `type: "daily"`
+- [ ] L'Atelier switche entre FilterPanel ("Filtrer") et ShelfPanel ("Étagères")
+- [ ] Header du panneau : "my-shelfs" + sous-titre + bouton fermer
+- [ ] 4 onglets : VUES \| HISTORIQUE \| FILTRE \| AUCUN
+  - VUES → étagères `type: "named"`, liste cliquable (set active)
+  - HISTORIQUE → étagères `type: "daily"`, triées par date desc
+  - FILTRE → aperçu de `filteredFragrances` (lecture seule, sauvegardable)
+  - AUCUN → `setActiveShelf(null)`
+- [ ] Par étagère : icône bookmark · nom · count · ⋮ (Renommer, Supprimer)
+- [ ] Section Actions : Sauvegarder la sélection actuelle, Renommer, Supprimer
+- [ ] "Sélection du jour" épinglée en bas si elle existe
+- [ ] Étagère active mise en évidence dans la liste
+
+**Hors scope** : déplacer vers, dupliquer, fusion d'étagères, vue spatiale
+
+**Dépendances** : #21 (Shelf model, store de base)
+**Branche** : `feat/curation` (suite directe)
+
+---
+
 ### Issue #26 — Aujourd'hui ✅
 
 **Titre** : `feat: Aujourd'hui — ruban de sélection du jour`
@@ -1343,6 +1377,7 @@ Drag & drop · animations · réduction automatique du niveau restant
 | Partager sa collection (lien public)                                                                                         | v2            |
 | Upload photo du flacon                                                                                                       | v2            |
 | Estimation consommation automatique (0,5ml/utilisation × fréquence)                                                          | v2            |
+| Historique de navigation — log des 10 dernières actions (filtres + recherches), rappelable ou sauvegardable comme étagère | v2 |
 | Import/export CSV                                                                                                            | v2            |
 | `useSettingsStore` — `activeGroupBy` persisté (critère de groupement actif)                                                  | v2            |
 | `groupBy(criteria)` dans le store — retourne `Map<string, Fragrance[]>` pour l'étagère spatiale                              | v2            |

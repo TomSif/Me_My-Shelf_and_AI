@@ -209,7 +209,7 @@ export function FragrancePage({ mode }: Props) {
     } else if (id) {
       update(id, data);
     }
-    navigate("/");
+    navigate(-1);
   }
 
   const inputStyle = {
@@ -279,7 +279,7 @@ export function FragrancePage({ mode }: Props) {
       >
         <button
           type="button"
-          onClick={() => navigate("/")}
+          onClick={() => navigate(-1)}
           className="text-sm"
           style={{ color: "var(--text-muted)" }}
         >
@@ -616,7 +616,7 @@ export function FragrancePage({ mode }: Props) {
         >
           <button
             type="button"
-            onClick={() => navigate("/")}
+            onClick={() => navigate(-1)}
             className="px-5 py-2 rounded-lg text-sm"
             style={{
               backgroundColor: "var(--surface-secondary)",

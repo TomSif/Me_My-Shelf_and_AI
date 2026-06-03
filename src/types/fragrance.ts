@@ -91,3 +91,10 @@ export interface ActiveFilters {
   samplesOnly: boolean;
   pyramidNotes: PyramidNotesFilter;
 }
+
+export interface Shelf {
+  id: string;
+  name: string;
+  createdAt: string;
+  fragranceIds: string[];
+}

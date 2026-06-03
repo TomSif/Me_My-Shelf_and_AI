@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import type { SortCriterion, SortDirection } from "../../types/fragrance";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
 
@@ -78,14 +79,17 @@ export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadg
         backgroundColor: "var(--header-bg)",
         borderBottom: "1px solid var(--header-border)",
         backdropFilter: "blur(var(--glass-blur))",
+        position: "relative",
+        zIndex: 100,
       }}
     >
-      <span
+      <Link
+        to="/"
         className="text-sm font-medium tracking-wide shrink-0"
-        style={{ color: "var(--text-primary)" }}
+        style={{ color: "var(--text-primary)", textDecoration: "none" }}
       >
         my-shelf and AI
-      </span>
+      </Link>
 
       <div
         className="flex-1 max-w-xs h-7 rounded-full px-3 flex items-center gap-1.5"

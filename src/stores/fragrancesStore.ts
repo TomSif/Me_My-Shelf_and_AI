@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { Fragrance, NewFragrance, ActiveFilters, PyramidNotesFilter, SortState } from "../types/fragrance";
+import type { Fragrance, NewFragrance, ActiveFilters, PyramidNotesFilter, SortState, Shelf } from "../types/fragrance";
 import { isComplete } from "../utils/fragrance";
 
 const DEFAULT_SORT: SortState = { criterion: "none", direction: "asc" };
@@ -104,6 +104,14 @@ function computeTodayFragrances(fragrances: Fragrance[]): Fragrance[] {
   return fragrances.filter(isWornToday);
 }
 
+function autoShelfName(): string {
+  return new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+}
+
+function computeActiveShelf(shelves: Shelf[], activeShelfId: string | null): Shelf | undefined {
+  return shelves.find((s) => s.id === activeShelfId);
+}
+
 interface FragrancesState {
   fragrances: Fragrance[];
   incompleteCount: number;
@@ -114,6 +122,11 @@ interface FragrancesState {
   searchQuery: string;
   sortedFragrances: Fragrance[];
   todayFragrances: Fragrance[];
+  shelves: Shelf[];
+  activeShelfId: string | null;
+  activeShelf: Shelf | undefined;
+  currentSelection: string[];
+  selectionCount: number;
   add: (data: NewFragrance) => string;
   update: (id: string, data: Partial<NewFragrance>) => void;
   remove: (id: string) => void;
@@ -123,6 +136,14 @@ interface FragrancesState {
   setSearchQuery: (query: string) => void;
   wearToday: (id: string) => void;
   unwearToday: (id: string) => void;
+  addToSelection: (fragranceId: string) => void;
+  removeFromSelection: (fragranceId: string) => void;
+  saveSelection: (name: string) => void;
+  clearSelection: () => void;
+  deleteShelf: (shelfId: string) => void;
+  setActiveShelf: (shelfId: string | null) => void;
+  createShelf: (name: string) => void;
+  renameShelf: (shelfId: string, name: string) => void;
 }
 
 export const useFragrancesStore = create<FragrancesState>()(
@@ -137,6 +158,11 @@ export const useFragrancesStore = create<FragrancesState>()(
       searchQuery: "",
       sortedFragrances: [],
       todayFragrances: [],
+      shelves: [],
+      activeShelfId: null,
+      activeShelf: undefined,
+      currentSelection: [],
+      selectionCount: 0,
       add: (data) => {
         const id = crypto.randomUUID();
         set((state) => {
@@ -238,6 +264,68 @@ export const useFragrancesStore = create<FragrancesState>()(
             todayFragrances: computeTodayFragrances(fragrances),
           };
         }),
+      addToSelection: (fragranceId) =>
+        set((state) => {
+          if (state.currentSelection.includes(fragranceId)) return {};
+          const currentSelection = [...state.currentSelection, fragranceId];
+          return { currentSelection, selectionCount: currentSelection.length };
+        }),
+      removeFromSelection: (fragranceId) =>
+        set((state) => {
+          const currentSelection = state.currentSelection.filter((id) => id !== fragranceId);
+          return { currentSelection, selectionCount: currentSelection.length };
+        }),
+      saveSelection: (name) =>
+        set((state) => {
+          if (state.currentSelection.length === 0) return {};
+          const newShelf: Shelf = {
+            id: crypto.randomUUID(),
+            name: name.trim() || autoShelfName(),
+            createdAt: new Date().toISOString(),
+            fragranceIds: [...state.currentSelection],
+          };
+          const shelves = [...state.shelves, newShelf];
+          return {
+            shelves,
+            currentSelection: [],
+            selectionCount: 0,
+            activeShelfId: newShelf.id,
+            activeShelf: newShelf,
+          };
+        }),
+      clearSelection: () =>
+        set(() => ({ currentSelection: [], selectionCount: 0 })),
+      deleteShelf: (shelfId) =>
+        set((state) => {
+          const shelves = state.shelves.filter((s) => s.id !== shelfId);
+          const activeShelfId = state.activeShelfId === shelfId
+            ? (shelves[0]?.id ?? null)
+            : state.activeShelfId;
+          const activeShelf = computeActiveShelf(shelves, activeShelfId);
+          return { shelves, activeShelfId, activeShelf };
+        }),
+      setActiveShelf: (shelfId) =>
+        set((state) => {
+          const activeShelf = computeActiveShelf(state.shelves, shelfId);
+          return { activeShelfId: shelfId, activeShelf };
+        }),
+      createShelf: (name) =>
+        set((state) => {
+          const newShelf: Shelf = {
+            id: crypto.randomUUID(),
+            name,
+            createdAt: new Date().toISOString(),
+            fragranceIds: [],
+          };
+          const shelves = [...state.shelves, newShelf];
+          return { shelves, activeShelfId: newShelf.id, activeShelf: newShelf };
+        }),
+      renameShelf: (shelfId, name) =>
+        set((state) => {
+          const shelves = state.shelves.map((s) => s.id === shelfId ? { ...s, name } : s);
+          const activeShelf = computeActiveShelf(shelves, state.activeShelfId);
+          return { shelves, activeShelf };
+        }),
     }),
     {
       name: "fragrances",
@@ -246,6 +334,9 @@ export const useFragrancesStore = create<FragrancesState>()(
         fragrances: state.fragrances,
         activeFilters: state.activeFilters,
         sortState: state.sortState,
+        shelves: state.shelves,
+        activeShelfId: state.activeShelfId,
+        currentSelection: state.currentSelection,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -255,6 +346,8 @@ export const useFragrancesStore = create<FragrancesState>()(
           state.searchQuery = "";
           state.sortedFragrances = applySort(applySearch(state.filteredFragrances, ""), state.sortState);
           state.todayFragrances = computeTodayFragrances(state.fragrances);
+          state.activeShelf = computeActiveShelf(state.shelves, state.activeShelfId);
+          state.selectionCount = state.currentSelection.length;
         }
       },
     }

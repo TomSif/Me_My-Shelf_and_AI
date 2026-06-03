@@ -16,7 +16,7 @@ type ContextMenu = { x: number; y: number; fragrance: Fragrance };
 
 export function BottleWall({ fragrances, filteredIds, selectedId, onSelect, onDeselect }: Props) {
   const navigate = useNavigate();
-  const { wearToday, unwearToday } = useFragrancesStore();
+  const { wearToday, unwearToday, addToSelection, removeFromSelection, currentSelection } = useFragrancesStore();
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
 
   useEffect(() => {
@@ -42,6 +42,7 @@ export function BottleWall({ fragrances, filteredIds, selectedId, onSelect, onDe
             fragrance={f}
             selected={f.id === selectedId}
             dimmed={filteredIds !== undefined && !filteredIds.has(f.id)}
+            inShelf={currentSelection.includes(f.id)}
             onSelect={(e) => { e.stopPropagation(); onSelect(f); }}
             onOpen={() => navigate(`/fragrance/${f.id}`)}
             onContextMenu={(e) => {
@@ -69,22 +70,37 @@ export function BottleWall({ fragrances, filteredIds, selectedId, onSelect, onDe
         >
           {(() => {
             const worn = isWornToday(contextMenu.fragrance);
+            const inShelf = currentSelection.includes(contextMenu.fragrance.id);
             return (
-              <button
-                type="button"
-                className="w-full text-left px-3 py-1.5 transition-colors"
-                style={{ color: worn ? "var(--text-muted)" : "var(--text-primary)" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--search-bg)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
-                onClick={() => {
-                  worn
-                    ? unwearToday(contextMenu.fragrance.id)
-                    : wearToday(contextMenu.fragrance.id);
-                  setContextMenu(null);
-                }}
-              >
-                {worn ? "Porté aujourd'hui ✓" : "Porter aujourd'hui"}
-              </button>
+              <>
+                <button
+                  type="button"
+                  className="w-full text-left px-3 py-1.5 transition-colors"
+                  style={{ color: worn ? "var(--text-muted)" : "var(--text-primary)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--search-bg)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+                  onClick={() => {
+                    worn ? unwearToday(contextMenu.fragrance.id) : wearToday(contextMenu.fragrance.id);
+                    setContextMenu(null);
+                  }}
+                >
+                  {worn ? "Porté aujourd'hui ✓" : "Porter aujourd'hui"}
+                </button>
+                <div style={{ height: 1, backgroundColor: "var(--border-light)", margin: "2px 0" }} />
+                <button
+                  type="button"
+                  className="w-full text-left px-3 py-1.5 transition-colors"
+                  style={{ color: inShelf ? "var(--text-muted)" : "var(--text-primary)" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--search-bg)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
+                  onClick={() => {
+                    inShelf ? removeFromSelection(contextMenu.fragrance.id) : addToSelection(contextMenu.fragrance.id);
+                    setContextMenu(null);
+                  }}
+                >
+                  {inShelf ? "Dans la sélection ✓" : "Ajouter à la sélection"}
+                </button>
+              </>
             );
           })()}
         </div>
@@ -97,6 +113,7 @@ function BottleCell({
   fragrance,
   selected,
   dimmed,
+  inShelf,
   onSelect,
   onOpen,
   onContextMenu,
@@ -104,6 +121,7 @@ function BottleCell({
   fragrance: Fragrance;
   selected: boolean;
   dimmed: boolean;
+  inShelf: boolean;
   onSelect: (e: React.MouseEvent) => void;
   onOpen: () => void;
   onContextMenu: (e: React.MouseEvent) => void;
@@ -132,6 +150,13 @@ function BottleCell({
       onContextMenu={onContextMenu}
     >
       <FragranceBottle families={fragrance.families} />
+
+      {inShelf && (
+        <div
+          className="absolute bottom-1 right-0.5 w-2 h-2 rounded-full"
+          style={{ backgroundColor: "var(--icon-active)" }}
+        />
+      )}
 
       <div
         className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1
