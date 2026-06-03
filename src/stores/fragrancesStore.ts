@@ -125,7 +125,8 @@ interface FragrancesState {
   shelves: Shelf[];
   activeShelfId: string | null;
   activeShelf: Shelf | undefined;
-  activeShelfCount: number;
+  currentSelection: string[];
+  selectionCount: number;
   add: (data: NewFragrance) => string;
   update: (id: string, data: Partial<NewFragrance>) => void;
   remove: (id: string) => void;
@@ -135,8 +136,10 @@ interface FragrancesState {
   setSearchQuery: (query: string) => void;
   wearToday: (id: string) => void;
   unwearToday: (id: string) => void;
-  addToShelf: (fragranceId: string) => void;
-  removeFromShelf: (fragranceId: string, shelfId?: string) => void;
+  addToSelection: (fragranceId: string) => void;
+  removeFromSelection: (fragranceId: string) => void;
+  saveSelection: (name: string) => void;
+  clearSelection: () => void;
   deleteShelf: (shelfId: string) => void;
   setActiveShelf: (shelfId: string | null) => void;
   createShelf: (name: string) => void;
@@ -158,7 +161,8 @@ export const useFragrancesStore = create<FragrancesState>()(
       shelves: [],
       activeShelfId: null,
       activeShelf: undefined,
-      activeShelfCount: 0,
+      currentSelection: [],
+      selectionCount: 0,
       add: (data) => {
         const id = crypto.randomUUID();
         set((state) => {
@@ -260,38 +264,37 @@ export const useFragrancesStore = create<FragrancesState>()(
             todayFragrances: computeTodayFragrances(fragrances),
           };
         }),
-      addToShelf: (fragranceId) =>
+      addToSelection: (fragranceId) =>
         set((state) => {
-          const existing = computeActiveShelf(state.shelves, state.activeShelfId);
-          if (existing && existing.fragranceIds.includes(fragranceId)) return {};
-          let shelves: Shelf[];
-          let activeShelfId: string;
-          if (existing) {
-            const updated = { ...existing, fragranceIds: [...existing.fragranceIds, fragranceId] };
-            shelves = state.shelves.map((s) => s.id === updated.id ? updated : s);
-            activeShelfId = updated.id;
-          } else {
-            const newShelf: Shelf = {
-              id: crypto.randomUUID(),
-              name: autoShelfName(),
-              createdAt: new Date().toISOString(),
-              fragranceIds: [fragranceId],
-            };
-            shelves = [...state.shelves, newShelf];
-            activeShelfId = newShelf.id;
-          }
-          const activeShelf = computeActiveShelf(shelves, activeShelfId);
-          return { shelves, activeShelfId, activeShelf, activeShelfCount: activeShelf?.fragranceIds.length ?? 0 };
+          if (state.currentSelection.includes(fragranceId)) return {};
+          const currentSelection = [...state.currentSelection, fragranceId];
+          return { currentSelection, selectionCount: currentSelection.length };
         }),
-      removeFromShelf: (fragranceId, shelfId) =>
+      removeFromSelection: (fragranceId) =>
         set((state) => {
-          const targetId = shelfId ?? state.activeShelfId;
-          const shelves = state.shelves.map((s) =>
-            s.id === targetId ? { ...s, fragranceIds: s.fragranceIds.filter((id) => id !== fragranceId) } : s
-          );
-          const activeShelf = computeActiveShelf(shelves, state.activeShelfId);
-          return { shelves, activeShelf, activeShelfCount: activeShelf?.fragranceIds.length ?? 0 };
+          const currentSelection = state.currentSelection.filter((id) => id !== fragranceId);
+          return { currentSelection, selectionCount: currentSelection.length };
         }),
+      saveSelection: (name) =>
+        set((state) => {
+          if (state.currentSelection.length === 0) return {};
+          const newShelf: Shelf = {
+            id: crypto.randomUUID(),
+            name: name.trim() || autoShelfName(),
+            createdAt: new Date().toISOString(),
+            fragranceIds: [...state.currentSelection],
+          };
+          const shelves = [...state.shelves, newShelf];
+          return {
+            shelves,
+            currentSelection: [],
+            selectionCount: 0,
+            activeShelfId: newShelf.id,
+            activeShelf: newShelf,
+          };
+        }),
+      clearSelection: () =>
+        set(() => ({ currentSelection: [], selectionCount: 0 })),
       deleteShelf: (shelfId) =>
         set((state) => {
           const shelves = state.shelves.filter((s) => s.id !== shelfId);
@@ -299,12 +302,12 @@ export const useFragrancesStore = create<FragrancesState>()(
             ? (shelves[0]?.id ?? null)
             : state.activeShelfId;
           const activeShelf = computeActiveShelf(shelves, activeShelfId);
-          return { shelves, activeShelfId, activeShelf, activeShelfCount: activeShelf?.fragranceIds.length ?? 0 };
+          return { shelves, activeShelfId, activeShelf };
         }),
       setActiveShelf: (shelfId) =>
         set((state) => {
           const activeShelf = computeActiveShelf(state.shelves, shelfId);
-          return { activeShelfId: shelfId, activeShelf, activeShelfCount: activeShelf?.fragranceIds.length ?? 0 };
+          return { activeShelfId: shelfId, activeShelf };
         }),
       createShelf: (name) =>
         set((state) => {
@@ -315,7 +318,7 @@ export const useFragrancesStore = create<FragrancesState>()(
             fragranceIds: [],
           };
           const shelves = [...state.shelves, newShelf];
-          return { shelves, activeShelfId: newShelf.id, activeShelf: newShelf, activeShelfCount: 0 };
+          return { shelves, activeShelfId: newShelf.id, activeShelf: newShelf };
         }),
       renameShelf: (shelfId, name) =>
         set((state) => {
@@ -333,6 +336,7 @@ export const useFragrancesStore = create<FragrancesState>()(
         sortState: state.sortState,
         shelves: state.shelves,
         activeShelfId: state.activeShelfId,
+        currentSelection: state.currentSelection,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
@@ -343,7 +347,7 @@ export const useFragrancesStore = create<FragrancesState>()(
           state.sortedFragrances = applySort(applySearch(state.filteredFragrances, ""), state.sortState);
           state.todayFragrances = computeTodayFragrances(state.fragrances);
           state.activeShelf = computeActiveShelf(state.shelves, state.activeShelfId);
-          state.activeShelfCount = state.activeShelf?.fragranceIds.length ?? 0;
+          state.selectionCount = state.currentSelection.length;
         }
       },
     }

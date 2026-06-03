@@ -82,7 +82,7 @@ export function Atelier() {
 function AtelierOpen({ section, onSectionChange, onClose }: {
   section: Section; onSectionChange: (s: Section) => void; onClose: () => void;
 }) {
-  const { activeShelfCount } = useFragrancesStore();
+  const { selectionCount } = useFragrancesStore();
 
   const title = section === "etageres" ? "my-shelfs" : "L'Atelier";
   const subtitle = section === "etageres" ? "Gérez vos vues et sélections" : "Composez votre collection";
@@ -156,12 +156,12 @@ function AtelierOpen({ section, onSectionChange, onClose }: {
               }}
             >
               <span>{label}</span>
-              {isEtageres && activeShelfCount > 0 && (
+              {isEtageres && selectionCount > 0 && (
                 <span
                   className="h-5 min-w-5 px-1.5 rounded-full flex items-center justify-center text-xs font-medium leading-none"
                   style={{ backgroundColor: "var(--icon-active)", color: "#fff" }}
                 >
-                  {activeShelfCount}
+                  {selectionCount}
                 </span>
               )}
             </button>
@@ -174,7 +174,7 @@ function AtelierOpen({ section, onSectionChange, onClose }: {
 
 function AtelierClosed({ onOpen }: { onOpen: (s?: Section) => void }) {
   const navigate = useNavigate();
-  const { activeShelfCount } = useFragrancesStore();
+  const { selectionCount } = useFragrancesStore();
   return (
     <div
       className="flex flex-col items-center gap-4 py-4"
@@ -199,12 +199,12 @@ function AtelierClosed({ onOpen }: { onOpen: (s?: Section) => void }) {
           title={label}
         >
           {short}
-          {label === "Étagères" && activeShelfCount > 0 && (
+          {label === "Étagères" && selectionCount > 0 && (
             <span
               className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full flex items-center justify-center text-[10px] font-medium leading-none"
               style={{ backgroundColor: "var(--icon-active)", color: "#fff" }}
             >
-              {activeShelfCount}
+              {selectionCount}
             </span>
           )}
         </button>

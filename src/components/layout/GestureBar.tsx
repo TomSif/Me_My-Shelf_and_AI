@@ -22,7 +22,7 @@ const HINTS = [
 
 export function GestureBar({ selectedFragrance, hasPrev, hasNext, onClose, onPrev, onNext }: Props) {
   const navigate = useNavigate();
-  const { wearToday, unwearToday, addToShelf, removeFromShelf, activeShelf } = useFragrancesStore();
+  const { wearToday, unwearToday, addToSelection, removeFromSelection, currentSelection } = useFragrancesStore();
 
   useEffect(() => {
     if (!selectedFragrance) return;
@@ -41,7 +41,7 @@ export function GestureBar({ selectedFragrance, hasPrev, hasNext, onClose, onPre
   const volumeLabel = f && f.volumeMl > 0 ? `${f.remainingMl} / ${f.volumeMl} ml` : null;
   const visibleTags = f ? f.tags.slice(0, 3) : [];
   const wornToday = f ? isWornToday(f) : false;
-  const inShelf = f ? (activeShelf?.fragranceIds.includes(f.id) ?? false) : false;
+  const inShelf = f ? currentSelection.includes(f.id) : false;
 
   return (
     <footer
@@ -127,11 +127,11 @@ export function GestureBar({ selectedFragrance, hasPrev, hasNext, onClose, onPre
             </button>
             <button
               type="button"
-              onClick={() => f && (inShelf ? removeFromShelf(f.id) : addToShelf(f.id))}
+              onClick={() => f && (inShelf ? removeFromSelection(f.id) : addToSelection(f.id))}
               className="text-xs transition-opacity"
               style={{ color: inShelf ? "var(--text-muted)" : "var(--icon-active)", opacity: 0.85 }}
             >
-              {inShelf ? "Dans l'étagère ✓" : "Ajouter à l'étagère"}
+              {inShelf ? "Dans la sélection ✓" : "Ajouter à la sélection"}
             </button>
             <button
               type="button"

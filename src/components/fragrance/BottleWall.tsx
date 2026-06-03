@@ -16,7 +16,7 @@ type ContextMenu = { x: number; y: number; fragrance: Fragrance };
 
 export function BottleWall({ fragrances, filteredIds, selectedId, onSelect, onDeselect }: Props) {
   const navigate = useNavigate();
-  const { wearToday, unwearToday, addToShelf, removeFromShelf, activeShelf } = useFragrancesStore();
+  const { wearToday, unwearToday, addToSelection, removeFromSelection, currentSelection } = useFragrancesStore();
   const [contextMenu, setContextMenu] = useState<ContextMenu | null>(null);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export function BottleWall({ fragrances, filteredIds, selectedId, onSelect, onDe
             fragrance={f}
             selected={f.id === selectedId}
             dimmed={filteredIds !== undefined && !filteredIds.has(f.id)}
-            inShelf={activeShelf?.fragranceIds.includes(f.id) ?? false}
+            inShelf={currentSelection.includes(f.id)}
             onSelect={(e) => { e.stopPropagation(); onSelect(f); }}
             onOpen={() => navigate(`/fragrance/${f.id}`)}
             onContextMenu={(e) => {
@@ -70,7 +70,7 @@ export function BottleWall({ fragrances, filteredIds, selectedId, onSelect, onDe
         >
           {(() => {
             const worn = isWornToday(contextMenu.fragrance);
-            const inShelf = activeShelf?.fragranceIds.includes(contextMenu.fragrance.id) ?? false;
+            const inShelf = currentSelection.includes(contextMenu.fragrance.id);
             return (
               <>
                 <button
@@ -94,11 +94,11 @@ export function BottleWall({ fragrances, filteredIds, selectedId, onSelect, onDe
                   onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--search-bg)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
                   onClick={() => {
-                    inShelf ? removeFromShelf(contextMenu.fragrance.id) : addToShelf(contextMenu.fragrance.id);
+                    inShelf ? removeFromSelection(contextMenu.fragrance.id) : addToSelection(contextMenu.fragrance.id);
                     setContextMenu(null);
                   }}
                 >
-                  {inShelf ? "Dans l'étagère ✓" : "Ajouter à l'étagère"}
+                  {inShelf ? "Dans la sélection ✓" : "Ajouter à la sélection"}
                 </button>
               </>
             );
