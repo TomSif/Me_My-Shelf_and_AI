@@ -15,26 +15,39 @@ export function ShelfPage() {
     ? [shelves[shelves.length - 1], ...shelves, shelves[0]]
     : shelves;
 
-  // Scroll initial vers l'étagère active — attend que clientHeight > 0
+  // Scroll initial vers l'étagère active — ResizeObserver attend les vraies dimensions
   useEffect(() => {
     const el = ribbonRef.current;
     if (!el || shelves.length === 0) return;
 
-    function scrollToActive() {
-      if (!el) return;
+    let done = false;
+
+    function doScroll() {
+      if (done || !el) return;
       const h = el.clientHeight;
-      if (h === 0) { requestAnimationFrame(scrollToActive); return; }
+      if (h === 0) return;
+      done = true;
       const activeIndex = activeShelfId
         ? shelves.findIndex((s) => s.id === activeShelfId)
         : 0;
       const realIndex = activeIndex >= 0 ? activeIndex : 0;
       const slideIndex = loop ? realIndex + 1 : realIndex;
-      el.style.scrollBehavior = "auto";
-      el.scrollTop = h * slideIndex;
-      el.style.scrollBehavior = "";
+      const target = el.children[slideIndex] as HTMLElement | undefined;
+      if (target) {
+        target.scrollIntoView({ behavior: "instant" as ScrollBehavior, block: "start" });
+      } else {
+        el.style.scrollBehavior = "auto";
+        el.scrollTop = h * slideIndex;
+        el.style.scrollBehavior = "";
+      }
+      observer.disconnect();
     }
 
-    requestAnimationFrame(scrollToActive);
+    const observer = new ResizeObserver(doScroll);
+    observer.observe(el);
+    doScroll();
+
+    return () => observer.disconnect();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Repositionnement silencieux quand on atteint un clone

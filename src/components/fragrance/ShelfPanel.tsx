@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import type { Shelf } from "../../types/fragrance";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
 
@@ -14,6 +14,7 @@ const TABS: { id: Tab; label: string }[] = [
 
 export function ShelfPanel() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const {
     shelves,
     activeShelfId,
@@ -31,7 +32,7 @@ export function ShelfPanel() {
     renameShelf,
   } = useFragrancesStore();
 
-  const [tab, setTab] = useState<Tab>("selection");
+  const [tab, setTab] = useState<Tab>(pathname === "/shelf" ? "etageres" : "selection");
   const [saveName, setSaveName] = useState("");
   const [saving, setSaving] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
