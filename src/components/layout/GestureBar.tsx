@@ -139,7 +139,7 @@ export function GestureBar({ selectedFragrance, hasPrev, hasNext, onClose, onPre
               className="text-xs transition-opacity"
               style={{ color: "var(--icon-active)", opacity: 0.85 }}
             >
-              Voir dans l'étagère →
+              Vue étagères →
             </button>
           </div>
         </div>

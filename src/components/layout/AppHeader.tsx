@@ -79,6 +79,8 @@ export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadg
         backgroundColor: "var(--header-bg)",
         borderBottom: "1px solid var(--header-border)",
         backdropFilter: "blur(var(--glass-blur))",
+        position: "relative",
+        zIndex: 100,
       }}
     >
       <Link

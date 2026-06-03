@@ -6,7 +6,7 @@ import { AppLayout } from "../components/layout/AppLayout";
 import { FragranceBottle } from "../components/fragrance/FragranceBottle";
 
 export function ShelfPage() {
-  const { shelves, activeShelfId, fragrances, deleteShelf, setActiveShelf } = useFragrancesStore();
+  const { shelves, activeShelfId, fragrances, filteredFragrances, hasActiveFilters, deleteShelf, setActiveShelf } = useFragrancesStore();
   const ribbonRef = useRef<HTMLDivElement>(null);
 
   // Slides = [clone-last, ...real, clone-first] pour le loop infini
@@ -142,6 +142,7 @@ export function ShelfPage() {
                 key={`${shelf.id}-${idx}`}
                 shelf={shelf}
                 fragrances={fragrances}
+                filteredIds={hasActiveFilters ? new Set(filteredFragrances.map(f => f.id)) : null}
                 isActive={shelf.id === activeShelfId}
                 onActivate={() => setActiveShelf(shelf.id)}
                 onDelete={() => handleDelete(shelf.id)}
@@ -192,20 +193,26 @@ export function ShelfPage() {
 function ShelfSlide({
   shelf,
   fragrances,
+  filteredIds,
   isActive,
   onActivate,
   onDelete,
 }: {
   shelf: Shelf;
   fragrances: ReturnType<typeof useFragrancesStore>["fragrances"];
+  filteredIds: Set<string> | null;
   isActive: boolean;
   onActivate: () => void;
   onDelete: () => void;
 }) {
   const navigate = useNavigate();
-  const shelfFragrances = shelf.fragranceIds
+  const allShelfFragrances = shelf.fragranceIds
     .map((id) => fragrances.find((f) => f.id === id))
     .filter(Boolean) as typeof fragrances;
+  const shelfFragrances = filteredIds
+    ? allShelfFragrances.filter((f) => filteredIds.has(f.id))
+    : allShelfFragrances;
+  const filterActive = filteredIds !== null;
 
   const date = new Date(shelf.createdAt).toLocaleDateString("fr-FR", {
     day: "2-digit",
@@ -237,6 +244,11 @@ function ShelfSlide({
           </div>
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
             {date} · {shelf.fragranceIds.length} parfum{shelf.fragranceIds.length > 1 ? "s" : ""}
+            {filterActive && (
+              <span style={{ color: "var(--icon-active)" }}>
+                {" "}· Filtre actif · {shelfFragrances.length}/{allShelfFragrances.length}
+              </span>
+            )}
           </span>
         </div>
         <button

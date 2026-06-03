@@ -219,7 +219,7 @@ export function ShelfPanel() {
         {tab === "filtre" && (
           <div className="flex flex-col gap-3">
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              Vue basée sur les filtres actifs
+              Ajoute les résultats du filtre actif à ta sélection. Les étagères existantes ne sont pas modifiées — les filtres contrôlent seulement la visibilité dans la vue étagère.
             </p>
             <div
               className="rounded-lg px-3 py-2 text-xs"
@@ -227,17 +227,24 @@ export function ShelfPanel() {
             >
               {filteredFragrances.length} parfum{filteredFragrances.length > 1 ? "s" : ""} correspondent aux filtres actifs
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                filteredFragrances.forEach((f) => addToSelection(f.id));
-                setTab("selection");
-              }}
-              className="text-xs py-1.5 px-3 rounded-lg text-left transition-colors"
-              style={{ color: "var(--icon-active)", backgroundColor: "var(--surface-secondary)" }}
-            >
-              + Ajouter à la sélection
-            </button>
+            {filteredFragrances.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  filteredFragrances.forEach((f) => addToSelection(f.id));
+                  setTab("selection");
+                }}
+                className="text-xs py-1.5 px-3 rounded-lg text-left transition-colors"
+                style={{ color: "var(--icon-active)", backgroundColor: "var(--surface-secondary)" }}
+              >
+                + Ajouter à la sélection ({filteredFragrances.length})
+              </button>
+            )}
+            {filteredFragrances.length === 0 && (
+              <p className="text-xs italic" style={{ color: "var(--text-muted)" }}>
+                Aucun filtre actif — active un filtre depuis l'Atelier.
+              </p>
+            )}
           </div>
         )}
 
