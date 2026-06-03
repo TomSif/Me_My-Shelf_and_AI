@@ -712,5 +712,35 @@ Thomas anticipe l'import depuis Fragrantica et autres. Approche : un adaptateur 
 
 ### Prochaine session
 
+- Issue #21 : mode curation — sélection manuelle vers ShelfPage
+
+---
+
+## Session 2026-06-03 — Issue #17 recherche textuelle
+
+### Ce qui était prévu
+
 - Issue #17 : barre de recherche textuelle
-- Issue #21 : mode curation — sélection vers l'étagère
+
+### Ce qui a été fait
+
+**Issue #17 — Recherche textuelle (`feat/search`, mergée)**
+
+- `applySearch()` dans le store : filtre sur `name` et `brand`, insensible à la casse, query vide = pass-through
+- `searchQuery: string` ajouté à l’interface du store, non persisté (absent de `partialize`)
+- Pipeline complet : `applyFilters → applySearch → applySort → sortedFragrances`
+- `setSearchQuery` : recalcule `sortedFragrances` à chaque frappe sans toucher `filteredFragrances`
+- `onRehydrateStorage` : `searchQuery` forcé à `""` au redémarrage
+- `AppHeader` : input remplace le placeholder statique, bouton × avec restauration du focus, placeholder coloré via `placeholder:text-(--text-muted)` (syntaxe Tailwind v4)
+
+### Décisions prises
+
+**Recherche non persistée.**
+Thomas : « c’est un outil de recherche rapide comme tous les outils du header ». Cohérent avec le modèle mental : les filtres (familles, saisons…) sont des états durables, la recherche est contextuelle et jetable. Implémenté en excluant `searchQuery` de `partialize`.
+
+**`filteredFragrances` reste le résultat des filtres seuls.**
+La recherche textuelle s’intercale entre `filteredFragrances` et `applySort`. `filteredFragrances` conserve sa sémantique (filtres panneau uniquement) — utile si on veut afficher un compteur « X résultats pour ces filtres » séparément de la recherche.
+
+### Prochaine session
+
+- Issue #21 : mode curation — sélection manuelle vers ShelfPage

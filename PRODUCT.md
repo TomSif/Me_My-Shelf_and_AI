@@ -628,12 +628,13 @@ Les champs `tags`, `seasons`, `rating`, `comment` et tous les champs optionnels 
 #18 `feat: tri de la collection — dropdown header, sortedFragrances, pipeline filter→sort` — mergée
 #25 `feat: log d'utilisation — wearToday/unwearToday, todayFragrances, boutons toggle` — mergée
 #26 `feat: Aujourd'hui — Mezzanine, ruban du jour, clic droit flacons` — mergée
+#17 `feat: recherche textuelle — barre header, name/brand, temps réel, bouton ×` — mergée
 
 ---
 
 ## Issues v1 — en cours
 
-> **Prochaine issue à implémenter : #26 (Aujourd'hui — Mezzanine)**
+> **Prochaine issue à implémenter : #21 (Curation manuelle)**
 
 ---
 
