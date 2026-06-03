@@ -629,12 +629,14 @@ Les champs `tags`, `seasons`, `rating`, `comment` et tous les champs optionnels 
 #25 `feat: log d'utilisation — wearToday/unwearToday, todayFragrances, boutons toggle` — mergée
 #26 `feat: Aujourd'hui — Mezzanine, ruban du jour, clic droit flacons` — mergée
 #17 `feat: recherche textuelle — barre header, name/brand, temps réel, bouton ×` — mergée
+#21 `feat: curation — étagères persistées, sélection courante, panneau my-shelfs, carousel loop` — mergée
+#27 `feat: panneau my-shelfs — SÉLECTION/ÉTAGÈRES/FILTRE/AUCUN, saveSelection, sync carousel` — mergée
 
 ---
 
 ## Issues v1 — en cours
 
-> **Prochaine issue à implémenter : #21 (Curation manuelle)**
+> **Prochaine issue à implémenter : à définir**
 
 ---
 
@@ -1280,12 +1282,12 @@ sélectionner 5 parfums depuis le résultat, les envoyer vers l'étagère.
 
 **Critères d'acceptance :**
 
-- [ ] `selectedIds: string[]` dans le store, persisté localStorage
-- [ ] Clic droit sur un flacon → menu contextuel → "Ajouter à la sélection"
-- [ ] Indicateur visuel sur les flacons sélectionnés dans `BottleWall`
-- [ ] Compteur de sélection visible (ex: "5 parfums sélectionnés")
-- [ ] `ShelfPage` affiche les parfums sélectionnés si sélection active
-- [ ] Bouton "Vider la sélection" dans `ShelfPage`
+- [x] `currentSelection: string[]` dans le store, persisté localStorage
+- [x] Clic droit sur un flacon → menu contextuel → "Ajouter à la sélection"
+- [x] Indicateur visuel sur les flacons sélectionnés dans `BottleWall`
+- [x] Compteur de sélection visible (badge Atelier = selectionCount)
+- [x] `ShelfPage` : carousel vertical snap, loop infini, navigation prev/next synchronisée
+- [x] Bouton "Vider la sélection" dans le panneau SÉLECTION
 - [ ] Bouton "Envoyer vers l'étagère" accessible depuis `GestureBar`
       quand au moins un parfum est sélectionné
 
@@ -1307,21 +1309,21 @@ Le panneau "my-shelfs" remplace l'affichage dans l'Atelier quand l'onglet
 
 **Critères d'acceptance :**
 
-- [ ] `type: "named" | "daily"` ajouté au type `Shelf`
-- [ ] `createShelf(name)` dans le store — crée une étagère nommée vide, la set active
-- [ ] `renameShelf(id, name)` dans le store
-- [ ] `addToShelf` crée les étagères avec `type: "daily"`
-- [ ] L'Atelier switche entre FilterPanel ("Filtrer") et ShelfPanel ("Étagères")
-- [ ] Header du panneau : "my-shelfs" + sous-titre + bouton fermer
-- [ ] 4 onglets : VUES \| HISTORIQUE \| FILTRE \| AUCUN
+- [x] `type: "named" | "daily"` ajouté au type `Shelf`
+- [x] `createShelf(name)` dans le store — crée une étagère nommée vide, la set active
+- [x] `renameShelf(id, name)` dans le store
+- [x] `addToShelf` crée les étagères avec `type: "daily"`
+- [x] L'Atelier switche entre FilterPanel ("Filtrer") et ShelfPanel ("Étagères")
+- [x] Header du panneau : "my-shelfs" + sous-titre + bouton fermer
+- [x] 4 onglets : VUES \| HISTORIQUE \| FILTRE \| AUCUN
   - VUES → étagères `type: "named"`, liste cliquable (set active)
   - HISTORIQUE → étagères `type: "daily"`, triées par date desc
   - FILTRE → aperçu de `filteredFragrances` (lecture seule, sauvegardable)
   - AUCUN → `setActiveShelf(null)`
-- [ ] Par étagère : icône bookmark · nom · count · ⋮ (Renommer, Supprimer)
-- [ ] Section Actions : Sauvegarder la sélection actuelle, Renommer, Supprimer
-- [ ] "Sélection du jour" épinglée en bas si elle existe
-- [ ] Étagère active mise en évidence dans la liste
+- [x] Par étagère : icône bookmark · nom · count · ⋮ (Renommer, Supprimer)
+- [x] Section Actions : Sauvegarder la sélection actuelle, Renommer, Supprimer
+- [x] "Sélection du jour" épinglée en bas si elle existe
+- [x] Étagère active mise en évidence dans la liste
 
 **Hors scope** : déplacer vers, dupliquer, fusion d'étagères, vue spatiale
 
