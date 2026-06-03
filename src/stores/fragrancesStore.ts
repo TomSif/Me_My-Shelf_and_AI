@@ -104,12 +104,8 @@ function computeTodayFragrances(fragrances: Fragrance[]): Fragrance[] {
   return fragrances.filter(isWornToday);
 }
 
-function todayShelfName(): string {
-  const d = new Date();
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const yyyy = d.getFullYear();
-  return `Sélection du jour · ${dd}/${mm}/${yyyy}`;
+function autoShelfName(): string {
+  return new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 }
 
 function computeActiveShelf(shelves: Shelf[], activeShelfId: string | null): Shelf | undefined {
@@ -277,8 +273,7 @@ export const useFragrancesStore = create<FragrancesState>()(
           } else {
             const newShelf: Shelf = {
               id: crypto.randomUUID(),
-              name: todayShelfName(),
-              type: "daily",
+              name: autoShelfName(),
               createdAt: new Date().toISOString(),
               fragranceIds: [fragranceId],
             };
@@ -316,7 +311,6 @@ export const useFragrancesStore = create<FragrancesState>()(
           const newShelf: Shelf = {
             id: crypto.randomUUID(),
             name,
-            type: "named",
             createdAt: new Date().toISOString(),
             fragranceIds: [],
           };

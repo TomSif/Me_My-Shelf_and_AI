@@ -32,7 +32,6 @@ export function ShelfPanel() {
   const [renameValue, setRenameValue] = useState("");
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
-  const namedShelves = shelves.filter((s) => s.type === "named");
   const allByDate = [...shelves].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   function handleCreate() {
@@ -59,7 +58,7 @@ export function ShelfPanel() {
   }
 
   const listedShelves =
-    tab === "vues" ? namedShelves :
+    tab === "vues" ? shelves :
     tab === "historique" ? allByDate : [];
 
   function activateShelf(id: string) {
