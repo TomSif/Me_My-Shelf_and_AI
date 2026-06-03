@@ -795,6 +795,62 @@ mental de l'utilisateur avant de coder, surtout pour une feature aussi centrale.
 
 ---
 
+## Session 2026-06-03 (suite) — Issue #19 : démarrage passe UI (Atelier + FilterPanel)
+
+### Ce qui était prévu
+
+- Issue #19 : passe UI globale (shadcn)
+
+### Ce qui a été fait
+
+Premier pas de la passe UI sur le composant Atelier/FilterPanel comme test.
+Branche `setup/shadcn-ui` ouverte, non mergée — réflexion en cours sur le plan de travail.
+
+**Analyse delta design vs état actuel**
+
+Comparaison de `vue-filterAtelier-2.png` avec l'état réel de l'app.
+Delta identifié : chips trop petites/invisibles (border blanc sur fond blanc),
+ichones nav en texte abrégé ("É", "♡"), chevrons ∧/∨ à remplacer,
+container FilterPanel trop enveloppé, inputs peu contrasés.
+
+**Passe #1 — Chips + lucide-react**
+
+- `--border-chip: rgba(29,27,25,0.12)` ajouté dans index.css — border visible sur fond clair
+- Chips familles/saisons/concentrations : `py-1`, dot 8px, `surface-primary` inactif
+- `lucide-react` installé
+- Nav Atelier : `BookMarked`, `Heart`, `BarChart2`, `Settings` remplacent "É/♡/S/R"
+
+**Passe #2 — FilterPanel + Atelier nav polish**
+
+- `ChevronUp`/`ChevronDown` (lucide 13px) remplacent ∧/∨
+- Séparateurs fins `rgba(29,27,25,0.06)` entre sections
+- Headers sections : 10px uppercase tracking large
+- Label "Filter Atelier" : 9px ghost très discret
+- Inputs : `border-chip`, `surface-primary`
+- Container FilterPanel : plus de carte interne (respire directement dans le panel)
+- Icône `Sparkles` (IA) dans NAV_ITEMS
+- Items non-implémentés (IA, Favoris, Stats, Réglages) à 45% opacity
+- AtelierClosed : helper `NavIcon` avec état actif amber
+- Icônes `Home` + `Filter` (funnel) remplacent le `»` chevron
+
+### Décisions prises
+
+**Approche composant par composant.**
+Plutôt qu'une migration shadcn globale, on avance section par section
+en comparant avec les fichiers de design dans `assets/design/`.
+L'Atelier/FilterPanel sert de prototype pour valider le pattern de style.
+
+**shadcn Installé mais pas encore utilisé pour les composants.**
+Lucide-react installé (icônes). shadcn/ui lui-même n'est pas encore installé —
+la passe actuelle montre qu'on peut aller loin avec Tailwind + CSS variables
+sans dépendances supplémentaires. Switch toggles = candidat naturel pour shadcn.
+
+### Prochaine session
+
+- Établir un plan de travail précis avec issues détaillées pour la passe UI
+- Suite issue #19 : toggles (shadcn Switch ?), header app, vue collection
+---
+
 ## Session 2026-06-03 — Issue #17 recherche textuelle
 
 ### Ce qui était prévu
@@ -902,3 +958,60 @@ mental de l'utilisateur avant de coder, surtout pour une feature aussi centrale.
 ### Prochaine session
 
 - À définir selon les priorités
+
+---
+
+## Session 2026-06-03 (suite) — Issue #19 : démarrage passe UI (Atelier + FilterPanel)
+
+### Ce qui était prévu
+
+- Issue #19 : passe UI globale (shadcn)
+
+### Ce qui a été fait
+
+Premier pas de la passe UI sur le composant Atelier/FilterPanel comme test.
+Branche `setup/shadcn-ui` ouverte, non mergée — réflexion en cours sur le plan de travail.
+
+**Analyse delta design vs état actuel**
+
+Comparaison de `vue-filterAtelier-2.png` avec l'état réel de l'app.
+Delta identifié : chips trop petites/invisibles (border blanc sur fond blanc),
+ichones nav en texte abrégé ("É", "♡"), chevrons ∧/∨ à remplacer,
+container FilterPanel trop enveloppé, inputs peu contrasés.
+
+**Passe #1 — Chips + lucide-react**
+
+- `--border-chip: rgba(29,27,25,0.12)` ajouté dans index.css — border visible sur fond clair
+- Chips familles/saisons/concentrations : `py-1`, dot 8px, `surface-primary` inactif
+- `lucide-react` installé
+- Nav Atelier : `BookMarked`, `Heart`, `BarChart2`, `Settings` remplacent "É/♡/S/R"
+
+**Passe #2 — FilterPanel + Atelier nav polish**
+
+- `ChevronUp`/`ChevronDown` (lucide 13px) remplacent ∧/∨
+- Séparateurs fins `rgba(29,27,25,0.06)` entre sections
+- Headers sections : 10px uppercase tracking large
+- Label "Filter Atelier" : 9px ghost très discret
+- Inputs : `border-chip`, `surface-primary`
+- Container FilterPanel : plus de carte interne (respire directement dans le panel)
+- Icône `Sparkles` (IA) dans NAV_ITEMS
+- Items non-implémentés (IA, Favoris, Stats, Réglages) à 45% opacity
+- AtelierClosed : helper `NavIcon` avec état actif amber
+- Icônes `Home` + `Filter` (funnel) remplacent le `»` chevron
+
+### Décisions prises
+
+**Approche composant par composant.**
+Plutôt qu'une migration shadcn globale, on avance section par section
+en comparant avec les fichiers de design dans `assets/design/`.
+L'Atelier/FilterPanel sert de prototype pour valider le pattern de style.
+
+**shadcn Installé mais pas encore utilisé pour les composants.**
+Lucide-react installé (icônes). shadcn/ui lui-même n'est pas encore installé —
+la passe actuelle montre qu'on peut aller loin avec Tailwind + CSS variables
+sans dépendances supplémentaires. Switch toggles = candidat naturel pour shadcn.
+
+### Prochaine session
+
+- Établir un plan de travail précis avec issues détaillées pour la passe UI
+- Suite issue #19 : toggles (shadcn Switch ?), header app, vue collection
