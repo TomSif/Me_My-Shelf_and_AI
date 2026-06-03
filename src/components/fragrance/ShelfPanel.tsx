@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Shelf } from "../../types/fragrance";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
 
@@ -12,6 +13,7 @@ const TABS: { id: Tab; label: string }[] = [
 ];
 
 export function ShelfPanel() {
+  const navigate = useNavigate();
   const {
     shelves,
     activeShelfId,
@@ -63,8 +65,17 @@ export function ShelfPanel() {
     tab === "vues" ? namedShelves :
     tab === "historique" ? dailyShelves : [];
 
+  function activateShelf(id: string) {
+    setActiveShelf(id);
+    navigate("/shelf");
+  }
+
   return (
     <div className="flex flex-col h-full">
+      {/* Overlay ferme le ⋮ */}
+      {menuOpenId && (
+        <div className="fixed inset-0 z-40" onClick={() => setMenuOpenId(null)} />
+      )}
       {/* Onglets */}
       <div
         className="flex shrink-0 px-3 pt-3 pb-2 gap-1"
@@ -141,7 +152,7 @@ export function ShelfPanel() {
                 isRenaming={renamingId === shelf.id}
                 renameValue={renameValue}
                 menuOpen={menuOpenId === shelf.id}
-                onActivate={() => setActiveShelf(shelf.id)}
+                onActivate={() => activateShelf(shelf.id)}
                 onRenameChange={setRenameValue}
                 onRenameSubmit={() => handleRename(shelf.id)}
                 onRenameCancel={() => setRenamingId(null)}
@@ -231,7 +242,7 @@ export function ShelfPanel() {
               backgroundColor: todayShelf.id === activeShelfId ? "color-mix(in srgb, var(--icon-active) 12%, transparent)" : "var(--surface-secondary)",
               border: todayShelf.id === activeShelfId ? "1px solid color-mix(in srgb, var(--icon-active) 30%, transparent)" : "1px solid transparent",
             }}
-            onClick={() => setActiveShelf(todayShelf.id)}
+            onClick={() => activateShelf(todayShelf.id)}
           >
             <div className="flex flex-col gap-0.5">
               <span className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
