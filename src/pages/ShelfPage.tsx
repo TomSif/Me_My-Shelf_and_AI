@@ -50,6 +50,26 @@ export function ShelfPage() {
     return () => observer.disconnect();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Scroll smooth quand activeShelfId change depuis le panneau (déjà sur /shelf)
+  const prevActiveId = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (prevActiveId.current === undefined) {
+      prevActiveId.current = activeShelfId;
+      return; // skip au montage — géré par le ResizeObserver
+    }
+    if (prevActiveId.current === activeShelfId) return;
+    prevActiveId.current = activeShelfId;
+    const el = ribbonRef.current;
+    if (!el) return;
+    const activeIndex = activeShelfId
+      ? shelves.findIndex((s) => s.id === activeShelfId)
+      : 0;
+    const realIndex = activeIndex >= 0 ? activeIndex : 0;
+    const slideIndex = loop ? realIndex + 1 : realIndex;
+    const target = el.children[slideIndex] as HTMLElement | undefined;
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [activeShelfId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Repositionnement silencieux quand on atteint un clone
   useEffect(() => {
     const el = ribbonRef.current;

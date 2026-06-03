@@ -52,7 +52,8 @@ export function ShelfPanel() {
 
   function activateShelf(id: string) {
     setActiveShelf(id);
-    navigate("/shelf");
+    if (pathname !== "/shelf") navigate("/shelf");
+    // Si déjà sur /shelf, ShelfPage écoute activeShelfId et scrolle
   }
 
   function startRename(shelf: Shelf) {
