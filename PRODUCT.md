@@ -1377,6 +1377,7 @@ Drag & drop · animations · réduction automatique du niveau restant
 | Partager sa collection (lien public)                                                                                         | v2            |
 | Upload photo du flacon                                                                                                       | v2            |
 | Estimation consommation automatique (0,5ml/utilisation × fréquence)                                                          | v2            |
+| Historique de navigation — log des 10 dernières actions (filtres + recherches), rappelable ou sauvegardable comme étagère | v2 |
 | Import/export CSV                                                                                                            | v2            |
 | `useSettingsStore` — `activeGroupBy` persisté (critère de groupement actif)                                                  | v2            |
 | `groupBy(criteria)` dans le store — retourne `Map<string, Fragrance[]>` pour l'étagère spatiale                              | v2            |

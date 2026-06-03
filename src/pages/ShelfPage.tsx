@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useLayoutEffect, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Shelf } from "../types/fragrance";
 import { useFragrancesStore } from "../stores/fragrancesStore";
@@ -9,11 +9,49 @@ export function ShelfPage() {
   const { shelves, activeShelfId, fragrances, deleteShelf, setActiveShelf } = useFragrancesStore();
   const ribbonRef = useRef<HTMLDivElement>(null);
 
-  function scrollToShelf(index: number) {
-    const slides = ribbonRef.current?.children;
-    if (slides && slides[index]) {
-      (slides[index] as HTMLElement).scrollIntoView({ behavior: "smooth", block: "start" });
+  // Slides = [clone-last, ...real, clone-first] pour le loop infini
+  const loop = shelves.length > 1;
+  const slides: Shelf[] = loop
+    ? [shelves[shelves.length - 1], ...shelves, shelves[0]]
+    : shelves;
+
+  // Scroll initial : sauter le clone du dessus
+  useLayoutEffect(() => {
+    const el = ribbonRef.current;
+    if (!el || !loop) return;
+    el.scrollTop = el.clientHeight;
+  }, [loop]);
+
+  // Repositionnement silencieux quand on atteint un clone
+  useEffect(() => {
+    const el = ribbonRef.current;
+    if (!el || !loop) return;
+
+    function onScrollEnd() {
+      const h = el.clientHeight;
+      if (!h) return;
+      const top = Math.round(el.scrollTop);
+      const last = Math.round(h * (shelves.length + 1));
+
+      if (top <= 0) {
+        // clone du dernier → sauter au vrai dernier
+        el.style.scrollBehavior = "auto";
+        el.scrollTop = h * shelves.length;
+        el.style.scrollBehavior = "";
+      } else if (top >= last) {
+        // clone du premier → sauter au vrai premier
+        el.style.scrollBehavior = "auto";
+        el.scrollTop = h;
+        el.style.scrollBehavior = "";
+      }
     }
+
+    el.addEventListener("scrollend", onScrollEnd);
+    return () => el.removeEventListener("scrollend", onScrollEnd);
+  }, [loop, shelves.length]);
+
+  function handleDelete(shelfId: string) {
+    deleteShelf(shelfId);
   }
 
   return (
@@ -26,18 +64,14 @@ export function ShelfPage() {
           className="h-full overflow-y-auto"
           style={{ scrollSnapType: "y mandatory" }}
         >
-          {shelves.map((shelf, index) => (
+          {slides.map((shelf, idx) => (
             <ShelfSlide
-              key={shelf.id}
+              key={`${shelf.id}-${idx}`}
               shelf={shelf}
               fragrances={fragrances}
               isActive={shelf.id === activeShelfId}
               onActivate={() => setActiveShelf(shelf.id)}
-              onDelete={() => {
-                deleteShelf(shelf.id);
-                const next = index > 0 ? index - 1 : 1;
-                setTimeout(() => scrollToShelf(next), 50);
-              }}
+              onDelete={() => handleDelete(shelf.id)}
             />
           ))}
         </div>
@@ -80,10 +114,7 @@ function ShelfSlide({
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
-            <span
-              className="text-lg font-medium"
-              style={{ color: "var(--text-primary)" }}
-            >
+            <span className="text-lg font-medium" style={{ color: "var(--text-primary)" }}>
               {shelf.name}
             </span>
             {isActive && (
@@ -140,7 +171,6 @@ function ShelfSlide({
         </div>
       )}
 
-      {/* Séparateur visuel entre slides */}
       <div style={{ height: 1, backgroundColor: "var(--border-light)" }} />
     </div>
   );
@@ -156,11 +186,11 @@ function EmptyState() {
       <p className="text-sm">Aucune étagère pour l'instant.</p>
       <button
         type="button"
-        onClick={() => navigate("/")}
+        onClick={() => navigate(-1)}
         className="text-sm"
         style={{ color: "var(--icon-active)" }}
       >
-        ← Retour à la collection
+        ← Retour
       </button>
     </div>
   );

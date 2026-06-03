@@ -33,10 +33,7 @@ export function ShelfPanel() {
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
 
   const namedShelves = shelves.filter((s) => s.type === "named");
-  const dailyShelves = shelves
-    .filter((s) => s.type === "daily")
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  const todayShelf = dailyShelves[0];
+  const allByDate = [...shelves].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   function handleCreate() {
     const name = newShelfName.trim();
@@ -63,7 +60,7 @@ export function ShelfPanel() {
 
   const listedShelves =
     tab === "vues" ? namedShelves :
-    tab === "historique" ? dailyShelves : [];
+    tab === "historique" ? allByDate : [];
 
   function activateShelf(id: string) {
     setActiveShelf(id);
@@ -234,27 +231,6 @@ export function ShelfPanel() {
           danger
         />
 
-        {/* Sélection du jour épinglée */}
-        {todayShelf && (
-          <div
-            className="mt-2 flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer"
-            style={{
-              backgroundColor: todayShelf.id === activeShelfId ? "color-mix(in srgb, var(--icon-active) 12%, transparent)" : "var(--surface-secondary)",
-              border: todayShelf.id === activeShelfId ? "1px solid color-mix(in srgb, var(--icon-active) 30%, transparent)" : "1px solid transparent",
-            }}
-            onClick={() => activateShelf(todayShelf.id)}
-          >
-            <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-medium" style={{ color: "var(--text-primary)" }}>
-                {todayShelf.name}
-              </span>
-              <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                {todayShelf.fragranceIds.length} parfum{todayShelf.fragranceIds.length > 1 ? "s" : ""}
-              </span>
-            </div>
-            <span className="text-base" style={{ color: "var(--icon-active)" }}>🔖</span>
-          </div>
-        )}
       </div>
     </div>
   );

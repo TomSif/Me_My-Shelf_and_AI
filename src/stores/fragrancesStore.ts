@@ -145,7 +145,6 @@ interface FragrancesState {
   setActiveShelf: (shelfId: string | null) => void;
   createShelf: (name: string) => void;
   renameShelf: (shelfId: string, name: string) => void;
-  ensureTodayShelf: () => void;
 }
 
 export const useFragrancesStore = create<FragrancesState>()(
@@ -329,20 +328,6 @@ export const useFragrancesStore = create<FragrancesState>()(
           const shelves = state.shelves.map((s) => s.id === shelfId ? { ...s, name } : s);
           const activeShelf = computeActiveShelf(shelves, state.activeShelfId);
           return { shelves, activeShelf };
-        }),
-      ensureTodayShelf: () =>
-        set((state) => {
-          const today = todayPrefix();
-          const exists = state.shelves.some((s) => s.type === "daily" && s.createdAt.startsWith(today));
-          if (exists) return {};
-          const newShelf: Shelf = {
-            id: crypto.randomUUID(),
-            name: todayShelfName(),
-            type: "daily",
-            createdAt: new Date().toISOString(),
-            fragranceIds: [],
-          };
-          return { shelves: [...state.shelves, newShelf] };
         }),
     }),
     {
