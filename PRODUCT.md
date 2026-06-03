@@ -636,7 +636,7 @@ Les champs `tags`, `seasons`, `rating`, `comment` et tous les champs optionnels 
 
 ## Issues v1 — en cours
 
-> **Prochaine issue à implémenter : à définir**
+> **Prochaines issues : #28 → #35 (passe UI, flacons, mobile, i18n, Supabase)**
 
 ---
 
@@ -1358,6 +1358,191 @@ Drag & drop · animations · réduction automatique du niveau restant
 
 **Dépendances** : #23 (AppLayout), #25 (wearToday/unwearToday/todayFragrances)
 **Branche** : `feat/aujourd-hui`
+
+---
+
+### Issue #28 — Composants UI réutilisables
+
+**Titre** : `setup: bibliothèque de composants UI — Toggle, Badge, Chip, Button, Input + shadcn`
+
+**Description** :
+Créer `src/components/ui/` avec les composants réutilisables alignés sur le design system.
+shadcn/ui installé pour les composants complexes uniquement (accessibilité, focus trap, ARIA).
+
+**Critères d'acceptance :**
+
+- [ ] `Toggle.tsx` — switch amber, animation fluide, props `value/onChange/label`
+- [ ] `Badge.tsx` — pastille compteur, variants `primary/ghost`, prop `count`
+- [ ] `Chip.tsx` — pill filtre, prop `color` (CSS variable), état actif/inactif
+- [ ] `Button.tsx` — variants `primary/outline/ghost`, tailles `sm/md`
+- [ ] `Input.tsx` — wrapper input avec `border-chip`, placeholder muted, focus ring amber
+- [ ] shadcn installé — `Dialog` remplace QuickAddModal, `DropdownMenu` pour le menu tri
+- [ ] Composants utilisés dans Atelier, FilterPanel, GestureBar
+
+**Hors scope** : Select, Tooltip, Combobox (v2)
+
+**Branche** : `setup/shadcn-ui` (en cours)
+
+---
+
+### Issue #29 — Typographie + couleurs finales
+
+**Titre** : `style: typographie et palette de couleurs définitives`
+
+**Description** :
+Choisir et intégrer la stack typographique définitive.
+SF Pro (system-ui) pour le corps. Canela ou Cormorant Garamond pour les titres d'affichage.
+Tester les deux avant de figer.
+
+**Critères d'acceptance :**
+
+- [ ] Police de corps : `system-ui` (SF Pro Apple, Segoe UI Windows, Inter fallback web)
+- [ ] Police de titre : Canela ou Cormorant Garamond testée et validée sur les vrais écrans
+- [ ] `@font-face` ou import Google Fonts dans `index.css`
+- [ ] Variables CSS `--font-body` et `--font-display` définies et appliquées
+- [ ] Palette couleurs révisée si nécessaire après test en conditions réelles
+
+**Branche** : `style/typography`
+
+---
+
+### Issue #30 — Système flacons v1
+
+**Titre** : `feat: système flacons v1 — 10 silhouettes SVG + logique d'attribution`
+
+**Description** :
+10 silhouettes SVG inspirées des grandes maisons, dessinées en éléments séparés pour être
+animables en v2 (bouchon, corps, liquide, reflet). Logique d'attribution par marque.
+Le niveau de liquide, les reflets et l'ombre portée restent en backlog v2.
+
+**Critères d'acceptance :**
+
+- [ ] 10 silhouettes SVG dans `src/assets/bottles/` — éléments nommés séparément :
+  `cap`, `body`, `liquid`, `highlight` (architecture animable v2)
+- [ ] Archétypes inspirés (non copiés) des grandes maisons :
+  classique rectangulaire (type Chanel), carré épuré (type Dior),
+  Art Déco (type Guerlain), rond organique (type Hermès),
+  angulaire moderne (type YSL), minimaliste (type Maison Margiela),
+  cylindrique (type Caron), medical/industriel (type CdG),
+  oblique/asymétrique (type Tom Ford), générique (défaut)
+- [ ] Champ `bottleStyleId?: string` ajouté à `Fragrance` (optionnel, non bloquant)
+- [ ] `FragranceBottle.tsx` accepte `bottleStyleId` — fallback famille olfactive si absent
+- [ ] Table de correspondance marque → bottleStyleId dans `utils/bottles.ts`
+
+**Hors scope** : niveau liquide, couleur liquide dynamique, reflets, ombre portée, animation (v2)
+
+**Branche** : `feat/bottles-v1`
+
+---
+
+### Issue #31 — Polish header + GestureBar
+
+**Titre** : `style: polish header, GestureBar et menu tri shadcn`
+
+**Description** :
+Refonte visuelle du header et de la GestureBar. Le dropdown tri migre vers shadcn DropdownMenu.
+La Mezzanine reçoit son glass effect définitif.
+
+**Critères d'acceptance :**
+
+- [ ] Header : icône loupe intégrée dans la barre de recherche, layout final
+- [ ] Dropdown tri : migré vers shadcn `DropdownMenu` (accessibilité clavier, Esc, focus)
+- [ ] GestureBar : typographie finale, icônes lucide cohérentes, peek polish
+- [ ] Mezzanine : `backdrop-filter` finalisé, border, shadow, état replié propre
+- [ ] Cohérence visuelle header / Atelier / GestureBar
+
+**Branche** : `style/header-gesturebar`
+
+---
+
+### Issue #32 — Vue mobile — liste responsive
+
+**Titre** : `feat: vue mobile — liste de cartes responsive (< 768px)`
+
+**Description** :
+L'app est desktop-first mais ne doit pas être cassée sur mobile.
+En dessous de 768px, le mur de flacons est remplacé par une liste de cartes scrollable.
+L'Atelier devient un drawer bottom sur mobile.
+
+**Critères d'acceptance :**
+
+- [ ] Breakpoint `md` (768px) : bascule automatique mur de flacons → liste de cartes
+- [ ] Carte mobile : nom, marque, famille (chips colorées), rating, flacon miniature
+- [ ] Tap → FragrancePage
+- [ ] Atelier : drawer bottom sur mobile (au lieu de sidebar gauche)
+- [ ] Header simplifié sur mobile (logo + search + icône filtre)
+- [ ] GestureBar : masquée ou adaptée sur mobile
+
+**Hors scope** : gestures pinch/zoom, animations Framer (v2)
+
+**Branche** : `feat/mobile-layout`
+
+---
+
+### Issue #33 — Architecture i18n
+
+**Titre** : `setup: architecture i18n — strings externalisées, hook useTranslation, FR uniquement`
+
+**Description** :
+Poser l'architecture de traduction sans implémenter plusieurs langues.
+Toutes les chaînes visibles externalisées dans `src/i18n/fr.ts`.
+Un hook `useTranslation()` permet d'ajouter EN plus tard en une journée.
+
+**Critères d'acceptance :**
+
+- [ ] `src/i18n/fr.ts` — dictionnaire de toutes les chaînes UI visibles
+- [ ] Hook `useTranslation(key)` → retourne la chaîne dans la langue active
+- [ ] `locale: "fr"` dans le store, extensible à "en"
+- [ ] Composants principaux migrés : header, Atelier, GestureBar, FilterPanel, ShelfPanel
+- [ ] Aucune traduction EN requise — architecture seulement
+
+**Branche** : `setup/i18n`
+
+---
+
+### Issue #34 — Réglages v1
+
+**Titre** : `feat: page Réglages v1 — densité d'affichage + langue`
+
+**Description** :
+Page `/settings` accessible depuis l'icône Réglages dans l'Atelier.
+Deux paramètres : densité d'affichage et langue (EN stub).
+
+**Critères d'acceptance :**
+
+- [ ] Route `/settings` → `SettingsPage` dans AppLayout
+- [ ] Densité : `compact` (40px, actuel) / `comfortable` (56px, plus aéré)
+- [ ] Langue : toggle FR / EN (EN = stub, retourne FR tant que traductions absentes)
+- [ ] Paramètres persistés (`useSettingsStore` ou clé localStorage dédiée)
+- [ ] Lien retour vers la collection
+
+**Branche** : `feat/settings`
+
+---
+
+### Issue #35 — Migration Supabase
+
+**Titre** : `feat: migration localStorage → Supabase (sans auth v1)`
+
+**Description** :
+Remplacer localStorage par Supabase comme source de données.
+Pas d'authentification en v1 — clé anon, RLS permissif.
+L'architecture Zustand est déjà prévue pour ce swap propre via `fragranceService.ts`.
+
+**Critères d'acceptance :**
+
+- [ ] Projet Supabase créé, tables `fragrances` et `shelves` créées
+- [ ] `fragranceService.ts` implémenté — CRUD Supabase remplace localStorage
+- [ ] Store Zustand : option `storage` swappée vers appels service async
+- [ ] Types `Fragrance` et `Shelf` mappés vers rows PostgreSQL
+- [ ] Champs tableaux (`families`, `seasons`, `tags`) → `text[]` PostgreSQL
+- [ ] Outil de migration : import depuis localStorage existant
+- [ ] Pas d'auth — clé anon Supabase, RLS désactivé ou permissif en v1
+
+**Hors scope** : Auth, multi-utilisateurs, partage (v2)
+
+**Dépendances** : toutes les issues v1 (#28–#34)
+**Branche** : `feat/supabase`
 
 ---
 
