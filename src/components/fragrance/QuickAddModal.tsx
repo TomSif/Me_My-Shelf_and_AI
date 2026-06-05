@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
 import { FamilyChips } from "./FamilyChips";
 import type { OlfactoryFamily } from "../../types/fragrance";
+import { Input } from "../ui/Input";
 
 interface Props {
   onClose: () => void;
@@ -32,12 +33,6 @@ export function QuickAddModal({ onClose }: Props) {
     });
     onClose();
   }
-
-  const inputStyle = {
-    backgroundColor: "var(--surface-secondary)",
-    color: "var(--text-primary)",
-    border: "1px solid var(--border-light)",
-  };
 
   const labelStyle = {
     color: "var(--text-muted)",
@@ -87,26 +82,20 @@ export function QuickAddModal({ onClose }: Props) {
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
             <label style={labelStyle}>Nom du parfum</label>
-            <input
-              type="text"
+            <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Sauvage"
               autoFocus
-              className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={inputStyle}
             />
           </div>
 
           <div className="flex flex-col gap-1">
             <label style={labelStyle}>Marque</label>
-            <input
-              type="text"
+            <Input
               value={brand}
               onChange={(e) => setBrand(e.target.value)}
               placeholder="Dior"
-              className="px-3 py-2 rounded-lg text-sm outline-none"
-              style={inputStyle}
             />
           </div>
 

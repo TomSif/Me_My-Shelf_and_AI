@@ -1,47 +1,56 @@
-import { useState, useMemo } from "react";
-import { ChevronUp, ChevronDown } from "lucide-react";
-import type { OlfactoryFamily, Season, Concentration } from "../../types/fragrance";
+import React, { useState, useMemo } from "react";
+import { ChevronUp, ChevronDown, Leaf, Sun, Snowflake } from "lucide-react";
+import type {
+  OlfactoryFamily,
+  Season,
+  Concentration,
+} from "../../types/fragrance";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
+import { Chip } from "../ui/Chip";
+import { FAMILY_CONFIG } from "../../utils/families";
+import { MapleLeafIcon } from "../ui/MapleLeafIcon";
+import { ConcentrationBottle } from "../ui/ConcentrationBottle";
+import { Tag } from "../ui/Tag";
+import { Toggle } from "../ui/Toggle";
+import { Input } from "../ui/Input";
 
 const FAMILIES: OlfactoryFamily[] = [
-  "hespéridé", "floral", "herbacé", "épicé", "gourmand",
-  "boisé", "résineux", "musqué", "cuiré", "alcoolisé", "minéral",
-  "artificiel", "indéfini",
+  "hespéridé",
+  "floral",
+  "herbacé",
+  "épicé",
+  "gourmand",
+  "boisé",
+  "résineux",
+  "musqué",
+  "cuiré",
+  "alcoolisé",
+  "minéral",
+  "artificiel",
+  "indéfini",
 ];
 
-const SEASONS: { value: Season; icon: string }[] = [
-  { value: "printemps", icon: "✿" },
-  { value: "été", icon: "☀" },
-  { value: "automne", icon: "◆" },
-  { value: "hiver", icon: "✦" },
+const SEASONS: { value: Season; icon: React.ReactNode; color: string }[] = [
+  { value: "printemps", icon: <Leaf size={24} />, color: "#5a9e6f" },
+  { value: "été", icon: <Sun size={24} />, color: "#d9a030" },
+  { value: "automne", icon: <MapleLeafIcon size={24} />, color: "#c86020" },
+  { value: "hiver", icon: <Snowflake size={24} />, color: "#4a90c4" },
 ];
 
 const CONCENTRATIONS: Concentration[] = [
-  "cologne", "eau de toilette", "eau de parfum", "parfum", "extrait",
+  "cologne",
+  "eau de toilette",
+  "eau de parfum",
+  "parfum",
+  "extrait",
 ];
 
 const CONC_LABEL: Record<Concentration, string> = {
-  cologne: "Cologne",
+  cologne: "EDC",
   "eau de toilette": "EDT",
   "eau de parfum": "EDP",
   parfum: "Parfum",
   extrait: "Extrait",
-};
-
-const FAMILY_COLOR: Record<OlfactoryFamily, string> = {
-  hespéridé: "var(--family-hesperide)",
-  floral: "var(--family-floral)",
-  herbacé: "var(--family-herbace)",
-  épicé: "var(--family-epice)",
-  gourmand: "var(--family-gourmand)",
-  boisé: "var(--family-boise)",
-  résineux: "var(--family-resineux)",
-  musqué: "var(--family-musque)",
-  cuiré: "var(--family-cuire)",
-  alcoolisé: "var(--family-alcoolise)",
-  minéral: "var(--family-mineral)",
-  artificiel: "var(--family-artificiel)",
-  indéfini: "var(--family-indefini)",
 };
 
 function toggle<T>(arr: T[], item: T): T[] {
@@ -49,25 +58,42 @@ function toggle<T>(arr: T[], item: T): T[] {
 }
 
 export function FilterPanel() {
-  const { fragrances, activeFilters, setFilter, clearFilters, hasActiveFilters } =
-    useFragrancesStore();
+  const {
+    fragrances,
+    activeFilters,
+    setFilter,
+    clearFilters,
+    hasActiveFilters,
+  } = useFragrancesStore();
 
   const allTags = useMemo(
     () => [...new Set(fragrances.flatMap((f) => f.tags))].sort(),
-    [fragrances]
+    [fragrances],
   );
   const allBrands = useMemo(
     () => [...new Set(fragrances.map((f) => f.brand))].sort(),
-    [fragrances]
+    [fragrances],
   );
   const allPerfumers = useMemo(
     () =>
-      [...new Set(fragrances.flatMap((f) => (f.perfumer ? [f.perfumer] : [])))].sort(),
-    [fragrances]
+      [
+        ...new Set(fragrances.flatMap((f) => (f.perfumer ? [f.perfumer] : []))),
+      ].sort(),
+    [fragrances],
   );
 
-  const { families, seasons, concentrations, tags, favoritesOnly, neverWorn, samplesOnly, brands, perfumers, pyramidNotes } =
-    activeFilters;
+  const {
+    families,
+    seasons,
+    concentrations,
+    tags,
+    favoritesOnly,
+    neverWorn,
+    samplesOnly,
+    brands,
+    perfumers,
+    pyramidNotes,
+  } = activeFilters;
 
   const selectionSummary = [
     favoritesOnly && "favoris",
@@ -97,36 +123,21 @@ export function FilterPanel() {
             : undefined
         }
       >
-        <div className="flex flex-wrap gap-1.5">
+        <div className="grid grid-cols-2 gap-1.5">
           {FAMILIES.map((f) => {
-            const active = families.includes(f);
+            const { color, Icon } = FAMILY_CONFIG[f];
             return (
-              <button
+              <Chip
                 key={f}
-                type="button"
+                variant="stone"
+                active={families.includes(f)}
+                color={color}
+                icon={<Icon size={13} />}
                 onClick={() => setFilter("families", toggle(families, f))}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs capitalize transition-opacity"
-                style={{
-                  backgroundColor: active ? FAMILY_COLOR[f] : "var(--surface-primary)",
-                  color: active ? "#fff" : "var(--text-secondary)",
-                  border: `1px solid ${active ? FAMILY_COLOR[f] : "var(--border-chip)"}`,
-                  fontWeight: active ? 500 : 400,
-                  opacity: active ? 1 : 0.85,
-                }}
+                className="w-full"
               >
-                <span
-                  style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    backgroundColor: FAMILY_COLOR[f],
-                    display: "inline-block",
-                    flexShrink: 0,
-                    opacity: active ? 0.9 : 0.7,
-                  }}
-                />
                 {f}
-              </button>
+              </Chip>
             );
           })}
         </div>
@@ -137,26 +148,17 @@ export function FilterPanel() {
         defaultOpen
         activeSummary={seasons.length > 0 ? seasons.join(", ") : undefined}
       >
-        <div className="flex flex-wrap gap-1.5">
-          {SEASONS.map(({ value, icon }) => {
-            const active = seasons.includes(value);
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setFilter("seasons", toggle(seasons, value))}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs capitalize transition-opacity"
-                style={{
-                  backgroundColor: active ? "var(--icon-active)" : "var(--surface-primary)",
-                  color: active ? "#fff" : "var(--text-secondary)",
-                  border: `1px solid ${active ? "var(--icon-active)" : "var(--border-chip)"}`,
-                  opacity: active ? 1 : 0.85,
-                }}
-              >
-                {icon} {value}
-              </button>
-            );
-          })}
+        <div className="flex gap-2">
+          {SEASONS.map(({ value, icon, color }) => (
+            <Chip
+              key={value}
+              active={seasons.includes(value)}
+              color={color}
+              icon={icon}
+              iconPadding="1rem"
+              onClick={() => setFilter("seasons", toggle(seasons, value))}
+            />
+          ))}
         </div>
       </CollapsibleSection>
 
@@ -169,27 +171,21 @@ export function FilterPanel() {
             : undefined
         }
       >
-        <div className="flex flex-wrap gap-1.5">
-          {CONCENTRATIONS.map((c) => {
-            const active = concentrations.includes(c);
-            return (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setFilter("concentrations", toggle(concentrations, c))}
-                className="px-2.5 py-1 rounded-full text-xs transition-opacity"
-                style={{
-                  backgroundColor: active ? "var(--icon-active)" : "var(--surface-primary)",
-                  color: active ? "#fff" : "var(--text-secondary)",
-                  border: `1px solid ${active ? "var(--icon-active)" : "var(--border-chip)"}`,
-                  fontWeight: active ? 500 : 400,
-                  opacity: active ? 1 : 0.85,
-                }}
-              >
-                {CONC_LABEL[c]}
-              </button>
-            );
-          })}
+        <div className="grid grid-cols-5 gap-1.5">
+          {CONCENTRATIONS.map((c) => (
+            <Chip
+              key={c}
+              layout="vertical"
+              active={concentrations.includes(c)}
+              icon={<ConcentrationBottle concentration={c} size={0.6} />}
+              onClick={() =>
+                setFilter("concentrations", toggle(concentrations, c))
+              }
+              className="w-full"
+            >
+              {CONC_LABEL[c]}
+            </Chip>
+          ))}
         </div>
       </CollapsibleSection>
 
@@ -198,7 +194,9 @@ export function FilterPanel() {
         title="TAGS"
         defaultOpen={false}
         activeSummary={
-          tags.length > 0 ? `${tags.length} tag${tags.length > 1 ? "s" : ""}` : undefined
+          tags.length > 0
+            ? `${tags.length} tag${tags.length > 1 ? "s" : ""}`
+            : undefined
         }
       >
         <AutocompleteChipInput
@@ -338,10 +336,11 @@ function CollapsibleSection({
           )}
         </span>
         <span className="ml-2 shrink-0" style={{ color: "var(--text-ghost)" }}>
-          {open
-            ? <ChevronUp size={13} strokeWidth={1.5} />
-            : <ChevronDown size={13} strokeWidth={1.5} />
-          }
+          {open ? (
+            <ChevronUp size={13} strokeWidth={1.5} />
+          ) : (
+            <ChevronDown size={13} strokeWidth={1.5} />
+          )}
         </span>
       </button>
       {open && <div className="pb-3">{children}</div>}
@@ -363,23 +362,7 @@ function ToggleRow({
       <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
         {label}
       </span>
-      <button
-        type="button"
-        onClick={() => onChange(!value)}
-        className="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full"
-        style={{
-          backgroundColor: value ? "var(--icon-active)" : "var(--border-light)",
-          transition: `background-color var(--duration-fast) var(--ease-soft)`,
-        }}
-      >
-        <span
-          className="inline-block h-4 w-4 rounded-full bg-white shadow-sm"
-          style={{
-            transform: value ? "translateX(18px)" : "translateX(2px)",
-            transition: `transform var(--duration-fast) var(--ease-soft)`,
-          }}
-        />
-      </button>
+      <Toggle value={value} onChange={onChange} />
     </div>
   );
 }
@@ -402,7 +385,9 @@ function AutocompleteChipInput({
     input.trim() === ""
       ? []
       : suggestions.filter(
-          (s) => !values.includes(s) && s.toLowerCase().includes(input.toLowerCase())
+          (s) =>
+            !values.includes(s) &&
+            s.toLowerCase().includes(input.toLowerCase()),
         );
 
   function add(value: string) {
@@ -420,22 +405,14 @@ function AutocompleteChipInput({
       {values.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {values.map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => remove(v)}
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
-              style={{ backgroundColor: "var(--icon-active)", color: "#fff" }}
-            >
+            <Tag key={v} onRemove={() => remove(v)}>
               {v}
-              <span style={{ opacity: 0.7 }}>×</span>
-            </button>
+            </Tag>
           ))}
         </div>
       )}
       <div className="relative">
-        <input
-          type="text"
+        <Input
           value={input}
           onChange={(e) => {
             setInput(e.target.value);
@@ -444,13 +421,7 @@ function AutocompleteChipInput({
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
           placeholder={placeholder}
-          className="w-full text-xs px-2.5 py-1.5 rounded-lg"
-          style={{
-            backgroundColor: "var(--surface-primary)",
-            color: "var(--text-primary)",
-            border: "1px solid var(--border-chip)",
-            outline: "none",
-          }}
+          className="w-full text-xs"
         />
         {open && filtered.length > 0 && (
           <div
@@ -498,13 +469,18 @@ function PyramidFilter({
     <div className="flex flex-col gap-2">
       {notes.map(({ key, label }) => (
         <div key={key} className="flex items-center gap-2">
-          <span className="text-xs w-10 shrink-0" style={{ color: "var(--text-muted)" }}>
+          <span
+            className="text-xs w-10 shrink-0"
+            style={{ color: "var(--text-muted)" }}
+          >
             {label}
           </span>
           <input
             type="text"
             value={value[key] ?? ""}
-            onChange={(e) => onChange({ ...value, [key]: e.target.value || undefined })}
+            onChange={(e) =>
+              onChange({ ...value, [key]: e.target.value || undefined })
+            }
             placeholder="ex: bergamote"
             className="flex-1 text-xs px-2.5 py-1.5 rounded-lg"
             style={{

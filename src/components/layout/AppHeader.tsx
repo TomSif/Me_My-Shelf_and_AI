@@ -1,7 +1,21 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef } from "react";
 import { Link } from "react-router-dom";
+import { ChevronsUpDown } from "lucide-react";
 import type { SortCriterion, SortDirection } from "../../types/fragrance";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "../ui/DropdownMenu";
 
 interface Props {
   count?: number;
@@ -17,14 +31,12 @@ type SortOption = {
 };
 
 const SORT_OPTIONS: SortOption[] = [
-  { criterion: "none",         label: "Aucun tri" },
-  { criterion: "alphabetic",   label: "Alphabétique",        directions: { asc: "A → Z",             desc: "Z → A" } },
-  { criterion: "createdAt",    label: "Date d'ajout",        directions: { asc: "Ancien → récent",    desc: "Récent → ancien" } },
-  { criterion: "rating",       label: "Note",                directions: { asc: "Moins bon → meilleur", desc: "Meilleur → moins bon" } },
-  { criterion: "purchaseDate", label: "Date d'achat",        directions: { asc: "Ancien → récent",    desc: "Récent → ancien" } },
-  { criterion: "lastUsed",     label: "Dernière utilisation",directions: { asc: "Ancien → récent",    desc: "Récent → ancien" } },
-  { criterion: "purchasePrice",label: "Prix",                directions: { asc: "Moins cher → plus cher", desc: "Plus cher → moins cher" } },
-  { criterion: "random",       label: "Aléatoire" },
+  { criterion: "alphabetic",    label: "Alphabétique",          directions: { asc: "A → Z",                  desc: "Z → A" } },
+  { criterion: "createdAt",     label: "Date d'ajout",          directions: { asc: "Ancien → récent",         desc: "Récent → ancien" } },
+  { criterion: "rating",        label: "Note",                  directions: { asc: "Moins bon → meilleur",    desc: "Meilleur → moins bon" } },
+  { criterion: "purchaseDate",  label: "Date d'achat",          directions: { asc: "Ancien → récent",         desc: "Récent → ancien" } },
+  { criterion: "lastUsed",      label: "Dernière utilisation",  directions: { asc: "Ancien → récent",         desc: "Récent → ancien" } },
+  { criterion: "purchasePrice", label: "Prix",                  directions: { asc: "Moins cher → plus cher",  desc: "Plus cher → moins cher" } },
 ];
 
 function getSortLabel(criterion: SortCriterion, direction: SortDirection): string {
@@ -37,40 +49,12 @@ function getSortLabel(criterion: SortCriterion, direction: SortDirection): strin
 export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadgeClick }: Props) {
   const { sortState, setSortState, searchQuery, setSearchQuery } = useFragrancesStore();
   const searchRef = useRef<HTMLInputElement>(null);
-  const [open, setOpen] = useState(false);
-  // subMenuCriterion : quel sous-menu est affiché — verrouillé sur le dernier critère survolé
-  // Ne se réinitialise PAS quand la souris quitte un bouton individuel (fix diagonal cursor)
-  const [subMenuCriterion, setSubMenuCriterion] = useState<SortCriterion>(sortState.criterion);
-  const [highlightedCriterion, setHighlightedCriterion] = useState<SortCriterion | null>(null);
-  const [highlightedDir, setHighlightedDir] = useState<SortDirection | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (open) setSubMenuCriterion(sortState.criterion);
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    function handleClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  function handleSelect(criterion: SortCriterion, direction?: SortDirection) {
-    if (criterion === "random") {
-      setSortState({ criterion: "random", direction: "asc" });
-    } else {
-      setSortState({ criterion, direction: direction! });
-    }
-    setOpen(false);
-  }
-
-  const activeOption = SORT_OPTIONS.find((o) => o.criterion === subMenuCriterion);
   const isDefaultSort = sortState.criterion === "none";
+
+  function select(criterion: SortCriterion, direction: SortDirection = "asc") {
+    setSortState({ criterion, direction });
+  }
 
   return (
     <header
@@ -91,6 +75,7 @@ export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadg
         my-shelf and AI
       </Link>
 
+      {/* Recherche */}
       <div
         className="flex-1 max-w-xs h-7 rounded-full px-3 flex items-center gap-1.5"
         style={{ backgroundColor: "var(--search-bg)" }}
@@ -117,98 +102,77 @@ export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadg
         )}
       </div>
 
-      {/* Sort dropdown */}
-      <div className="relative" ref={menuRef}>
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          className="flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs transition-colors"
-          style={{
-            backgroundColor: open || !isDefaultSort ? "var(--icon-active)" : "var(--search-bg)",
-            color: open || !isDefaultSort ? "#fff" : "var(--text-muted)",
-          }}
-        >
-          <span>↕</span>
-          <span>{isDefaultSort ? "Trier" : getSortLabel(sortState.criterion, sortState.direction)}</span>
-        </button>
-
-        {open && (
-          <div
-            className="absolute top-full mt-1.5 left-0 z-50 flex rounded-lg overflow-hidden text-xs"
+      {/* Dropdown tri */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs transition-colors"
             style={{
-              backgroundColor: "var(--surface-primary)",
-              boxShadow: "var(--shadow-soft)",
-              border: "1px solid var(--header-border)",
-              minWidth: 160,
+              backgroundColor: !isDefaultSort ? "var(--icon-active)" : "var(--search-bg)",
+              color: !isDefaultSort ? "#fff" : "var(--text-muted)",
             }}
           >
-            {/* Colonne critères */}
-            <div className="flex flex-col py-1" style={{ minWidth: 160 }}>
-              {SORT_OPTIONS.map((opt) => {
-                const isActive = sortState.criterion === opt.criterion;
-                const isHighlighted = highlightedCriterion === opt.criterion;
-                return (
-                  <button
-                    key={opt.criterion}
-                    type="button"
-                    className="flex items-center justify-between gap-2 px-3 py-1.5 text-left transition-colors"
-                    style={{
-                      color: isActive ? "var(--icon-active)" : "var(--text-primary)",
-                      backgroundColor: isHighlighted ? "var(--search-bg)" : "transparent",
-                    }}
-                    onMouseEnter={() => {
-                      setHighlightedCriterion(opt.criterion);
-                      setSubMenuCriterion(opt.criterion);
-                    }}
-                    onMouseLeave={() => setHighlightedCriterion(null)}
-                    onClick={() => {
-                      if (opt.criterion === "none") handleSelect("none");
-                      else if (opt.criterion === "random") handleSelect("random");
-                    }}
-                  >
-                    <span>{opt.label}</span>
-                    {opt.directions && <span style={{ color: "var(--text-muted)" }}>›</span>}
-                    {!opt.directions && isActive && <span style={{ color: "var(--icon-active)" }}>✓</span>}
-                  </button>
-                );
-              })}
-            </div>
+            <ChevronsUpDown size={12} />
+            <span>{isDefaultSort ? "Trier" : getSortLabel(sortState.criterion, sortState.direction)}</span>
+          </button>
+        </DropdownMenuTrigger>
 
-            {/* Colonne sous-menu directions */}
-            {activeOption?.directions && (
-              <div
-                className="flex flex-col py-1 border-l"
-                style={{ borderColor: "var(--header-border)", minWidth: 180 }}
+        <DropdownMenuContent align="start">
+          <DropdownMenuLabel>Trier par</DropdownMenuLabel>
+
+          <DropdownMenuItem
+            onSelect={() => select("none")}
+            data-active={sortState.criterion === "none" || undefined}
+            className="data-active:text-(--icon-active)"
+          >
+            Aucun tri
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          {SORT_OPTIONS.map((opt) => (
+            <DropdownMenuSub key={opt.criterion}>
+              <DropdownMenuSubTrigger
+                data-active={sortState.criterion === opt.criterion || undefined}
+                className="data-active:text-(--icon-active)"
               >
-                {(["asc", "desc"] as SortDirection[]).map((dir) => {
-                  const isActive = sortState.criterion === subMenuCriterion && sortState.direction === dir;
-                  const isHighlighted = highlightedDir === dir;
-                  return (
-                    <button
-                      key={dir}
-                      type="button"
-                      className="flex items-center justify-between gap-2 px-3 py-1.5 text-left transition-colors focus:outline-none"
-                      style={{
-                        color: isActive ? "var(--icon-active)" : "var(--text-primary)",
-                        backgroundColor: isHighlighted ? "var(--search-bg)" : "transparent",
-                      }}
-                      onMouseEnter={() => setHighlightedDir(dir)}
-                      onMouseLeave={() => setHighlightedDir(null)}
-                      onFocus={() => setHighlightedDir(dir)}
-                      onBlur={() => setHighlightedDir(null)}
-                      onClick={() => handleSelect(subMenuCriterion, dir)}
-                    >
-                      <span>{activeOption.directions![dir]}</span>
-                      {isActive && <span style={{ color: "var(--icon-active)" }}>✓</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+                {opt.label}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuRadioGroup
+                  value={sortState.criterion === opt.criterion ? sortState.direction : ""}
+                >
+                  <DropdownMenuRadioItem
+                    value="asc"
+                    onSelect={() => select(opt.criterion, "asc")}
+                  >
+                    {opt.directions!.asc}
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem
+                    value="desc"
+                    onSelect={() => select(opt.criterion, "desc")}
+                  >
+                    {opt.directions!.desc}
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          ))}
 
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            onSelect={() => select("random")}
+            data-active={sortState.criterion === "random" || undefined}
+            className="data-active:text-(--icon-active)"
+          >
+            Aléatoire
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Droite */}
       <div className="ml-auto flex items-center gap-3">
         {count !== undefined && (
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
@@ -220,11 +184,7 @@ export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadg
             type="button"
             onClick={onIncompleteBadgeClick}
             className="h-5 min-w-5 px-1.5 rounded-full flex items-center justify-center text-xs font-medium leading-none transition-opacity"
-            style={{
-              backgroundColor: "var(--icon-active)",
-              color: "#fff",
-              opacity: 0.85,
-            }}
+            style={{ backgroundColor: "var(--icon-active)", color: "#fff", opacity: 0.85 }}
             title={`${incompleteCount} parfum${incompleteCount > 1 ? "s" : ""} incomplet${incompleteCount > 1 ? "s" : ""}`}
           >
             {incompleteCount}
@@ -235,10 +195,7 @@ export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadg
             type="button"
             onClick={onQuickAdd}
             className="w-7 h-7 rounded-full flex items-center justify-center text-base leading-none transition-colors"
-            style={{
-              backgroundColor: "var(--icon-active)",
-              color: "#fff",
-            }}
+            style={{ backgroundColor: "var(--icon-active)", color: "#fff" }}
             title="Ajout rapide"
           >
             +

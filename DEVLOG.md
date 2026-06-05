@@ -848,7 +848,8 @@ sans dépendances supplémentaires. Switch toggles = candidat naturel pour shadc
 ### Prochaine session
 
 - Établir un plan de travail précis avec issues détaillées pour la passe UI
-- Suite issue #19 : toggles (shadcn Switch ?), header app, vue collection
+- Suite issue #19 : toggles (shadcn Switch ?), header app, vue collection (→ issue #28 en 2026-06-04)
+
 ---
 
 ## Session 2026-06-03 — Issue #17 recherche textuelle
@@ -1015,3 +1016,109 @@ sans dépendances supplémentaires. Switch toggles = candidat naturel pour shadc
 
 - Établir un plan de travail précis avec issues détaillées pour la passe UI
 - Suite issue #19 : toggles (shadcn Switch ?), header app, vue collection
+
+---
+
+## Session 2026-06-04 — Issue #28 : bibliothèque de composants UI (en cours)
+
+### Ce qui était prévu
+
+- Issue #28 : composants UI réutilisables — Chip, Tag, Toggle, Badge, Button, Input + shadcn
+
+### Ce qui a été fait
+
+**Roadmap clarifiée**
+
+PRODUCT.md mis à jour avec issues #28–#35 détaillées. L'ancienne "issue #19 passe UI"
+est désormais découpée en 8 issues distinctes. Branche : `setup/shadcn-ui`.
+
+**shadcn/ui — installation manuelle (SSL réseau)**
+
+`npx shadcn@latest init` échoue en raison d'un certificat SSL intercepté par le réseau.
+Solution : installation manuelle — `clsx` + `tailwind-merge` installés via npm,
+`components.json` et `src/lib/utils.ts` (fonction `cn()`) créés à la main.
+Alias `@/*` ajouté dans `tsconfig.app.json` et `vite.config.ts`.
+
+**`Chip.tsx` — composant pill réutilisable**
+
+3 modes selon les props :
+- **Horizontal** (défaut) : icône slot 14px fixe (grid) + texte `1fr` — alignement parfait, pas de bold shift
+- **Circle** : `icon` sans `children` → cercle centré, `iconPadding` configurable
+- **Vertical** : `layout="vertical"` → icône au-dessus, label en dessous (`rounded-xl`)
+
+État actif : bg pastel `${color}1a` (~10% opacité), border colorée, icône colorée.
+Texte toujours `--text-secondary`. Drop shadow discret. `transition-all duration-150`.
+
+**`Tag.tsx` — tag supprimable**
+
+Pill neutre : `--surface-primary`, `--border-chip`, `X` lucide 10px.
+`translate-y-0.5` sur l icône × pour corriger l illusion optique viewBox lucide.
+Utilisé dans `TagsInput` et `AutocompleteChipInput` (FilterPanel).
+
+**`ConcentrationBottle.tsx` — SVG bouteille par concentration**
+
+Même géométrie que `FragranceBottle`. Couleur ambrée fixe `#f0c373`.
+Opacité liquide croissante : cologne 12% → extrait 92%.
+Utilisé dans les chips concentrations (mode vertical, `grid-cols-5`).
+
+**`MapleLeafIcon.tsx` — icône automne**
+
+Icône `tabler-leaf-2` récupérée via shadcn.io/icons (Tabler Icons, MIT).
+Style line cohérent avec lucide (stroke, viewBox 24x24, strokeWidth 2).
+
+**`LeatherIcon.tsx` — icône cuiré**
+
+SVG inline custom (2 rectangles arrondis empilés).
+Nécessaire car pas d équivalent cuir/leather dans lucide-react.
+
+**`families.ts` — config centralisée familles olfactives**
+
+`FAMILY_CONFIG: Record<OlfactoryFamily, { color: string, Icon: ElementType }>`.
+Icônes lucide + LeatherIcon. Fichier `.ts` pur (pas de JSX) pour Fast Refresh.
+Couleurs révisées par Thomas (plus vives que les CSS variables d origine).
+
+**FilterPanel — 3 sections refactorisées**
+
+- Familles : `grid-cols-2`, icônes depuis `FAMILY_CONFIG`, `Chip` horizontal
+- Saisons : 4 `Chip` cercle + `iconPadding="1rem"`, icônes lucide + MapleLeafIcon
+- Concentrations : `grid-cols-5`, `Chip` vertical, `ConcentrationBottle size={0.6}`
+
+**TagsInput — migré vers `Tag`**
+
+Inline `<span>` remplacé par `<Tag onRemove>`.
+
+### Décisions prises
+
+**`families.tsx` → `families.ts` + `LeatherIcon.tsx` séparé.**
+Un fichier `.tsx` qui exporte à la fois un composant et des données non-composants
+casse Fast Refresh (`react-refresh/only-export-components`).
+Solution : stocker la référence du composant (`Icon: ElementType`) plutôt qu une
+fonction JSX — le JSX est rendu au call site. Fichier de config = `.ts` pur.
+
+**Grid interne `12px 1fr` dans Chip (mode horizontal).**
+`justify-center` causait un effet escalier. Avec un slot fixe de 12px pour l icône,
+toutes les icônes sont à la même position X quelle que soit leur largeur intrinsèque.
+Bonus : bold shift (fontWeight 400→500) ne décale plus rien — texte dans colonne `1fr` fixe.
+
+**`NavIcon` sorti du render de `AtelierClosed`.**
+ESLint `react-hooks/static-components` — créer un composant dans le corps d un autre
+reset son état à chaque render. `NavIcon` déplacé au niveau module.
+
+**shadcn installé manuellement.**
+Le CLI shadcn fait des requêtes HTTPS vers `ui.shadcn.com` bloquées par le proxy SSL.
+Pour ajouter des composants plus tard : `npm config set strict-ssl false` avant
+`npx shadcn@latest add <composant>`, puis remettre `strict-ssl true`.
+
+### Bugs / blocages rencontrés
+
+**`Pepper` absent de lucide-react v1.17.**
+Remplacé par `Flame` pour épicé, `FlameKindling` pour résineux.
+
+**`baseUrl` déprécié en TypeScript 6.0.**
+Fix : supprimer `baseUrl` de `tsconfig.app.json` — `paths` fonctionne seul depuis TS 6.0.
+
+### Prochaine session
+
+- Continuer issue #28 : `Toggle` (switch Favoris/Jamais portés/Échantillons)
+- Puis `Button` et `Input` canoniques
+- Puis issue #29 : typographie + palette couleurs définitives

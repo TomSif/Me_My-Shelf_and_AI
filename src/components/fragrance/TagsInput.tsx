@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Tag } from "../ui/Tag";
+import { Input } from "../ui/Input";
 
 interface Props {
   value: string[];
@@ -22,50 +24,34 @@ export function TagsInput({ value, onChange }: Props) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-1.5 flex-wrap">
         {value.map((tag) => (
-          <span
-            key={tag}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
-            style={{
-              backgroundColor: "var(--surface-secondary)",
-              color: "var(--text-secondary)",
-              border: "1px solid var(--border-light)",
-            }}
-          >
+          <Tag key={tag} onRemove={() => remove(tag)}>
             {tag}
-            <button
-              type="button"
-              onClick={() => remove(tag)}
-              className="opacity-50 hover:opacity-100 transition-opacity"
-            >
-              ×
-            </button>
-          </span>
+          </Tag>
         ))}
       </div>
       <div className="flex gap-2">
-        <input
-          type="text"
+        <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
-          placeholder="Ajouter un tag…"
-          className="flex-1 text-sm px-3 py-1.5 rounded-lg outline-none"
-          style={{
-            backgroundColor: "var(--surface-secondary)",
-            color: "var(--text-primary)",
-            border: "1px solid var(--border-light)",
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              add();
+            }
           }}
+          placeholder="Ajouter un tag…"
+          className="flex-1 text-xs"
         />
         <button
           type="button"
           onClick={add}
           className="px-3 py-1.5 rounded-lg text-sm"
           style={{
-            backgroundColor: "var(--surface-secondary)",
+            backgroundColor: "var(--surface-primary)",
             color: "var(--text-secondary)",
-            border: "1px solid var(--border-light)",
+            border: "1px solid var(--border-chip)",
           }}
         >
           +
