@@ -1371,17 +1371,24 @@ shadcn/ui installé pour les composants complexes uniquement (accessibilité, fo
 
 **Critères d'acceptance :**
 
-- [ ] `Toggle.tsx` — switch amber, animation fluide, props `value/onChange/label`
-- [ ] `Badge.tsx` — pastille compteur, variants `primary/ghost`, prop `count`
-- [ ] `Chip.tsx` — pill filtre, prop `color` (CSS variable), état actif/inactif
-- [ ] `Button.tsx` — variants `primary/outline/ghost`, tailles `sm/md`
-- [ ] `Input.tsx` — wrapper input avec `border-chip`, placeholder muted, focus ring amber
-- [ ] shadcn installé — `Dialog` remplace QuickAddModal, `DropdownMenu` pour le menu tri
-- [ ] Composants utilisés dans Atelier, FilterPanel, GestureBar
+- [x] `Toggle.tsx` — switch amber `#e3aa3a`, transition `.18s`, `role="switch"` + `aria-checked`
+- [x] `Chip.tsx` — 3 modes (horizontal/cercle/vertical), stone variant, fond crème actif, border amber, scale(1.15)
+- [x] `Tag.tsx` — pill supprimable, `X` lucide, `translate-y-0.5` correction optique
+- [x] `Input.tsx` — wrapper `cn()`, border `rgba(120,100,80,.12)`, focus ring amber. Migré : TagsInput, FilterPanel (AutocompleteChipInput), QuickAddModal
+- [x] `DropdownMenu.tsx` — Radix UI (`@radix-ui/react-dropdown-menu`), accessibilité clavier native. AppHeader dropdown tri migré.
+- [x] `families.ts` — config centralisée `{ color, Icon }` par famille olfactive
+- [x] `ConcentrationBottle.tsx` + `LeatherIcon.tsx` + `MapleLeafIcon.tsx` — SVG custom
+- [x] shadcn setup : `components.json`, `lib/utils.ts` (`cn()`), `clsx`, `tailwind-merge`
+- [x] FilterPanel entièrement refactorisé : Chip (familles/saisons/concentrations), Tag, Toggle, Input
+- [ ] ~~`Badge.tsx`~~ — badge inline suffisant, pas de composant dédié nécessaire
+- [ ] ~~`Button.tsx`~~ — Chips couvrent les besoins toggle/filtre. CTAs de form adressés page par page.
+- [ ] `Input` migré dans FragrancePage, ShelfPanel, PyramidInput — reste à faire
+- [ ] ShelfPanel `⋮` kebab → `DropdownMenu` — reste à faire
+- [ ] ~~`Dialog` remplace QuickAddModal~~ — QuickAddModal custom suffisant pour l'instant
 
 **Hors scope** : Select, Tooltip, Combobox (v2)
 
-**Branche** : `setup/shadcn-ui` (en cours)
+**Branche** : `setup/shadcn-ui` (en cours — commit 608b66e)
 
 ---
 

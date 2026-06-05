@@ -1122,3 +1122,70 @@ Fix : supprimer `baseUrl` de `tsconfig.app.json` — `paths` fonctionne seul dep
 - Continuer issue #28 : `Toggle` (switch Favoris/Jamais portés/Échantillons)
 - Puis `Button` et `Input` canoniques
 - Puis issue #29 : typographie + palette couleurs définitives
+
+**`Toggle.tsx` — switch amber**
+
+Switch `w-9 h-5`, fond `rgba(120,100,80,.18)` → `#e3aa3a` actif.
+Thumb blanc avec shadow, transition `.18s ease`. `role="switch"` + `aria-checked`.
+Utilisé dans `ToggleRow` du FilterPanel (Favoris / Jamais portés / Échantillons).
+
+**`Input.tsx` — wrapper shadcn-style**
+
+Wrapper `<input>` avec `cn()`. Border `rgba(120,100,80,.12)` au repos,
+amber `#e3aa3a` au focus (ring 2 + border). Placeholder `--text-muted`.
+Migré dans : `TagsInput`, `AutocompleteChipInput` (FilterPanel), `QuickAddModal`.
+Décision : `Button.tsx` non créé — les Chips couvrent les besoins,
+les rares CTAs de form (Enregistrer, Annuler) sont trop contextuels pour un composant générique.
+
+**`DropdownMenu.tsx` — Radix UI avec styling custom**
+
+Wrapper complet autour de `@radix-ui/react-dropdown-menu`.
+Composants exportés : Content, Item, SubTrigger, SubContent, Separator, Label, RadioGroup, RadioItem.
+Styles : fond `bg-white/90 backdrop-blur-sm`, border `rgba(120,100,80,.12)`,
+focus amber `rgba(232,178,61,.08)`, RadioItem avec `Check` lucide amber.
+`@radix-ui/react-dropdown-menu` installé via npm (pas via CLI shadcn — SSL).
+
+**AppHeader — dropdown tri migré vers Radix**
+
+Supprimé : `open`, `subMenuCriterion`, `highlightedCriterion`, `highlightedDir`, `menuRef`, 2 useEffect.
+Remplacé par : `DropdownMenu` + `DropdownMenuSub` par critère + `DropdownMenuRadioGroup` par direction.
+Navigation clavier (↑↓ → Esc) et fermeture click-outside gratuits via Radix.
+Icône `ChevronsUpDown` (lucide) remplace `↕`.
+
+**Itération design Chip (stone variant)**
+
+Longue exploration sur l'identité visuelle des chips :
+1. Icônes colorées famille + border amber uniforme → trop arlequin
+2. Tout amber → trop criard
+3. Stone variant : icônes `#8D8177` → `#E8B23D` au clic + `drop-shadow` gravure
+4. Retour icônes colorées famille + stone filter : meilleur compromis
+5. Fond actif `linear-gradient(45deg, #f8f5f1)` — crème chaud lisible vs blanc neutre
+6. Border `rgba(232,178,61,.30)` — amber discret
+7. Micro-animation icône `scale(1.15) + transition color .18s`
+
+Verdict Thomas : "plus c'est sobre mieux c'est" — design stable.
+
+### Décisions prises (suite)
+
+**`Button.tsx` non créé.**
+Thomas : "on vient de customiser les chips qui sont aussi des boutons — de quoi tu parles ?"
+Juste. Les Chip couvrent les toggles et filtres. Les CTAs ponctuels (Enregistrer, Annuler)
+sont trop contextuels pour être généralisés sans sur-ingénierie. Décision : on les adresse
+composant par composant quand on touche les pages concernées.
+
+**Radix installé directement, pas via CLI.**
+`npx shadcn@latest add input` échoue comme l'init — même proxy SSL.
+Approche définitive : installer les packages Radix via npm, copier/écrire les wrappers à la main.
+
+### Bugs / blocages rencontrés (suite)
+
+**`SHADOW_ON` avec `linear-gradient` dans `boxShadow`.**
+Le navigateur ignore silencieusement une valeur `linear-gradient` dans `box-shadow`.
+Corrigé par Thomas directement. Leçon : les propriétés CSS n'acceptent pas toutes le même
+type de valeur — `background` accepte `linear-gradient`, `box-shadow` non.
+
+### Prochaine session
+
+- Suite issue #28 : migrer les inputs restants (FragrancePage, ShelfPanel, PyramidInput)
+- ShelfPanel `⋮` kebab → `DropdownMenu` Radix
+- Issue #29 : typographie + palette couleurs définitives
