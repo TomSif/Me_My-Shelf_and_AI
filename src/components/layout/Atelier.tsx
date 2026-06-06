@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ElementType } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Home,
@@ -60,14 +61,14 @@ function saveSection(value: Section) {
 export function Atelier() {
   const [isOpen, setIsOpen] = useState(getInitialOpen);
   const [section, setSection] = useState<Section>(getInitialSection);
+  const routerNavigate = useNavigate();
+  const { selectionCount } = useFragrancesStore();
 
-  function open(s?: Section) {
+  function open(s: Section) {
     setIsOpen(true);
     saveOpen(true);
-    if (s) {
-      setSection(s);
-      saveSection(s);
-    }
+    setSection(s);
+    saveSection(s);
   }
 
   function close() {
@@ -75,44 +76,80 @@ export function Atelier() {
     saveOpen(false);
   }
 
-  function changeSection(s: Section) {
-    setSection(s);
-    saveSection(s);
+  function toggle(s: Section) {
+    if (isOpen && section === s) close();
+    else open(s);
   }
 
   return (
-    <aside
-      className="flex flex-col shrink-0 overflow-hidden"
-      style={{
-        width: isOpen ? 300 : 48,
-        transition: "width 200ms ease-out",
-        borderRight: "1px solid var(--border-light)",
-        backgroundColor: "var(--surface-secondary)",
-      }}
-    >
-      {isOpen ? (
-        <AtelierOpen
-          section={section}
-          onSectionChange={changeSection}
-          onClose={close}
+    <>
+      {/* Nav permanente — toujours visible, jamais masquée par le panel */}
+      <div
+        className="flex flex-col items-center gap-2 py-4 shrink-0"
+        style={{
+          width: 48,
+          minWidth: 48,
+          borderRight: "1px solid var(--border-light)",
+          backgroundColor: "var(--surface-secondary)",
+        }}
+      >
+        <NavIcon
+          icon={Home}
+          title="Collection"
+          onClick={() => routerNavigate("/")}
         />
-      ) : (
-        <AtelierClosed onOpen={open} />
-      )}
-    </aside>
+        <NavIcon
+          icon={Filter}
+          title="Filtrer"
+          active={isOpen && section === "filtres"}
+          onClick={() => toggle("filtres")}
+        />
+
+        <div
+          className="w-5 my-1"
+          style={{ height: 1, backgroundColor: "var(--border-chip)" }}
+        />
+
+        {NAV_ITEMS.map(({ label, icon: Icon, section: itemSection }) => (
+          <NavIcon
+            key={label}
+            icon={Icon}
+            title={label}
+            active={isOpen && itemSection !== null && itemSection === section}
+            onClick={() => (itemSection ? toggle(itemSection) : undefined)}
+            badge={label === "Étagères" ? selectionCount : undefined}
+          />
+        ))}
+      </div>
+
+      {/* Panel coulissant — sort à droite de la nav */}
+      <div
+        className="flex flex-col shrink-0 overflow-hidden"
+        style={{
+          width: isOpen ? 300 : 0,
+          transition: "width 200ms ease-out",
+          borderRight: isOpen ? "1px solid var(--border-light)" : "none",
+          backgroundColor: "var(--surface-secondary)",
+        }}
+      >
+        <div className="flex flex-col h-full" style={{ width: 300, minWidth: 300 }}>
+          <AtelierOpen
+            section={section}
+            onClose={close}
+          />
+        </div>
+      </div>
+    </>
   );
 }
 
 function AtelierOpen({
   section,
-  onSectionChange,
   onClose,
 }: {
   section: Section;
-  onSectionChange: (s: Section) => void;
   onClose: () => void;
 }) {
-  const { selectionCount } = useFragrancesStore();
 
   const title = section === "etageres" ? "my-shelfs" : "L'Atelier";
   const subtitle =
@@ -163,50 +200,6 @@ function AtelierOpen({
         )}
       </div>
 
-      {/* Navigation */}
-      <div
-        className="flex flex-col gap-0.5 px-2 pb-4 pt-2 shrink-0"
-        style={{ borderTop: "1px solid rgba(29,27,25,0.06)" }}
-      >
-        {NAV_ITEMS.map(({ label, icon: Icon, section: itemSection }) => {
-          const isActive = itemSection !== null && itemSection === section;
-          return (
-            <button
-              key={label}
-              type="button"
-              onClick={() =>
-                itemSection ? onSectionChange(itemSection) : undefined
-              }
-              className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-xs text-left w-full"
-              style={{
-                color: isActive
-                  ? "var(--icon-active)"
-                  : "var(--icon-secondary)",
-                backgroundColor: isActive
-                  ? "color-mix(in srgb, var(--icon-active) 10%, transparent)"
-                  : "transparent",
-                opacity: itemSection ? 1 : 0.45,
-              }}
-            >
-              <div className="flex items-center gap-2.5">
-                <Icon size={14} strokeWidth={1.5} />
-                <span>{label}</span>
-              </div>
-              {label === "Étagères" && selectionCount > 0 && (
-                <span
-                  className="h-4 min-w-4 px-1 rounded-full flex items-center justify-center text-[10px] font-medium leading-none"
-                  style={{
-                    backgroundColor: "var(--icon-active)",
-                    color: "#fff",
-                  }}
-                >
-                  {selectionCount}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
     </div>
   );
 }
@@ -218,7 +211,7 @@ function NavIcon({
   active = false,
   badge,
 }: {
-  icon: React.ElementType;
+  icon: ElementType;
   title: string;
   onClick: () => void;
   active?: boolean;
@@ -247,43 +240,5 @@ function NavIcon({
         </span>
       )}
     </button>
-  );
-}
-
-function AtelierClosed({ onOpen }: { onOpen: (s?: Section) => void }) {
-  const routerNavigate = useNavigate();
-  const { selectionCount } = useFragrancesStore();
-
-  return (
-    <div
-      className="flex flex-col items-center gap-2 py-4"
-      style={{ width: 48, minWidth: 48 }}
-    >
-      <NavIcon
-        icon={Home}
-        title="Collection"
-        onClick={() => routerNavigate("/")}
-      />
-      <NavIcon
-        icon={Filter}
-        title="Filtrer"
-        onClick={() => onOpen("filtres")}
-      />
-
-      <div
-        className="w-5 my-1"
-        style={{ height: 1, backgroundColor: "var(--border-chip)" }}
-      />
-
-      {NAV_ITEMS.map(({ label, icon: Icon, section: itemSection }) => (
-        <NavIcon
-          key={label}
-          icon={Icon}
-          title={label}
-          onClick={() => (itemSection ? onOpen(itemSection) : undefined)}
-          badge={label === "Étagères" ? selectionCount : undefined}
-        />
-      ))}
-    </div>
   );
 }
