@@ -668,6 +668,59 @@ L'implémenter dans une issue dédiée (#36 ?) après que la passe UI soit stabl
 
 ---
 
+## Comportements par défaut des vues — Décisions 2026-06-06
+
+### Vue Collection — tri par défaut
+
+**Critère : `lastUsed` décroissant.**
+
+Ce que tu portes souvent remonte naturellement. La collection est vivante, pas alphabétique.
+
+Règle de tri complète :
+```
+1. Parfums portés au moins une fois  → lastUsed desc (le plus récent en premier)
+2. Parfums jamais portés (lastUsed undefined) → createdAt desc (le plus récemment ajouté)
+```
+
+Les parfums jamais portés ne disparaissent pas — ils sont en queue, visibles en scrollant.
+En v2, le tri par défaut sera remplacé par une **pertinence contextuelle** (saison, météo, humeur)
+calculée par l'IA. Le `lastUsed` desc devient alors le fallback.
+
+---
+
+### Vue Shelf — organisation par défaut
+
+**Shelf = Collection en mode étagère spatiale.** Ce n'est pas une destination distincte —
+c'est un mode de rendu alternatif de la même donnée. Le bouton Shelf dans le header
+est toujours déterministe : il affiche toujours l'intégralité de la collection, groupée.
+
+**Groupement par défaut : famille olfactive.**
+
+Pourquoi la famille plutôt que la marque ou la saison :
+- C'est la dimension centrale de toute l'app (filtres, chips, couleurs)
+- Correspond au vrai usage : "je veux quelque chose de boisé" → l'étagère boisé est là
+- La marque est logique pour une vraie étagère physique, pas pour choisir quoi porter
+
+Règles d'affichage :
+- Une étagère par famille représentée dans la collection (pas d'étagère vide)
+- 4–5 flacons visibles par étagère (scroll horizontal si plus)
+- Ordre dans une étagère : `lastUsed` desc (même logique que Collection)
+- Sélecteur de groupement disponible (marque / famille / saison) — secondaire
+
+**Interaction avec l'Atelier :**
+
+L'Atelier est un calque qui s'applique sur la vue active — Collection ou Shelf.
+Si des filtres sont actifs quand tu bascules sur Shelf, la vue Shelf affiche
+uniquement les parfums correspondants, groupés par famille.
+Le filtre persiste entre les deux vues.
+
+**Edge case : `lastUsed` undefined en Shelf**
+
+Même règle que Collection : les jamais portés sont groupés dans leur famille,
+triés par `createdAt` desc, en queue de l'étagère de leur famille.
+
+---
+
 ## Modèle de données
 
 ```typescript
@@ -1698,6 +1751,53 @@ L'architecture Zustand est déjà prévue pour ce swap propre via `fragranceServ
 
 **Dépendances** : toutes les issues v1 (#28–#34)
 **Branche** : `feat/supabase`
+
+---
+
+### Issue #36 — Refactor architecture : séparation Navigation / Atelier
+
+**Titre** : `refactor: séparation Navigation/Atelier — nav rail épuré, Atelier de Curation`
+
+**Description** :
+La nav rail actuelle mélange des destinations (Collection, IA, Stats) et des outils de curation
+(Filtrer, Étagères). Ce refactor implémente la séparation documentée dans la section
+"Réflexion architecture — Juin 2026" de ce fichier.
+
+**Ce qui change :**
+
+- `Atelier.tsx` : `section` passe de `"filtres" | "etageres"` à `"filtres" | "composer"`.
+  Un seul toggle dans la nav rail ouvre/ferme l'Atelier.
+- `ShelfPanel.tsx` → devient `ComposerPanel.tsx` : sélecteur de vues mémorisées
+  (Sélection active, Mes sélections, Historique), pas un concurrent du FilterPanel.
+- Nav rail : retire `Filtrer` et `Étagères` comme items autonomes. Nouvelle liste :
+  `Collection | Atelier (toggle) | IA | Favoris | Stats | Réglages`
+- Header (optionnel) : envisager de déplacer la nav principale vers le header
+  pour correspondre à la maquette juin 2026.
+- Store : revoir `activeShelfId`, `currentSelection`, `selectionCount` selon
+  la nouvelle structure COMPOSER.
+
+**Comportements à implémenter :**
+
+- Shelf (header) : toujours déterministe — affiche toute la collection en vue étagère,
+  groupée par famille olfactive, tri `lastUsed` desc.
+- Collection (header) : tri `lastUsed` desc par défaut, jamais portés en queue (`createdAt` desc).
+- L'Atelier est un calque : ses filtres s'appliquent sur la vue active (Collection ou Shelf),
+  persistent quand on bascule entre les deux.
+
+**Critères d'acceptance :**
+
+- [ ] Nav rail : 5–6 items, tous du même type (destinations ou toggle panel)
+- [ ] `Filtrer` et `Étagères` ne sont plus des items de nav autonomes
+- [ ] L'Atelier s'ouvre/ferme via un seul bouton toggle
+- [ ] `ComposerPanel` : Sélection active + Mes sélections + Historique
+- [ ] Shelf (header) : vue étagère par famille, déterministe, sans état contextuel
+- [ ] Collection : tri `lastUsed` desc implémenté comme défaut
+- [ ] Les filtres Atelier persistent lors du switch Collection ↔ Shelf
+
+**Hors scope** : motion, animations de transition entre vues (v2)
+
+**Dépendances** : #28 (mergée ✅), #29 (typographie — peut être parallèle)
+**Branche** : `refactor/architecture-navigation`
 
 ---
 
