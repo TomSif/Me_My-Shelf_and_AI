@@ -41,7 +41,7 @@ export function FamilyChips({ value, onChange }: Props) {
             key={family}
             active={value.includes(family)}
             color={color}
-            icon={<Icon size={14} />}
+            icon={<Icon size={16} />}
             onClick={() => toggle(family)}
             className="w-full"
           >

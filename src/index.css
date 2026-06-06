@@ -7,7 +7,7 @@
 
   --bg-primary: #f7f4ef;
   --bg-secondary: #eee7de;
-  --bg-chip: #f6f1eb;
+  --bg-chip: #f8f5f1;
   --bg-elevated: rgba(255, 255, 255, 0.42);
   --bg-toggle: #e0dbd5;
 
@@ -27,7 +27,7 @@
   --text-secondary: #5b5b5e;
   --text-muted: #8e877f;
   --text-ghost: rgba(29, 27, 25, 0.38);
-  --text-chip: #4e443c;
+  --text-chip: #4e423fdc;
 
   /* =========================================================
      LIGHTING SYSTEM
@@ -121,7 +121,7 @@
 
   --icon-primary: #24211d;
   --icon-secondary: #857e76;
-  --icon-active: #d7a84b;
+  --icon-active: #e8b23d;
   --icon-border: rgba(120, 100, 80, 0.12);
   --icon-bg: #f6ede7;
   --icon-hover: #fcf8f4;

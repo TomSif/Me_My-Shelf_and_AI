@@ -1189,3 +1189,138 @@ type de valeur — `background` accepte `linear-gradient`, `box-shadow` non.
 - Suite issue #28 : migrer les inputs restants (FragrancePage, ShelfPanel, PyramidInput)
 - ShelfPanel `⋮` kebab → `DropdownMenu` Radix
 - Issue #29 : typographie + palette couleurs définitives
+
+
+---
+
+## Session 2026-06-05 — Itération design Chip (suite)
+
+### Ce qui était prévu
+
+- Finaliser le design des chips familles/saisons
+
+### Ce qui a été fait
+
+**Exploration du state actif des chips — 6 itérations**
+
+Longue exploration pour trouver le bon signal de sélection :
+
+1. Dot 5px couleur famille à gauche de l icone → lisible mais ajout de bruit visuel
+2. Fond `#F2ECE5` au clic → couleur pas belle, trop beige
+3. Suppression amber partout, border neutre `rgba(100,80,60,.28)` → bonne direction
+4. Icone remplie inversée (cercle couleur famille + icone blanche) → trop chargé
+5. Icone stone partout inactif, couleur seulement actif → LA bonne idée
+6. Harmonisation saisons sur même logique que familles
+
+**Décision finale — "actif = couleur"**
+
+Stone `#A8968A` / `#979188` inactif → couleur famille/saison pleine actif.
+Le picto est lisible en stone, la couleur est réservée au signal de sélection.
+Pas de border amber, pas de fond coloré — l icone suffit.
+`scale(1.16)` au clic pour renforcer le feedback tactile.
+
+**Harmonisation saisons ↔ familles**
+
+Les saisons avaient couleur toujours visible — deux logiques cohabitaient.
+Unification : stone inactif (`STONE_CIRCLE_OFF = #979188`) + couleur actif pour les deux modes.
+`STONE_FILTER` (drop-shadow simulant gravure) appliqué en inactif sur les deux modes.
+
+**Couleurs familles saturées**
+
+Palettes revues pour être lisibles au clic :
+hespéridé `#E8960A`, floral `#C04880`, herbacé `#3A9E55`, résineux `#8B2500`,
+boisé `#7A4820`, épicé `#CC3A18`, musqué `#3A85C0`, cuiré `#5C3010`,
+gourmand `#C87030`, alcoolisé `#A05828`, minéral `#607A90`, artificiel `#4A5CC8`.
+
+Icones passées de 13px à 16px. Slot grid `18px 1fr`.
+
+### Décisions prises
+
+**"Actif = couleur" est le meilleur signal UX de la session.**
+Inactif sobre et neutre → la couleur apparaît uniquement pour confirmer le choix.
+Pas de border colorée (arlequin), pas de fond coloré (pas joli), pas de dot (bruit).
+La couleur de l icone est le signal, rien d autre.
+
+**Stone plutôt qu opacité.**
+Varier l opacité (65% → 100%) créait un effet délavé peu premium.
+Stone `#A8968A` est une vraie couleur, pas une version atténuée — plus propre.
+
+### Prochaine session
+
+- Suite issue #28 : Input dans FragrancePage, ShelfPanel, PyramidInput
+- ShelfPanel kebab → DropdownMenu Radix
+- Issue #29 : typographie + palette couleurs définitives
+
+---
+
+## Session 2026-06-06 — Issue #28 : Atelier layout + ConcentrationBottle (suite)
+
+### Ce qui était prévu
+
+- Continuer issue #28 : corrections UX et design
+
+### Ce qui a été fait
+
+**Fix layout Atelier — nav permanente + panel coulissant**
+
+Problème : l'`<aside>` unique (48px → 300px) remplaçait les icônes nav par le panel
+au lieu de les faire coexister. Les boutons de navigation disparaissaient pendant
+que le panel était ouvert.
+
+Refactoring : `Atelier` retourne maintenant un Fragment React avec deux éléments côte à côte :
+- `<div width=48 shrink-0>` : nav permanente, toujours visible — Home, Filter, NAV_ITEMS
+- `<div width=0→300 overflow-hidden>` : panel coulissant, sort à droite de la nav
+
+`AtelierClosed` supprimé — plus nécessaire.
+`routerNavigate` et `selectionCount` remontent dans `Atelier`.
+Cliquer sur l'icone active ferme le panel (toggle).
+Un seul `borderRight` sur la nav = la fine ligne entre les deux zones.
+Le panel n'a pas de `borderLeft` — pas de double bordure.
+
+**Fix nav interne `AtelierOpen` — menu fantôme supprimé**
+
+Le bloc "Navigation" en bas du panel (`NAV_ITEMS` avec labels texte) était redondant
+avec la nav permanente gauche. Supprimé. `onSectionChange` et `selectionCount`
+retirés des props de `AtelierOpen` en conséquence.
+
+**`ConcentrationBottle` — hauteur variable + actif = couleur**
+
+L'approche opacité variable (`cologne 12% → extrait 92%`) créait un effet délavé
+— même principe rejeté plus tôt sur les chips familles/saisons.
+
+Nouveau design :
+- Hauteur de liquide variable : `cologne: 4px → extrait: 30px` (viewBox 60px)
+- `clipPath` sur le corps `rx=3` pour que le liquide respecte les coins arrondis
+- Inactif : liquide stone `#cccccc` (neutre, pas de couleur)
+- Actif : liquide amber `#f0c373` — suit le principe "actif = couleur"
+- Col (neck) : liquide visible pour parfum/extrait uniquement
+- Prop `active` passée directement dans le JSX de l'icône dans FilterPanel
+
+**Fix ShelfPanel — `activeShelf` non utilisé**
+
+`activeShelf` était destructuré du store mais jamais consommé — `activeShelfId` suffisait.
+Supprimé.
+
+### Décisions prises
+
+**Fragment React pour deux éléments flex indépendants.**
+Au lieu de conditionner `AtelierClosed` vs `AtelierOpen` dans un seul `<aside>`,
+les deux zones sont maintenant des frères dans le flex container de `AppLayout`.
+Le Fragment est invisible dans le DOM — les deux `<div>` deviennent directement
+des flex items. C'est le pattern correct pour "deux colonnes qui coexistent".
+
+**Hauteur plutôt qu'opacité pour la bouteille.**
+Varier l'opacité d'un liquide donne une impression de décoloration, pas de niveau.
+Varier la hauteur crée une vraie métaphore physique (remplissage/vidage).
+Bonus : le niveau devient lisible même en inactif (stone), sans couleur.
+
+**`active` injecté au call site, pas dans `Chip`.**
+`ConcentrationBottle` gère sa propre couleur selon `active`. `Chip` n'a pas besoin
+de savoir que l'icône qu'il reçoit est une bouteille avec des états —
+le composant parent construit l'icône configurée avant de la passer.
+
+### Prochaine session
+
+- Suite issue #28 : Input dans FragrancePage, ShelfPanel, PyramidInput
+- ShelfPanel kebab → DropdownMenu Radix
+- Issue #29 : typographie + palette couleurs définitives
