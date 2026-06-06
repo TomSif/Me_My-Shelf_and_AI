@@ -6,8 +6,10 @@
      ========================================================= */
 
   --bg-primary: #f7f4ef;
-  --bg-secondary: #f3eee7;
+  --bg-secondary: #eee7de;
+  --bg-chip: #f8f5f1;
   --bg-elevated: rgba(255, 255, 255, 0.42);
+  --bg-toggle: #e0dbd5;
 
   --surface-primary: rgba(255, 255, 255, 0.58);
   --surface-secondary: rgba(255, 255, 255, 0.34);
@@ -15,15 +17,17 @@
 
   --border-soft: rgba(255, 255, 255, 0.48);
   --border-light: rgba(255, 255, 255, 0.24);
+  --border-chip: rgba(29, 27, 25, 0.12);
 
   /* =========================================================
      TYPOGRAPHY
      ========================================================= */
 
   --text-primary: #1d1b19;
-  --text-secondary: #5f5a54;
+  --text-secondary: #5b5b5e;
   --text-muted: #8e877f;
   --text-ghost: rgba(29, 27, 25, 0.38);
+  --text-chip: #4e423fdc;
 
   /* =========================================================
      LIGHTING SYSTEM
@@ -117,12 +121,14 @@
 
   --icon-primary: #24211d;
   --icon-secondary: #857e76;
-  --icon-active: #d7a84b;
+  --icon-active: #e8b23d;
+  --icon-border: rgba(120, 100, 80, 0.12);
+  --icon-bg: #f6ede7;
+  --icon-hover: #fcf8f4;
 
   /* =========================================================
      HEADER
      ========================================================= */
-
   --header-bg: rgba(255, 255, 255, 0.34);
   --header-border: rgba(255, 255, 255, 0.42);
   --search-bg: rgba(255, 255, 255, 0.52);
@@ -182,5 +188,22 @@ body {
   font-family: system-ui, sans-serif;
 }
 
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+/* Élévation nav icons — hover + actif */
+.nav-icon {
+  transition: background-color 150ms ease-out, box-shadow 150ms ease-out, transform 150ms ease-out;
+}
+.nav-icon:hover,
+.nav-icon.is-active {
+  background-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+.nav-icon.is-active {
+  transform: scale(1.02);
+}

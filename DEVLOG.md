@@ -795,6 +795,63 @@ mental de l'utilisateur avant de coder, surtout pour une feature aussi centrale.
 
 ---
 
+## Session 2026-06-03 (suite) — Issue #19 : démarrage passe UI (Atelier + FilterPanel)
+
+### Ce qui était prévu
+
+- Issue #19 : passe UI globale (shadcn)
+
+### Ce qui a été fait
+
+Premier pas de la passe UI sur le composant Atelier/FilterPanel comme test.
+Branche `setup/shadcn-ui` ouverte, non mergée — réflexion en cours sur le plan de travail.
+
+**Analyse delta design vs état actuel**
+
+Comparaison de `vue-filterAtelier-2.png` avec l'état réel de l'app.
+Delta identifié : chips trop petites/invisibles (border blanc sur fond blanc),
+ichones nav en texte abrégé ("É", "♡"), chevrons ∧/∨ à remplacer,
+container FilterPanel trop enveloppé, inputs peu contrasés.
+
+**Passe #1 — Chips + lucide-react**
+
+- `--border-chip: rgba(29,27,25,0.12)` ajouté dans index.css — border visible sur fond clair
+- Chips familles/saisons/concentrations : `py-1`, dot 8px, `surface-primary` inactif
+- `lucide-react` installé
+- Nav Atelier : `BookMarked`, `Heart`, `BarChart2`, `Settings` remplacent "É/♡/S/R"
+
+**Passe #2 — FilterPanel + Atelier nav polish**
+
+- `ChevronUp`/`ChevronDown` (lucide 13px) remplacent ∧/∨
+- Séparateurs fins `rgba(29,27,25,0.06)` entre sections
+- Headers sections : 10px uppercase tracking large
+- Label "Filter Atelier" : 9px ghost très discret
+- Inputs : `border-chip`, `surface-primary`
+- Container FilterPanel : plus de carte interne (respire directement dans le panel)
+- Icône `Sparkles` (IA) dans NAV_ITEMS
+- Items non-implémentés (IA, Favoris, Stats, Réglages) à 45% opacity
+- AtelierClosed : helper `NavIcon` avec état actif amber
+- Icônes `Home` + `Filter` (funnel) remplacent le `»` chevron
+
+### Décisions prises
+
+**Approche composant par composant.**
+Plutôt qu'une migration shadcn globale, on avance section par section
+en comparant avec les fichiers de design dans `assets/design/`.
+L'Atelier/FilterPanel sert de prototype pour valider le pattern de style.
+
+**shadcn Installé mais pas encore utilisé pour les composants.**
+Lucide-react installé (icônes). shadcn/ui lui-même n'est pas encore installé —
+la passe actuelle montre qu'on peut aller loin avec Tailwind + CSS variables
+sans dépendances supplémentaires. Switch toggles = candidat naturel pour shadcn.
+
+### Prochaine session
+
+- Établir un plan de travail précis avec issues détaillées pour la passe UI
+- Suite issue #19 : toggles (shadcn Switch ?), header app, vue collection (→ issue #28 en 2026-06-04)
+
+---
+
 ## Session 2026-06-03 — Issue #17 recherche textuelle
 
 ### Ce qui était prévu
@@ -1262,58 +1319,8 @@ Bonus : le niveau devient lisible même en inactif (stone), sans couleur.
 de savoir que l'icône qu'il reçoit est une bouteille avec des états —
 le composant parent construit l'icône configurée avant de la passer.
 
-**Refonte icons nav — labels + tiles verticales + elevation hover**
-
-Objectif : rapprocher le nav rail de la maquette, avec labels sous les icônes,
-une surface rectangulaire élancée à l'actif/hover, et la couleur pour le seul état actif.
-
-Changements :
-- `NavIcon` : tile `w-12 py-3` (vertical, 48×~67px) — plus élancé que carré
-- Icônes : `size={28} strokeWidth={1.6}` — cohérent avec les icônes saisons dans l'Atelier
-- Label : `<span fontSize=9 color=var(--text-muted)>` sous chaque icône
-- Couleur : amber `var(--icon-active)` actif seulement, stone inactif — "actif = couleur"
-- CSS classes `.nav-icon` + `.is-active` : hover → léger fond blanc + ombre 1px sans couleur
-- Scale `1.02` à l'actif — subtil, cohérent avec les chips
-- `justify-center` sur le container nav → icônes centrées verticalement sur l'écran
-
-**Chips Atelier — hover sans couleur**
-
-Les 3 modes de Chip (pill, cercle, vertical) n'avaient aucun état de survol.
-Pattern ajouté : `elevated = active || hovered`
-- `hovered` : useState + helper `hoverHandlers(setHovered)` (onMouseEnter/Leave)
-- Élevé (hover ou actif) : fond plus clair, border plus sombre, ombre +1px, scale 1.02
-- Couleur (icon, fontWeight) : `active` uniquement — hover sans couleur
-
-Fix annexe : glitch hauteur sur le texte des chips verticaux (concentration).
-`fontWeight 400→600` changeait la hauteur de la ligne au clic.
-Fix : `height: "1.2em"` + `flex items-center justify-center` sur le `<span>` texte.
-
-**Réflexion architecture — Navigation vs Atelier**
-
-Identification d'une confusion structurante : la nav rail gauche mélange
-des *destinations* (Collection, IA, Stats…) et des *outils de curation* (Filtrer, Étagères).
-
-Réflexion documentée dans PRODUCT.md section "Réflexion architecture — Juin 2026" :
-- Navigation = où je vais (destinations uniquement)
-- Atelier = ce que je fais (curation, jamais une page)
-- Atelier de Curation : FILTRER + COMPOSER (Étagères = vues mémorisées, pas destinations)
-- Nav rail épurée : Collection | IA | Favoris | Stats | Réglages
-
-Statut : réflexion uniquement, non implémentée — traiter dans une issue dédiée post-#28.
-
-### Décisions prises
-
-**`elevated = active || hovered` comme pattern de hover dans Chip.**
-Sépare la logique d'élévation (visuelle) de la logique de couleur (sémantique).
-Le hover donne du feedback sans signifier "actif".
-
-**Ne pas mélanger réflexion architecture et passe UI.**
-La réflexion est documentée mais non implémentée.
-Implémenter dans l'élan aurait mélangé refactor structurant et feature UI — ce que CLAUDE.md interdit.
-
 ### Prochaine session
 
 - Suite issue #28 : Input dans FragrancePage, ShelfPanel, PyramidInput
 - ShelfPanel kebab → DropdownMenu Radix
 - Issue #29 : typographie + palette couleurs définitives
-- Issue #36 (à créer) : refactoring architecture Navigation vs Atelier

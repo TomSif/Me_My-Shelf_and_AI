@@ -18,7 +18,6 @@ export function ShelfPanel() {
   const {
     shelves,
     activeShelfId,
-    activeShelf,
     fragrances,
     filteredFragrances,
     currentSelection,

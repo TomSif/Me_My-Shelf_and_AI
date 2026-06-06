@@ -1,9 +1,21 @@
 import type { OlfactoryFamily } from "../../types/fragrance";
+import { Chip } from "../ui/Chip";
+import { FAMILY_CONFIG } from "../../utils/families";
 
 const FAMILIES: OlfactoryFamily[] = [
-  "hespéridé", "floral", "herbacé", "épicé", "gourmand",
-  "boisé", "résineux", "musqué", "cuiré", "alcoolisé", "minéral",
-  "artificiel", "indéfini",
+  "hespéridé",
+  "floral",
+  "herbacé",
+  "épicé",
+  "gourmand",
+  "boisé",
+  "résineux",
+  "musqué",
+  "cuiré",
+  "alcoolisé",
+  "minéral",
+  "artificiel",
+  "indéfini",
 ];
 
 interface Props {
@@ -21,24 +33,20 @@ export function FamilyChips({ value, onChange }: Props) {
   }
 
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="grid grid-cols-2 gap-1.5">
       {FAMILIES.map((family) => {
-        const active = value.includes(family);
+        const { color, Icon } = FAMILY_CONFIG[family];
         return (
-          <button
+          <Chip
             key={family}
-            type="button"
+            active={value.includes(family)}
+            color={color}
+            icon={<Icon size={16} />}
             onClick={() => toggle(family)}
-            className="px-3 py-1 rounded-full text-xs capitalize transition-all"
-            style={{
-              backgroundColor: active ? "var(--surface-primary)" : "var(--surface-secondary)",
-              color: active ? "var(--text-primary)" : "var(--text-muted)",
-              border: `1px solid ${active ? "var(--border-soft)" : "var(--border-light)"}`,
-              fontWeight: active ? 500 : 400,
-            }}
+            className="w-full"
           >
             {family}
-          </button>
+          </Chip>
         );
       })}
     </div>
