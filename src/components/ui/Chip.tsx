@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
 
 interface ChipProps {
@@ -20,6 +21,11 @@ const STONE_OFF = "#74645a";
 const STONE_CIRCLE_OFF = "#979188";
 const STONE_FILTER = "drop-shadow(0 0.5px 0 rgba(255,255,255,.75))";
 
+const hoverHandlers = (set: (v: boolean) => void) => ({
+  onMouseEnter: () => set(true),
+  onMouseLeave: () => set(false),
+});
+
 export function Chip({
   active,
   color,
@@ -30,22 +36,13 @@ export function Chip({
   layout = "horizontal",
   className,
 }: ChipProps) {
-  const border = active ? BORDER_ON : BORDER_OFF;
-  const shadow = active ? SHADOW_ON : SHADOW_OFF;
+  const [hovered, setHovered] = useState(false);
+  const elevated = active || hovered;
 
-  const iconSpan = (
-    <span
-      style={{
-        color: STONE_OFF,
-        filter: STONE_FILTER,
-        display: "flex",
-        transform: active ? "scale(1.08)" : "scale(1)",
-        transition: "transform .18s ease",
-      }}
-    >
-      {icon}
-    </span>
-  );
+  const border = elevated ? BORDER_ON : BORDER_OFF;
+  const shadow = elevated ? SHADOW_ON : SHADOW_OFF;
+  const bg = elevated ? BG_ON : "var(--bg-chip)";
+  const scale = elevated ? "scale(1.02)" : "scale(1)";
 
   // Mode vertical
   if (layout === "vertical" && icon) {
@@ -53,20 +50,34 @@ export function Chip({
       <button
         type="button"
         onClick={onClick}
+        {...hoverHandlers(setHovered)}
         className={`flex flex-col items-center gap-1.5 px-2 py-2.5 rounded-xl transition-all duration-150 ease-out ${className ?? ""}`}
         style={{
-          background: active ? BG_ON : "var(--bg-chip)",
+          background: bg,
           border: `1px solid ${border}`,
           boxShadow: shadow,
+          transform: scale,
         }}
       >
-        {iconSpan}
+        <span
+          style={{
+            color: STONE_OFF,
+            filter: STONE_FILTER,
+            display: "flex",
+            transform: active ? "scale(1.08)" : "scale(1)",
+            transition: "transform .18s ease",
+          }}
+        >
+          {icon}
+        </span>
         {children && (
           <span
-            className="text-[10px] leading-none capitalize"
+            className="text-[10px] capitalize flex items-center justify-center"
             style={{
               color: "var(--text-secondary)",
               fontWeight: active ? 600 : 400,
+              lineHeight: 1,
+              height: "1.2em",
             }}
           >
             {children}
@@ -76,19 +87,20 @@ export function Chip({
     );
   }
 
-  // Mode cercle (saisons) — stone inactif, couleur active (même logique que familles)
+  // Mode cercle (saisons) — stone inactif, couleur active
   if (icon && !children) {
     return (
       <button
         type="button"
         onClick={onClick}
+        {...hoverHandlers(setHovered)}
         className={`flex items-center justify-center rounded-full transition-all duration-150 ease-out ${className ?? ""}`}
         style={{
-          background: active ? BG_ON : "var(--bg-chip)",
+          background: bg,
           border: `1px solid ${border}`,
           boxShadow: shadow,
           padding: iconPadding,
-          transform: active ? "scale(1.06)" : "scale(1)",
+          transform: scale,
         }}
       >
         <span
@@ -111,16 +123,18 @@ export function Chip({
     <button
       type="button"
       onClick={onClick}
+      {...hoverHandlers(setHovered)}
       className={`items-center px-4 py-3 rounded-2xl text-xs capitalize transition-all duration-150 ease-out ${className ?? ""}`}
       style={{
         display: "grid",
         gridTemplateColumns: icon ? "18px 1fr" : "1fr",
         columnGap: "0.625rem",
-        background: active ? BG_ON : "var(--bg-chip)",
+        background: bg,
         border: `1px solid ${border}`,
         color: "var(--text-chip)",
         fontWeight: active ? 600 : 400,
         boxShadow: shadow,
+        transform: scale,
       }}
     >
       {icon && (

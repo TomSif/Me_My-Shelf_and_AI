@@ -85,10 +85,10 @@ export function Atelier() {
     <>
       {/* Nav permanente — toujours visible, jamais masquée par le panel */}
       <div
-        className="flex flex-col items-center gap-2 py-4 shrink-0"
+        className="flex flex-col items-center justify-center gap-2 shrink-0"
         style={{
-          width: 48,
-          minWidth: 48,
+          width: 72,
+          minWidth: 72,
           borderRight: "1px solid var(--border-light)",
           backgroundColor: "var(--surface-secondary)",
         }}
@@ -106,8 +106,8 @@ export function Atelier() {
         />
 
         <div
-          className="w-5 my-1"
-          style={{ height: 1, backgroundColor: "var(--border-chip)" }}
+          className="my-2"
+          style={{ height: 1, width: 40, backgroundColor: "var(--border-chip)" }}
         />
 
         {NAV_ITEMS.map(({ label, icon: Icon, section: itemSection }) => (
@@ -221,19 +221,20 @@ function NavIcon({
     <button
       type="button"
       onClick={onClick}
-      className="relative w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-      style={{
-        color: active ? "var(--icon-active)" : "var(--icon-secondary)",
-        backgroundColor: active
-          ? "color-mix(in srgb, var(--icon-active) 12%, transparent)"
-          : "transparent",
-      }}
-      title={title}
+      className={`nav-icon relative flex flex-col items-center gap-1 w-12 py-3 rounded-xl transition-all${active ? " is-active" : ""}`}
     >
-      <Icon size={24} strokeWidth={1.8} />
+      <span style={{ color: active ? "var(--icon-active)" : "var(--icon-secondary)" }}>
+        <Icon size={28} strokeWidth={1.6} />
+      </span>
+      <span
+        className="leading-none select-none"
+        style={{ fontSize: 9, color: "var(--text-muted)" }}
+      >
+        {title}
+      </span>
       {badge !== undefined && badge > 0 && (
         <span
-          className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full flex items-center justify-center text-[10px] font-medium leading-none"
+          className="absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full flex items-center justify-center text-[10px] font-medium leading-none"
           style={{ backgroundColor: "var(--icon-active)", color: "#fff" }}
         >
           {badge}

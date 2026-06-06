@@ -31,10 +31,10 @@ const FAMILIES: OlfactoryFamily[] = [
 ];
 
 const SEASONS: { value: Season; icon: React.ReactNode; color: string }[] = [
-  { value: "printemps", icon: <Leaf size={28} />,          color: "#3aA05a" },
-  { value: "été",       icon: <Sun size={28} />,           color: "#E8960A" },
-  { value: "automne",   icon: <MapleLeafIcon size={28} />, color: "#D45510" },
-  { value: "hiver",     icon: <Snowflake size={28} />,     color: "#2E8EC8" },
+  { value: "printemps", icon: <Leaf size={26} />, color: "#3aA05a" },
+  { value: "été", icon: <Sun size={26} />, color: "#E8960A" },
+  { value: "automne", icon: <MapleLeafIcon size={26} />, color: "#D45510" },
+  { value: "hiver", icon: <Snowflake size={26} />, color: "#2E8EC8" },
 ];
 
 const CONCENTRATIONS: Concentration[] = [
@@ -176,7 +176,13 @@ export function FilterPanel() {
               key={c}
               layout="vertical"
               active={concentrations.includes(c)}
-              icon={<ConcentrationBottle concentration={c} size={0.6} active={concentrations.includes(c)} />}
+              icon={
+                <ConcentrationBottle
+                  concentration={c}
+                  size={0.6}
+                  active={concentrations.includes(c)}
+                />
+              }
               onClick={() =>
                 setFilter("concentrations", toggle(concentrations, c))
               }

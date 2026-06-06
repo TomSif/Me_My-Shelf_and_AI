@@ -194,3 +194,16 @@ body {
 .no-scrollbar {
   scrollbar-width: none;
 }
+
+/* Élévation nav icons — hover + actif */
+.nav-icon {
+  transition: background-color 150ms ease-out, box-shadow 150ms ease-out, transform 150ms ease-out;
+}
+.nav-icon:hover,
+.nav-icon.is-active {
+  background-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+.nav-icon.is-active {
+  transform: scale(1.02);
+}
