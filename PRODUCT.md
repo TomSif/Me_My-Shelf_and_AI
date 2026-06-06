@@ -520,6 +520,154 @@ Règle : aucune animation ne doit sembler gamifiée ou "tech demo".
 
 ---
 
+## Réflexion architecture — Juin 2026
+
+> **Statut : en réflexion — non implémenté.**
+> Cette section documente une remise en question fondamentale de l'architecture de navigation,
+> identifiée en session le 2026-06-06. Elle sert de mémoire pour la décision future.
+
+---
+
+### Le problème identifié
+
+La barre de navigation gauche mélange aujourd'hui trois catégories conceptuelles différentes :
+
+| Élément    | Catégorie réelle     | Problème                                          |
+| ---------- | -------------------- | ------------------------------------------------- |
+| Collection | Destination (page)   | ✅ cohérent                                       |
+| Filtrer    | Outil (panneau)      | ❌ dans la nav comme une destination              |
+| Étagères   | Vue de contenu       | ❌ traitée comme un outil au même niveau          |
+| IA         | Destination (future) | ✅ cohérent                                       |
+| Favoris    | Destination (future) | ✅ cohérent                                       |
+| Stats      | Destination (future) | ✅ cohérent                                       |
+| Réglages   | Destination (future) | ✅ cohérent                                       |
+
+**Une étagère n'est pas un outil. C'est une vue mémorisée de la collection.**
+C'est probablement la fonctionnalité la plus centrale du produit — le produit s'appelle *my-shelf*.
+
+La confusion vient du fait que "Filtrer" et "Étagères" sont des *panneaux de l'Atelier*,
+pas des destinations autonomes. Les traiter comme des items de nav crée une hiérarchie fausse.
+
+---
+
+### La nouvelle séparation conceptuelle proposée
+
+**Navigation = où je vais.** Elle change de page. Elle vit dans le Header ou la nav principale.
+
+```
+Collection | Favoris | Stats | Réglages
+```
+
+**Atelier = ce que je fais.** Il ne change pas de page. Il modifie ce que l'utilisateur regarde.
+L'Atelier reste à gauche, mais il n'est plus un système de navigation — c'est un espace de travail.
+
+---
+
+### Nouvelle structure de l'Atelier
+
+L'Atelier devient **Atelier de Curation** avec deux zones distinctes :
+
+**Zone 1 — FILTRER** *(actuel FilterPanel, inchangé)*
+
+Familles · Saisons · Concentrations · Tags · Marque · Parfumeur · Pyramide
+
+**Zone 2 — COMPOSER** *(remplace le panneau Étagères)*
+
+Ce n'est plus une liste d'étagères à naviguer. C'est un système de vues mémorisées :
+
+```
+COMPOSER
+
+● Sélection du jour (3)          ← temporaire, auto-créée
+● Été 2025                        ← sauvegardée (nommée)
+● Chanel                          ← sauvegardée
+● Agrumes préférés                ← sauvegardée
+
+Historique
+  └── 05/06, 04/06, 03/06...     ← non sauvegardées
+
++ Nouvelle étagère
+```
+
+**Types de sélections :**
+
+| Type        | Description                                       | Persistance  |
+| ----------- | ------------------------------------------------- | ------------ |
+| Temporaire  | Sélection du jour, session courante               | Non          |
+| Historique  | Sessions non nommées                              | Courte durée |
+| Sauvegardée | Étagères nommées par l'utilisateur                | Permanente   |
+
+---
+
+### Conséquence sur la nav rail gauche
+
+```
+Atelier fermé          Atelier ouvert
+─────────────          ─────────────────────────
+🏠 Collection          L'ATELIER
+✨ Atelier  ←toggle→   ─────────────────────
+❤️ Favoris             FILTRER
+📊 Stats               Familles · Saisons · ...
+⚙️ Réglages            ─────────────────────
+                       COMPOSER
+                       ● Sélection du jour (3)
+                       ● Été 2025
+                       ...
+                       + Nouvelle étagère
+```
+
+**Filtrer et Étagères disparaissent du rail.** Ils vivent à l'intérieur de l'Atelier.
+Le rail devient propre : 5 items, tous du même type (destinations ou toggle panel).
+
+---
+
+### Ce qui ne change pas
+
+Les trois vues majeures restent :
+
+| Vue        | Rôle                                      |
+| ---------- | ----------------------------------------- |
+| Collection | Vue satellite — dense, globale, homepage  |
+| Shelf      | Vue de curation — focus, étage par étage  |
+| Détail     | Vue face à face — un parfum, tout l'espace|
+
+La page **Shelf ne disparaît pas.** Elle reste une destination dédiée,
+mais on y accède via l'Atelier (clic sur une étagère → ouvre Shelf sur cet étage),
+pas via la nav principale.
+
+---
+
+### Pourquoi c'est plus juste philosophiquement
+
+> "L'utilisateur ne se dit jamais 'je vais dans le menu étagère'.
+> Il se dit 'je veux retrouver ma sélection Chanel' ou 'je veux voir ce que j'ai porté récemment'."
+
+Ces actes sont des **actes de curation**, pas de navigation.
+Ils appartiennent donc naturellement à l'Atelier.
+
+**Séparation finale :**
+- Navigation en haut → *où je vais*
+- Atelier à gauche → *comment je façonne ce que je vois*
+
+Cette séparation est suffisamment solide pour accueillir les fonctionnalités futures
+(IA contextuelle, sélections intelligentes, rotation saisonnière, playlists olfactives)
+sans refonte de l'interface.
+
+---
+
+### Pourquoi ce n'est pas encore implémenté
+
+Ce refactor touche :
+- `Atelier.tsx` — suppression de `section: "filtres" | "etageres"`, nouvelle structure
+- `ShelfPanel.tsx` — devient sélecteur de vue (COMPOSER), pas concurrent du FilterPanel
+- La nav rail — retire Filtrer et Étagères comme items, ajoute Atelier comme toggle
+- Potentiellement le store (`activeShelfId`, `currentSelection`, `shelves`)
+
+Décision : **ne pas mélanger ce refactor structurant avec la passe UI (#28).**
+L'implémenter dans une issue dédiée (#36 ?) après que la passe UI soit stable et mergée.
+
+---
+
 ## Modèle de données
 
 ```typescript

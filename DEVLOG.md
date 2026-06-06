@@ -902,3 +902,418 @@ mental de l'utilisateur avant de coder, surtout pour une feature aussi centrale.
 ### Prochaine session
 
 - À définir selon les priorités
+
+---
+
+## Session 2026-06-03 (suite) — Issue #19 : démarrage passe UI (Atelier + FilterPanel)
+
+### Ce qui était prévu
+
+- Issue #19 : passe UI globale (shadcn)
+
+### Ce qui a été fait
+
+Premier pas de la passe UI sur le composant Atelier/FilterPanel comme test.
+Branche `setup/shadcn-ui` ouverte, non mergée — réflexion en cours sur le plan de travail.
+
+**Analyse delta design vs état actuel**
+
+Comparaison de `vue-filterAtelier-2.png` avec l'état réel de l'app.
+Delta identifié : chips trop petites/invisibles (border blanc sur fond blanc),
+ichones nav en texte abrégé ("É", "♡"), chevrons ∧/∨ à remplacer,
+container FilterPanel trop enveloppé, inputs peu contrasés.
+
+**Passe #1 — Chips + lucide-react**
+
+- `--border-chip: rgba(29,27,25,0.12)` ajouté dans index.css — border visible sur fond clair
+- Chips familles/saisons/concentrations : `py-1`, dot 8px, `surface-primary` inactif
+- `lucide-react` installé
+- Nav Atelier : `BookMarked`, `Heart`, `BarChart2`, `Settings` remplacent "É/♡/S/R"
+
+**Passe #2 — FilterPanel + Atelier nav polish**
+
+- `ChevronUp`/`ChevronDown` (lucide 13px) remplacent ∧/∨
+- Séparateurs fins `rgba(29,27,25,0.06)` entre sections
+- Headers sections : 10px uppercase tracking large
+- Label "Filter Atelier" : 9px ghost très discret
+- Inputs : `border-chip`, `surface-primary`
+- Container FilterPanel : plus de carte interne (respire directement dans le panel)
+- Icône `Sparkles` (IA) dans NAV_ITEMS
+- Items non-implémentés (IA, Favoris, Stats, Réglages) à 45% opacity
+- AtelierClosed : helper `NavIcon` avec état actif amber
+- Icônes `Home` + `Filter` (funnel) remplacent le `»` chevron
+
+### Décisions prises
+
+**Approche composant par composant.**
+Plutôt qu'une migration shadcn globale, on avance section par section
+en comparant avec les fichiers de design dans `assets/design/`.
+L'Atelier/FilterPanel sert de prototype pour valider le pattern de style.
+
+**shadcn Installé mais pas encore utilisé pour les composants.**
+Lucide-react installé (icônes). shadcn/ui lui-même n'est pas encore installé —
+la passe actuelle montre qu'on peut aller loin avec Tailwind + CSS variables
+sans dépendances supplémentaires. Switch toggles = candidat naturel pour shadcn.
+
+### Prochaine session
+
+- Établir un plan de travail précis avec issues détaillées pour la passe UI
+- Suite issue #19 : toggles (shadcn Switch ?), header app, vue collection
+
+---
+
+## Session 2026-06-04 — Issue #28 : bibliothèque de composants UI (en cours)
+
+### Ce qui était prévu
+
+- Issue #28 : composants UI réutilisables — Chip, Tag, Toggle, Badge, Button, Input + shadcn
+
+### Ce qui a été fait
+
+**Roadmap clarifiée**
+
+PRODUCT.md mis à jour avec issues #28–#35 détaillées. L'ancienne "issue #19 passe UI"
+est désormais découpée en 8 issues distinctes. Branche : `setup/shadcn-ui`.
+
+**shadcn/ui — installation manuelle (SSL réseau)**
+
+`npx shadcn@latest init` échoue en raison d'un certificat SSL intercepté par le réseau.
+Solution : installation manuelle — `clsx` + `tailwind-merge` installés via npm,
+`components.json` et `src/lib/utils.ts` (fonction `cn()`) créés à la main.
+Alias `@/*` ajouté dans `tsconfig.app.json` et `vite.config.ts`.
+
+**`Chip.tsx` — composant pill réutilisable**
+
+3 modes selon les props :
+- **Horizontal** (défaut) : icône slot 14px fixe (grid) + texte `1fr` — alignement parfait, pas de bold shift
+- **Circle** : `icon` sans `children` → cercle centré, `iconPadding` configurable
+- **Vertical** : `layout="vertical"` → icône au-dessus, label en dessous (`rounded-xl`)
+
+État actif : bg pastel `${color}1a` (~10% opacité), border colorée, icône colorée.
+Texte toujours `--text-secondary`. Drop shadow discret. `transition-all duration-150`.
+
+**`Tag.tsx` — tag supprimable**
+
+Pill neutre : `--surface-primary`, `--border-chip`, `X` lucide 10px.
+`translate-y-0.5` sur l icône × pour corriger l illusion optique viewBox lucide.
+Utilisé dans `TagsInput` et `AutocompleteChipInput` (FilterPanel).
+
+**`ConcentrationBottle.tsx` — SVG bouteille par concentration**
+
+Même géométrie que `FragranceBottle`. Couleur ambrée fixe `#f0c373`.
+Opacité liquide croissante : cologne 12% → extrait 92%.
+Utilisé dans les chips concentrations (mode vertical, `grid-cols-5`).
+
+**`MapleLeafIcon.tsx` — icône automne**
+
+Icône `tabler-leaf-2` récupérée via shadcn.io/icons (Tabler Icons, MIT).
+Style line cohérent avec lucide (stroke, viewBox 24x24, strokeWidth 2).
+
+**`LeatherIcon.tsx` — icône cuiré**
+
+SVG inline custom (2 rectangles arrondis empilés).
+Nécessaire car pas d équivalent cuir/leather dans lucide-react.
+
+**`families.ts` — config centralisée familles olfactives**
+
+`FAMILY_CONFIG: Record<OlfactoryFamily, { color: string, Icon: ElementType }>`.
+Icônes lucide + LeatherIcon. Fichier `.ts` pur (pas de JSX) pour Fast Refresh.
+Couleurs révisées par Thomas (plus vives que les CSS variables d origine).
+
+**FilterPanel — 3 sections refactorisées**
+
+- Familles : `grid-cols-2`, icônes depuis `FAMILY_CONFIG`, `Chip` horizontal
+- Saisons : 4 `Chip` cercle + `iconPadding="1rem"`, icônes lucide + MapleLeafIcon
+- Concentrations : `grid-cols-5`, `Chip` vertical, `ConcentrationBottle size={0.6}`
+
+**TagsInput — migré vers `Tag`**
+
+Inline `<span>` remplacé par `<Tag onRemove>`.
+
+### Décisions prises
+
+**`families.tsx` → `families.ts` + `LeatherIcon.tsx` séparé.**
+Un fichier `.tsx` qui exporte à la fois un composant et des données non-composants
+casse Fast Refresh (`react-refresh/only-export-components`).
+Solution : stocker la référence du composant (`Icon: ElementType`) plutôt qu une
+fonction JSX — le JSX est rendu au call site. Fichier de config = `.ts` pur.
+
+**Grid interne `12px 1fr` dans Chip (mode horizontal).**
+`justify-center` causait un effet escalier. Avec un slot fixe de 12px pour l icône,
+toutes les icônes sont à la même position X quelle que soit leur largeur intrinsèque.
+Bonus : bold shift (fontWeight 400→500) ne décale plus rien — texte dans colonne `1fr` fixe.
+
+**`NavIcon` sorti du render de `AtelierClosed`.**
+ESLint `react-hooks/static-components` — créer un composant dans le corps d un autre
+reset son état à chaque render. `NavIcon` déplacé au niveau module.
+
+**shadcn installé manuellement.**
+Le CLI shadcn fait des requêtes HTTPS vers `ui.shadcn.com` bloquées par le proxy SSL.
+Pour ajouter des composants plus tard : `npm config set strict-ssl false` avant
+`npx shadcn@latest add <composant>`, puis remettre `strict-ssl true`.
+
+### Bugs / blocages rencontrés
+
+**`Pepper` absent de lucide-react v1.17.**
+Remplacé par `Flame` pour épicé, `FlameKindling` pour résineux.
+
+**`baseUrl` déprécié en TypeScript 6.0.**
+Fix : supprimer `baseUrl` de `tsconfig.app.json` — `paths` fonctionne seul depuis TS 6.0.
+
+### Prochaine session
+
+- Continuer issue #28 : `Toggle` (switch Favoris/Jamais portés/Échantillons)
+- Puis `Button` et `Input` canoniques
+- Puis issue #29 : typographie + palette couleurs définitives
+
+**`Toggle.tsx` — switch amber**
+
+Switch `w-9 h-5`, fond `rgba(120,100,80,.18)` → `#e3aa3a` actif.
+Thumb blanc avec shadow, transition `.18s ease`. `role="switch"` + `aria-checked`.
+Utilisé dans `ToggleRow` du FilterPanel (Favoris / Jamais portés / Échantillons).
+
+**`Input.tsx` — wrapper shadcn-style**
+
+Wrapper `<input>` avec `cn()`. Border `rgba(120,100,80,.12)` au repos,
+amber `#e3aa3a` au focus (ring 2 + border). Placeholder `--text-muted`.
+Migré dans : `TagsInput`, `AutocompleteChipInput` (FilterPanel), `QuickAddModal`.
+Décision : `Button.tsx` non créé — les Chips couvrent les besoins,
+les rares CTAs de form (Enregistrer, Annuler) sont trop contextuels pour un composant générique.
+
+**`DropdownMenu.tsx` — Radix UI avec styling custom**
+
+Wrapper complet autour de `@radix-ui/react-dropdown-menu`.
+Composants exportés : Content, Item, SubTrigger, SubContent, Separator, Label, RadioGroup, RadioItem.
+Styles : fond `bg-white/90 backdrop-blur-sm`, border `rgba(120,100,80,.12)`,
+focus amber `rgba(232,178,61,.08)`, RadioItem avec `Check` lucide amber.
+`@radix-ui/react-dropdown-menu` installé via npm (pas via CLI shadcn — SSL).
+
+**AppHeader — dropdown tri migré vers Radix**
+
+Supprimé : `open`, `subMenuCriterion`, `highlightedCriterion`, `highlightedDir`, `menuRef`, 2 useEffect.
+Remplacé par : `DropdownMenu` + `DropdownMenuSub` par critère + `DropdownMenuRadioGroup` par direction.
+Navigation clavier (↑↓ → Esc) et fermeture click-outside gratuits via Radix.
+Icône `ChevronsUpDown` (lucide) remplace `↕`.
+
+**Itération design Chip (stone variant)**
+
+Longue exploration sur l'identité visuelle des chips :
+1. Icônes colorées famille + border amber uniforme → trop arlequin
+2. Tout amber → trop criard
+3. Stone variant : icônes `#8D8177` → `#E8B23D` au clic + `drop-shadow` gravure
+4. Retour icônes colorées famille + stone filter : meilleur compromis
+5. Fond actif `linear-gradient(45deg, #f8f5f1)` — crème chaud lisible vs blanc neutre
+6. Border `rgba(232,178,61,.30)` — amber discret
+7. Micro-animation icône `scale(1.15) + transition color .18s`
+
+Verdict Thomas : "plus c'est sobre mieux c'est" — design stable.
+
+### Décisions prises (suite)
+
+**`Button.tsx` non créé.**
+Thomas : "on vient de customiser les chips qui sont aussi des boutons — de quoi tu parles ?"
+Juste. Les Chip couvrent les toggles et filtres. Les CTAs ponctuels (Enregistrer, Annuler)
+sont trop contextuels pour être généralisés sans sur-ingénierie. Décision : on les adresse
+composant par composant quand on touche les pages concernées.
+
+**Radix installé directement, pas via CLI.**
+`npx shadcn@latest add input` échoue comme l'init — même proxy SSL.
+Approche définitive : installer les packages Radix via npm, copier/écrire les wrappers à la main.
+
+### Bugs / blocages rencontrés (suite)
+
+**`SHADOW_ON` avec `linear-gradient` dans `boxShadow`.**
+Le navigateur ignore silencieusement une valeur `linear-gradient` dans `box-shadow`.
+Corrigé par Thomas directement. Leçon : les propriétés CSS n'acceptent pas toutes le même
+type de valeur — `background` accepte `linear-gradient`, `box-shadow` non.
+
+### Prochaine session
+
+- Suite issue #28 : migrer les inputs restants (FragrancePage, ShelfPanel, PyramidInput)
+- ShelfPanel `⋮` kebab → `DropdownMenu` Radix
+- Issue #29 : typographie + palette couleurs définitives
+
+
+---
+
+## Session 2026-06-05 — Itération design Chip (suite)
+
+### Ce qui était prévu
+
+- Finaliser le design des chips familles/saisons
+
+### Ce qui a été fait
+
+**Exploration du state actif des chips — 6 itérations**
+
+Longue exploration pour trouver le bon signal de sélection :
+
+1. Dot 5px couleur famille à gauche de l icone → lisible mais ajout de bruit visuel
+2. Fond `#F2ECE5` au clic → couleur pas belle, trop beige
+3. Suppression amber partout, border neutre `rgba(100,80,60,.28)` → bonne direction
+4. Icone remplie inversée (cercle couleur famille + icone blanche) → trop chargé
+5. Icone stone partout inactif, couleur seulement actif → LA bonne idée
+6. Harmonisation saisons sur même logique que familles
+
+**Décision finale — "actif = couleur"**
+
+Stone `#A8968A` / `#979188` inactif → couleur famille/saison pleine actif.
+Le picto est lisible en stone, la couleur est réservée au signal de sélection.
+Pas de border amber, pas de fond coloré — l icone suffit.
+`scale(1.16)` au clic pour renforcer le feedback tactile.
+
+**Harmonisation saisons ↔ familles**
+
+Les saisons avaient couleur toujours visible — deux logiques cohabitaient.
+Unification : stone inactif (`STONE_CIRCLE_OFF = #979188`) + couleur actif pour les deux modes.
+`STONE_FILTER` (drop-shadow simulant gravure) appliqué en inactif sur les deux modes.
+
+**Couleurs familles saturées**
+
+Palettes revues pour être lisibles au clic :
+hespéridé `#E8960A`, floral `#C04880`, herbacé `#3A9E55`, résineux `#8B2500`,
+boisé `#7A4820`, épicé `#CC3A18`, musqué `#3A85C0`, cuiré `#5C3010`,
+gourmand `#C87030`, alcoolisé `#A05828`, minéral `#607A90`, artificiel `#4A5CC8`.
+
+Icones passées de 13px à 16px. Slot grid `18px 1fr`.
+
+### Décisions prises
+
+**"Actif = couleur" est le meilleur signal UX de la session.**
+Inactif sobre et neutre → la couleur apparaît uniquement pour confirmer le choix.
+Pas de border colorée (arlequin), pas de fond coloré (pas joli), pas de dot (bruit).
+La couleur de l icone est le signal, rien d autre.
+
+**Stone plutôt qu opacité.**
+Varier l opacité (65% → 100%) créait un effet délavé peu premium.
+Stone `#A8968A` est une vraie couleur, pas une version atténuée — plus propre.
+
+### Prochaine session
+
+- Suite issue #28 : Input dans FragrancePage, ShelfPanel, PyramidInput
+- ShelfPanel kebab → DropdownMenu Radix
+- Issue #29 : typographie + palette couleurs définitives
+
+---
+
+## Session 2026-06-06 — Issue #28 : Atelier layout + ConcentrationBottle (suite)
+
+### Ce qui était prévu
+
+- Continuer issue #28 : corrections UX et design
+
+### Ce qui a été fait
+
+**Fix layout Atelier — nav permanente + panel coulissant**
+
+Problème : l'`<aside>` unique (48px → 300px) remplaçait les icônes nav par le panel
+au lieu de les faire coexister. Les boutons de navigation disparaissaient pendant
+que le panel était ouvert.
+
+Refactoring : `Atelier` retourne maintenant un Fragment React avec deux éléments côte à côte :
+- `<div width=48 shrink-0>` : nav permanente, toujours visible — Home, Filter, NAV_ITEMS
+- `<div width=0→300 overflow-hidden>` : panel coulissant, sort à droite de la nav
+
+`AtelierClosed` supprimé — plus nécessaire.
+`routerNavigate` et `selectionCount` remontent dans `Atelier`.
+Cliquer sur l'icone active ferme le panel (toggle).
+Un seul `borderRight` sur la nav = la fine ligne entre les deux zones.
+Le panel n'a pas de `borderLeft` — pas de double bordure.
+
+**Fix nav interne `AtelierOpen` — menu fantôme supprimé**
+
+Le bloc "Navigation" en bas du panel (`NAV_ITEMS` avec labels texte) était redondant
+avec la nav permanente gauche. Supprimé. `onSectionChange` et `selectionCount`
+retirés des props de `AtelierOpen` en conséquence.
+
+**`ConcentrationBottle` — hauteur variable + actif = couleur**
+
+L'approche opacité variable (`cologne 12% → extrait 92%`) créait un effet délavé
+— même principe rejeté plus tôt sur les chips familles/saisons.
+
+Nouveau design :
+- Hauteur de liquide variable : `cologne: 4px → extrait: 30px` (viewBox 60px)
+- `clipPath` sur le corps `rx=3` pour que le liquide respecte les coins arrondis
+- Inactif : liquide stone `#cccccc` (neutre, pas de couleur)
+- Actif : liquide amber `#f0c373` — suit le principe "actif = couleur"
+- Col (neck) : liquide visible pour parfum/extrait uniquement
+- Prop `active` passée directement dans le JSX de l'icône dans FilterPanel
+
+**Fix ShelfPanel — `activeShelf` non utilisé**
+
+`activeShelf` était destructuré du store mais jamais consommé — `activeShelfId` suffisait.
+Supprimé.
+
+### Décisions prises
+
+**Fragment React pour deux éléments flex indépendants.**
+Au lieu de conditionner `AtelierClosed` vs `AtelierOpen` dans un seul `<aside>`,
+les deux zones sont maintenant des frères dans le flex container de `AppLayout`.
+Le Fragment est invisible dans le DOM — les deux `<div>` deviennent directement
+des flex items. C'est le pattern correct pour "deux colonnes qui coexistent".
+
+**Hauteur plutôt qu'opacité pour la bouteille.**
+Varier l'opacité d'un liquide donne une impression de décoloration, pas de niveau.
+Varier la hauteur crée une vraie métaphore physique (remplissage/vidage).
+Bonus : le niveau devient lisible même en inactif (stone), sans couleur.
+
+**`active` injecté au call site, pas dans `Chip`.**
+`ConcentrationBottle` gère sa propre couleur selon `active`. `Chip` n'a pas besoin
+de savoir que l'icône qu'il reçoit est une bouteille avec des états —
+le composant parent construit l'icône configurée avant de la passer.
+
+**Refonte icons nav — labels + tiles verticales + elevation hover**
+
+Objectif : rapprocher le nav rail de la maquette, avec labels sous les icônes,
+une surface rectangulaire élancée à l'actif/hover, et la couleur pour le seul état actif.
+
+Changements :
+- `NavIcon` : tile `w-12 py-3` (vertical, 48×~67px) — plus élancé que carré
+- Icônes : `size={28} strokeWidth={1.6}` — cohérent avec les icônes saisons dans l'Atelier
+- Label : `<span fontSize=9 color=var(--text-muted)>` sous chaque icône
+- Couleur : amber `var(--icon-active)` actif seulement, stone inactif — "actif = couleur"
+- CSS classes `.nav-icon` + `.is-active` : hover → léger fond blanc + ombre 1px sans couleur
+- Scale `1.02` à l'actif — subtil, cohérent avec les chips
+- `justify-center` sur le container nav → icônes centrées verticalement sur l'écran
+
+**Chips Atelier — hover sans couleur**
+
+Les 3 modes de Chip (pill, cercle, vertical) n'avaient aucun état de survol.
+Pattern ajouté : `elevated = active || hovered`
+- `hovered` : useState + helper `hoverHandlers(setHovered)` (onMouseEnter/Leave)
+- Élevé (hover ou actif) : fond plus clair, border plus sombre, ombre +1px, scale 1.02
+- Couleur (icon, fontWeight) : `active` uniquement — hover sans couleur
+
+Fix annexe : glitch hauteur sur le texte des chips verticaux (concentration).
+`fontWeight 400→600` changeait la hauteur de la ligne au clic.
+Fix : `height: "1.2em"` + `flex items-center justify-center` sur le `<span>` texte.
+
+**Réflexion architecture — Navigation vs Atelier**
+
+Identification d'une confusion structurante : la nav rail gauche mélange
+des *destinations* (Collection, IA, Stats…) et des *outils de curation* (Filtrer, Étagères).
+
+Réflexion documentée dans PRODUCT.md section "Réflexion architecture — Juin 2026" :
+- Navigation = où je vais (destinations uniquement)
+- Atelier = ce que je fais (curation, jamais une page)
+- Atelier de Curation : FILTRER + COMPOSER (Étagères = vues mémorisées, pas destinations)
+- Nav rail épurée : Collection | IA | Favoris | Stats | Réglages
+
+Statut : réflexion uniquement, non implémentée — traiter dans une issue dédiée post-#28.
+
+### Décisions prises
+
+**`elevated = active || hovered` comme pattern de hover dans Chip.**
+Sépare la logique d'élévation (visuelle) de la logique de couleur (sémantique).
+Le hover donne du feedback sans signifier "actif".
+
+**Ne pas mélanger réflexion architecture et passe UI.**
+La réflexion est documentée mais non implémentée.
+Implémenter dans l'élan aurait mélangé refactor structurant et feature UI — ce que CLAUDE.md interdit.
+
+### Prochaine session
+
+- Suite issue #28 : Input dans FragrancePage, ShelfPanel, PyramidInput
+- ShelfPanel kebab → DropdownMenu Radix
+- Issue #29 : typographie + palette couleurs définitives
+- Issue #36 (à créer) : refactoring architecture Navigation vs Atelier
