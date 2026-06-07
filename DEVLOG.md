@@ -1324,3 +1324,111 @@ le composant parent construit l'icône configurée avant de la passer.
 - Suite issue #28 : Input dans FragrancePage, ShelfPanel, PyramidInput
 - ShelfPanel kebab → DropdownMenu Radix
 - Issue #29 : typographie + palette couleurs définitives
+
+## Session 2026-06-07 — Réflexion architecture + démarrage issue #36
+
+### Ce qui était prévu
+
+- Merger `setup/shadcn-ui` dans `dev`
+- Réfléchir au comportement par défaut de Shelf et Favoris (issues ouvertes par les questions de la session précédente)
+- Si le temps le permet, attaquer l'issue #36
+
+### Ce qui a été fait
+
+**Merge `setup/shadcn-ui` → `dev`**
+
+PR ouverte et mergée manuellement (pas de `gh` CLI installé sur la machine).
+Conflit de merge sur `DEVLOG.md` (la version de `dev` était plus ancienne) résolu
+en conservant le contenu le plus récent. Branche locale et distante supprimées.
+
+**Réflexion architecture — séparation Navigation / Atelier**
+
+Documentée dans `PRODUCT.md` : la nav (déplacements entre vues) et l'Atelier
+(curation de la vue courante) sont deux responsabilités distinctes qui ne doivent
+pas cohabiter dans la même barre latérale. Conséquence : les destinations
+(Collection, Shelf, Favoris, Stats, IA, Réglages) basculent dans le header,
+l'Atelier ne garde que ses outils de composition (Filtrer, Étagères/Composer).
+Décision : ne pas mélanger réflexion d'architecture et passe UI — documenter
+d'abord, exécuter ensuite.
+
+**Comportements par défaut Collection / Shelf**
+
+Discussion → décisions consignées dans `PRODUCT.md` :
+- Collection : tri par `lastUsed` décroissant, jamais-portés en queue triée par `createdAt` décroissant
+- Shelf : groupement par famille olfactive par défaut, 4-5 flacons par étagère
+- L'Atelier reste un calque de filtre persistant au-dessus des deux vues
+- Collection et Shelf sont deux modes de rendu déterministes de la collection
+  complète (grille / spatial) — élimine le "bouton Shelf brouillon" dont le
+  comportement aurait varié selon le contexte
+
+**Favoris comme curation — Le Podium**
+
+Idée développée et documentée dans `PRODUCT.md` : Favoris cesse d'être un simple
+bouton "j'aime" pour devenir un outil de classement (Top 3/5/10/100), avec une
+représentation en pyramide/podium (étage du haut = Top 1, etc.). Le classement
+vit dans l'étagère ("le podium"), pas dans le `Fragrance` — préserve le modèle
+de données stable. Décision : Favoris = route dédiée `/favoris`, qui réutilise
+entièrement le moteur de navigation spatiale de Shelf ; seules la composition
+initiale (3 étagères visibles) et la source des données (sélection classée vs
+groupement par famille) diffèrent.
+
+**Démarrage issue #36 — premiers pas concrets**
+
+1. *Nav tabs dans le header* (`AppHeader.tsx`) : les 6 destinations
+   (Collection, Shelf, Favoris, Stats, IA, Réglages) apparaissent maintenant
+   dans la navbar, alignées à droite façon navbar traditionnelle (recherche
+   reste collée au logo à gauche). Collection et Shelf sont des `<Link>`
+   fonctionnels avec détection de route active (`useLocation`). Favoris, Stats,
+   IA et Réglages — qui n'ont pas encore de page — sont rendus en `<span>`
+   inertes et grisés (`var(--text-ghost)`, `title="… — à venir"`) plutôt
+   qu'omis : Thomas veut les garder sous les yeux pour être obligé de continuer
+   à réfléchir à leur fonctionnement, quitte à les griser en prod comme
+   indicateur "work in progress".
+
+2. *"Trier" descend dans l'Atelier* : le `DropdownMenu` de tri et toute sa
+   logique (`SORT_OPTIONS`, `getSortLabel`, `select`, `isDefaultSort`) ont été
+   retirés du header et déplacés dans `FilterPanel.tsx`, sous la forme d'une
+   nouvelle section repliable "TRI" ouverte par défaut (en haut, avant
+   FAMILLES — c'est la première décision de mise en forme de la collection).
+   Chaque critère s'affiche en ligne avec deux petits boutons ↑/↓ (tooltips =
+   libellés de direction, ex. "Récent → ancien"), dans le même langage visuel
+   que le reste du panneau (chips, toggles).
+
+3. *Nettoyage de la nav permanente de l'Atelier* : Collection, IA, Favoris,
+   Stats et Réglages retirés de la colonne d'icônes — ils font maintenant
+   doublon avec la navbar du header. Il ne reste que Filtrer et Étagères
+   (les deux seuls outils qui ouvrent réellement une section de l'Atelier).
+   Le séparateur visuel entre les deux groupes a aussi été supprimé : les deux
+   icônes restantes sont de même nature (toggle d'une section), plus besoin de
+   les distinguer visuellement. `NAV_ITEMS`, `useNavigate`/`routerNavigate` et
+   les imports d'icônes devenus inutiles ont été supprimés.
+
+### Décisions prises
+
+**Le classement vit dans l'étagère, pas dans le parfum.**
+Pour ne pas toucher au modèle `Fragrance` (stable, "ne pas modifier sans
+discussion"), le Top/Podium est une propriété d'une étagère spéciale, pas un
+champ `rank` sur le parfum. Distinction nette : `rating` = combien j'aime
+(absolu, stable, privé) vs classement = qui je suis (relatif, daté, partageable).
+
+**Réutiliser le moteur de Shelf pour Favoris plutôt que tout réinventer.**
+Même logique de navigation spatiale, composition initiale différente (podium
+à 3 étagères visibles) et source de données différente (sélection classée).
+Évite de dupliquer un moteur de rendu/navigation complexe pour une variation
+de présentation.
+
+**Montrer les destinations sans page plutôt que les masquer.**
+Contre-intuitif au premier abord (pourquoi montrer un bouton qui ne fait rien ?)
+mais voulu : les garder visibles force à continuer à se poser la question de
+leur comportement. Les griser communique "en construction" sans les cacher.
+Pattern réutilisable pour d'autres décisions de design en suspens.
+
+### Prochaine session
+
+- Vérifier visuellement le rendu de la navbar + de la section TRI dans l'Atelier
+  dans le navigateur (golden path : recherche, navigation Collection/Shelf, tri,
+  hover sur les placeholders grisés)
+- Réfléchir à un découpage en commits atomiques (nav header / déplacement tri /
+  nettoyage Atelier sont trois intentions distinctes)
+- Créer l'issue #36 sur GitHub (contenu déjà rédigé dans `PRODUCT.md`, prêt à copier-coller)
+- Suite issue #36 : le Composer/ShelfPanel reste un chantier séparé
