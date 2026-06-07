@@ -1,31 +1,13 @@
 import { useState } from "react";
 import type { ElementType } from "react";
-import { useNavigate } from "react-router-dom";
 import {
-  Home,
   Filter,
   BookMarked,
-  Sparkles,
-  Heart,
-  BarChart2,
-  Settings,
   ChevronLeft,
 } from "lucide-react";
 import { FilterPanel } from "../fragrance/FilterPanel";
 import { ShelfPanel } from "../fragrance/ShelfPanel";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
-
-const NAV_ITEMS = [
-  {
-    label: "Étagères",
-    icon: BookMarked,
-    section: "etageres" as Section | null,
-  },
-  { label: "IA", icon: Sparkles, section: null },
-  { label: "Favoris", icon: Heart, section: null },
-  { label: "Stats", icon: BarChart2, section: null },
-  { label: "Réglages", icon: Settings, section: null },
-];
 
 type Section = "filtres" | "etageres";
 
@@ -61,7 +43,6 @@ function saveSection(value: Section) {
 export function Atelier() {
   const [isOpen, setIsOpen] = useState(getInitialOpen);
   const [section, setSection] = useState<Section>(getInitialSection);
-  const routerNavigate = useNavigate();
   const { selectionCount } = useFragrancesStore();
 
   function open(s: Section) {
@@ -94,32 +75,18 @@ export function Atelier() {
         }}
       >
         <NavIcon
-          icon={Home}
-          title="Collection"
-          onClick={() => routerNavigate("/")}
-        />
-        <NavIcon
           icon={Filter}
           title="Filtrer"
           active={isOpen && section === "filtres"}
           onClick={() => toggle("filtres")}
         />
-
-        <div
-          className="my-2"
-          style={{ height: 1, width: 40, backgroundColor: "var(--border-chip)" }}
+        <NavIcon
+          icon={BookMarked}
+          title="Étagères"
+          active={isOpen && section === "etageres"}
+          onClick={() => toggle("etageres")}
+          badge={selectionCount}
         />
-
-        {NAV_ITEMS.map(({ label, icon: Icon, section: itemSection }) => (
-          <NavIcon
-            key={label}
-            icon={Icon}
-            title={label}
-            active={isOpen && itemSection !== null && itemSection === section}
-            onClick={() => (itemSection ? toggle(itemSection) : undefined)}
-            badge={label === "Étagères" ? selectionCount : undefined}
-          />
-        ))}
       </div>
 
       {/* Panel coulissant — sort à droite de la nav */}
