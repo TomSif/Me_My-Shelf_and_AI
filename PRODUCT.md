@@ -721,6 +721,82 @@ triés par `createdAt` desc, en queue de l'étagère de leur famille.
 
 ---
 
+## Favoris comme curation — Le Podium (Réflexion 2026-06-07)
+
+> **Statut : idée fraîche — non implémentée.**
+> Consignée ici pour ne pas se perdre, avant transformation en issue v1 ou v2.
+
+### Le problème avec "Favoris" tel quel
+
+Un bouton Favoris qui ouvre une simple liste filtrée des `isFavorite: true`
+est fonctionnel mais plat — un like Instagram, pas un acte de curation.
+Ça ne raconte rien sur l'utilisateur, ça ne se partage pas, ça ne se rejoue pas.
+
+### L'idée : Favoris devient un espace de classement
+
+Favoris ouvre un outil qui permet de construire un **Top personnel** — Top 3, Top 5,
+Top 10, jusqu'à Top 100 — visualisé comme un podium ou une pyramide d'étagères.
+Un terrain de jeu pour les passionnés ("les illuminés comme moi"), qui transforme
+la collection en un objet à exposer, à raconter, à renouveler dans le temps.
+
+### Où vit le classement — pas dans le parfum, dans l'étagère
+
+**Décision structurante : le classement n'est pas une propriété de `Fragrance`.**
+Le modèle reste stable (pas de champ `rank`). Le classement est porté par une
+**étagère spéciale — une "shelf classée"**, un type distinct des shelves groupées
+(par famille, marque… cf. COMPOSER).
+
+Ça crée une distinction claire avec le champ `rating` qui existe déjà :
+
+| Notion         | Nature                          | Question qu'elle répond                      |
+| -------------- | ------------------------------- | --------------------------------------------- |
+| `rating`       | Absolue, stable, privée          | "Combien j'aime ce parfum ?"                  |
+| Classement/Top | Relative, datée, partageable     | "Où il se situe dans mon panthéon du moment ?"|
+
+Un même parfum peut être noté 4/5 et décrocher le Top 1 d'"Été 2026" — pas parce
+qu'il est objectivement le meilleur, mais parce qu'il raconte quelque chose de
+l'utilisateur à cet instant. **Le rating mesure combien j'aime. Le classement raconte qui je suis.**
+Et un même parfum peut très bien apparaître Top 1 dans un classement et absent d'un autre —
+le classement est contextuel à l'étagère qui le porte, jamais une vérité figée sur l'objet.
+
+### Structure visuelle — podium / pyramide
+
+Le nombre d'étages dépend de la taille du Top choisi — plus le Top est grand,
+plus la base de la pyramide s'élargit :
+
+```
+Top 3   → 1 étage  : Top 1 · Top 2 · Top 3
+Top 5   → 2 étages : [Top 1, Top 2] / [Top 3, Top 4, Top 5]
+Top 10  → 3 étages : [Top 1] / [Top 2, Top 3] / [Top 4 → Top 10]
+Top 100 → pyramide complète, plusieurs étages
+```
+
+Chaque étage porte un picto distinctif (coupe, couronne) et une inscription
+gravée au fond ("Top 1", "Top 2-3"…) — un signe d'identité, pas une donnée fonctionnelle.
+C'est ce genre de détail qui donne une âme à l'objet.
+
+### Vers le partage
+
+Un Top devient un objet à exposer — "mon Top du mois", "mon Top de l'été 2026".
+Ça introduit une dimension absente du reste du produit : la **temporalité de la curation**,
+et l'envie de montrer, pas seulement de garder. Plus fort et plus spécifique que
+l'idée backlog v2 "Partager sa collection (lien public)" — pas "voici ma collection",
+mais "voici comment je me vois aujourd'hui".
+
+### Pourquoi ça compte
+
+Un classement, contrairement à un like, oblige à choisir, comparer, se positionner.
+C'est un acte d'expression de soi — exactement dans l'esprit du nom "Me, Myself and I".
+Ça transforme Favoris d'une fonctionnalité passive en un véritable terrain de jeu.
+
+### Ce que ça implique techniquement (pour plus tard)
+
+- Nouvelle structure de données : "shelf classée" à étages (liste ordonnée + paliers)
+- Mécanisme de snapshot pour le partage temporel ("Top de la semaine du 7 juin")
+- Rendu visuel dédié : podium/pyramide, distinct du rendu "étagère groupée" de Shelf
+
+---
+
 ## Modèle de données
 
 ```typescript
