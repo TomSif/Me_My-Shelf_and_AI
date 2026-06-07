@@ -775,6 +775,29 @@ Chaque étage porte un picto distinctif (coupe, couronne) et une inscription
 gravée au fond ("Top 1", "Top 2-3"…) — un signe d'identité, pas une donnée fonctionnelle.
 C'est ce genre de détail qui donne une âme à l'objet.
 
+### Favoris : destination dédiée, moteur partagé avec Shelf
+
+**Décision (2026-06-07) : Favoris ouvre une route dédiée (`/favoris`), pas un panneau Atelier.**
+
+Même logique que Collection : la *destination* montre le résultat curaté, l'*Atelier*
+(COMPOSER) sert à le construire — on choisit les parfums, on les range par palier,
+on nomme son Top, on bascule entre plusieurs Tops actifs.
+
+**Un seul moteur de navigation spatiale, deux compositions.**
+
+Favoris réutilise tel quel le système de navigation par étages développé pour Shelf
+(scroll, transitions entre niveaux, mécanique spatiale). Pas de réinvention —
+seules les spécificités changent :
+
+| Aspect              | Shelf                                  | Favoris (Podium)                          |
+| ------------------- | -------------------------------------- | ------------------------------------------ |
+| Composition initiale| 1 étagère visible, groupes par famille  | 3 étagères visibles d'un coup → effet podium|
+| Source des données  | Collection groupée (famille/marque/…)   | Sélection classée (paliers ordonnés)        |
+| Navigation au-delà  | logique Shelf standard                  | **identique** — même transition étage par étage |
+
+L'utilisateur apprend une seule grammaire de navigation spatiale et la retrouve
+partout dans l'app — ce qui réduit la charge cognitive et le travail de dev.
+
 ### Vers le partage
 
 Un Top devient un objet à exposer — "mon Top du mois", "mon Top de l'été 2026".
@@ -793,7 +816,11 @@ C'est un acte d'expression de soi — exactement dans l'esprit du nom "Me, Mysel
 
 - Nouvelle structure de données : "shelf classée" à étages (liste ordonnée + paliers)
 - Mécanisme de snapshot pour le partage temporel ("Top de la semaine du 7 juin")
-- Rendu visuel dédié : podium/pyramide, distinct du rendu "étagère groupée" de Shelf
+- Route dédiée `/favoris` — réutilise le moteur de navigation spatiale de Shelf,
+  avec une composition initiale différente (3 étagères visibles = podium) et
+  une source de données différente (sélection classée vs groupement par famille)
+- Construction du Top : panneau dédié dans COMPOSER (Atelier) — choix des parfums,
+  paliers, nommage, bascule entre Tops actifs
 
 ---
 
