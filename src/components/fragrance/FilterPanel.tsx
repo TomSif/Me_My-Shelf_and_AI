@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from "react";
-import { ChevronUp, ChevronDown, Leaf, Sun, Snowflake } from "lucide-react";
+import { ChevronUp, ChevronDown, ArrowUp, ArrowDown, Leaf, Sun, Snowflake } from "lucide-react";
 import type {
   OlfactoryFamily,
   Season,
   Concentration,
+  SortCriterion,
+  SortDirection,
 } from "../../types/fragrance";
 import { useFragrancesStore } from "../../stores/fragrancesStore";
 import { Chip } from "../ui/Chip";
@@ -53,6 +55,28 @@ const CONC_LABEL: Record<Concentration, string> = {
   extrait: "Extrait",
 };
 
+type SortOption = {
+  criterion: SortCriterion;
+  label: string;
+  directions?: { asc: string; desc: string };
+};
+
+const SORT_OPTIONS: SortOption[] = [
+  { criterion: "alphabetic",    label: "Alphabétique",          directions: { asc: "A → Z",                  desc: "Z → A" } },
+  { criterion: "createdAt",     label: "Date d'ajout",          directions: { asc: "Ancien → récent",         desc: "Récent → ancien" } },
+  { criterion: "rating",        label: "Note",                  directions: { asc: "Moins bon → meilleur",    desc: "Meilleur → moins bon" } },
+  { criterion: "purchaseDate",  label: "Date d'achat",          directions: { asc: "Ancien → récent",         desc: "Récent → ancien" } },
+  { criterion: "lastUsed",      label: "Dernière utilisation",  directions: { asc: "Ancien → récent",         desc: "Récent → ancien" } },
+  { criterion: "purchasePrice", label: "Prix",                  directions: { asc: "Moins cher → plus cher",  desc: "Plus cher → moins cher" } },
+];
+
+function getSortLabel(criterion: SortCriterion, direction: SortDirection): string {
+  const opt = SORT_OPTIONS.find((o) => o.criterion === criterion);
+  if (!opt) return "Trier";
+  if (!opt.directions) return opt.label;
+  return `${opt.label} · ${opt.directions[direction]}`;
+}
+
 function toggle<T>(arr: T[], item: T): T[] {
   return arr.includes(item) ? arr.filter((v) => v !== item) : [...arr, item];
 }
@@ -64,6 +88,8 @@ export function FilterPanel() {
     setFilter,
     clearFilters,
     hasActiveFilters,
+    sortState,
+    setSortState,
   } = useFragrancesStore();
 
   const allTags = useMemo(
@@ -111,6 +137,40 @@ export function FilterPanel() {
       >
         Filter Atelier
       </p>
+
+      {/* Tri — au-dessus des filtres, c'est la première décision de mise en forme */}
+      <CollapsibleSection
+        title="TRI"
+        defaultOpen
+        activeSummary={
+          sortState.criterion !== "none"
+            ? getSortLabel(sortState.criterion, sortState.direction)
+            : undefined
+        }
+      >
+        <div className="flex flex-col gap-0.5 py-0.5">
+          <SortRow
+            label="Aucun tri"
+            active={sortState.criterion === "none"}
+            onClick={() => setSortState({ criterion: "none", direction: "asc" })}
+          />
+          {SORT_OPTIONS.map((opt) => (
+            <SortRow
+              key={opt.criterion}
+              label={opt.label}
+              active={sortState.criterion === opt.criterion}
+              direction={sortState.criterion === opt.criterion ? sortState.direction : undefined}
+              directions={opt.directions}
+              onSelectDirection={(direction) => setSortState({ criterion: opt.criterion, direction })}
+            />
+          ))}
+          <SortRow
+            label="Aléatoire"
+            active={sortState.criterion === "random"}
+            onClick={() => setSortState({ criterion: "random", direction: "asc" })}
+          />
+        </div>
+      </CollapsibleSection>
 
       {/* Niveau 1 — ouvertes par défaut */}
       <CollapsibleSection
@@ -369,6 +429,91 @@ function ToggleRow({
       </span>
       <Toggle value={value} onChange={onChange} />
     </div>
+  );
+}
+
+function SortRow({
+  label,
+  active,
+  directions,
+  direction,
+  onClick,
+  onSelectDirection,
+}: {
+  label: string;
+  active: boolean;
+  directions?: { asc: string; desc: string };
+  direction?: SortDirection;
+  onClick?: () => void;
+  onSelectDirection?: (direction: SortDirection) => void;
+}) {
+  const textStyle = {
+    color: active ? "var(--icon-active)" : "var(--text-secondary)",
+    fontWeight: active ? 600 : 400,
+  };
+
+  if (!directions) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="text-left px-2.5 py-1.5 rounded-lg text-xs transition-colors hover:bg-black/5"
+        style={{ ...textStyle, backgroundColor: active ? "var(--bg-chip)" : "transparent" }}
+      >
+        {label}
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between px-2.5 py-1 gap-2">
+      <span className="text-xs" style={textStyle}>
+        {label}
+      </span>
+      <div className="flex items-center gap-1 shrink-0">
+        <DirectionButton
+          active={active && direction === "asc"}
+          onClick={() => onSelectDirection?.("asc")}
+          title={directions.asc}
+        >
+          <ArrowUp size={12} strokeWidth={1.6} />
+        </DirectionButton>
+        <DirectionButton
+          active={active && direction === "desc"}
+          onClick={() => onSelectDirection?.("desc")}
+          title={directions.desc}
+        >
+          <ArrowDown size={12} strokeWidth={1.6} />
+        </DirectionButton>
+      </div>
+    </div>
+  );
+}
+
+function DirectionButton({
+  active,
+  onClick,
+  title,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={title}
+      className="w-6 h-6 rounded-md flex items-center justify-center transition-colors"
+      style={{
+        backgroundColor: active ? "var(--icon-active)" : "var(--bg-chip)",
+        color: active ? "#fff" : "var(--text-muted)",
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
