@@ -1,21 +1,15 @@
 import { useRef } from "react";
-import { Link } from "react-router-dom";
-import { ChevronsUpDown } from "lucide-react";
-import type { SortCriterion, SortDirection } from "../../types/fragrance";
-import { useFragrancesStore } from "../../stores/fragrancesStore";
+import type { ElementType } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from "../ui/DropdownMenu";
+  Home,
+  BookMarked,
+  Heart,
+  BarChart2,
+  Sparkles,
+  Settings,
+} from "lucide-react";
+import { useFragrancesStore } from "../../stores/fragrancesStore";
 
 interface Props {
   count?: number;
@@ -24,37 +18,19 @@ interface Props {
   onIncompleteBadgeClick?: () => void;
 }
 
-type SortOption = {
-  criterion: SortCriterion;
-  label: string;
-  directions?: { asc: string; desc: string };
-};
-
-const SORT_OPTIONS: SortOption[] = [
-  { criterion: "alphabetic",    label: "Alphabétique",          directions: { asc: "A → Z",                  desc: "Z → A" } },
-  { criterion: "createdAt",     label: "Date d'ajout",          directions: { asc: "Ancien → récent",         desc: "Récent → ancien" } },
-  { criterion: "rating",        label: "Note",                  directions: { asc: "Moins bon → meilleur",    desc: "Meilleur → moins bon" } },
-  { criterion: "purchaseDate",  label: "Date d'achat",          directions: { asc: "Ancien → récent",         desc: "Récent → ancien" } },
-  { criterion: "lastUsed",      label: "Dernière utilisation",  directions: { asc: "Ancien → récent",         desc: "Récent → ancien" } },
-  { criterion: "purchasePrice", label: "Prix",                  directions: { asc: "Moins cher → plus cher",  desc: "Plus cher → moins cher" } },
+const NAV_DESTINATIONS: { label: string; icon: ElementType; path: string | null }[] = [
+  { label: "Collection", icon: Home, path: "/" },
+  { label: "Shelf", icon: BookMarked, path: "/shelf" },
+  { label: "Favoris", icon: Heart, path: null },
+  { label: "Stats", icon: BarChart2, path: null },
+  { label: "IA", icon: Sparkles, path: null },
+  { label: "Réglages", icon: Settings, path: null },
 ];
 
-function getSortLabel(criterion: SortCriterion, direction: SortDirection): string {
-  const opt = SORT_OPTIONS.find((o) => o.criterion === criterion);
-  if (!opt) return "Trier";
-  if (!opt.directions) return opt.label;
-  return `${opt.label} · ${opt.directions[direction]}`;
-}
-
 export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadgeClick }: Props) {
-  const { sortState, setSortState, searchQuery, setSearchQuery } = useFragrancesStore();
+  const { searchQuery, setSearchQuery } = useFragrancesStore();
+  const { pathname } = useLocation();
   const searchRef = useRef<HTMLInputElement>(null);
-
-  const isDefaultSort = sortState.criterion === "none";
-
-  function select(criterion: SortCriterion, direction: SortDirection = "asc") {
-    setSortState({ criterion, direction });
-  }
 
   return (
     <header
@@ -75,9 +51,9 @@ export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadg
         my-shelf and AI
       </Link>
 
-      {/* Recherche */}
+      {/* Recherche — collée au logo */}
       <div
-        className="flex-1 max-w-xs h-7 rounded-full px-3 flex items-center gap-1.5"
+        className="w-64 shrink-0 h-7 rounded-full px-3 flex items-center gap-1.5"
         style={{ backgroundColor: "var(--search-bg)" }}
       >
         <input
@@ -102,78 +78,21 @@ export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadg
         )}
       </div>
 
-      {/* Dropdown tri */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            className="flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs transition-colors"
-            style={{
-              backgroundColor: !isDefaultSort ? "var(--icon-active)" : "var(--search-bg)",
-              color: !isDefaultSort ? "#fff" : "var(--text-muted)",
-            }}
-          >
-            <ChevronsUpDown size={12} />
-            <span>{isDefaultSort ? "Trier" : getSortLabel(sortState.criterion, sortState.direction)}</span>
-          </button>
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent align="start">
-          <DropdownMenuLabel>Trier par</DropdownMenuLabel>
-
-          <DropdownMenuItem
-            onSelect={() => select("none")}
-            data-active={sortState.criterion === "none" || undefined}
-            className="data-active:text-(--icon-active)"
-          >
-            Aucun tri
-          </DropdownMenuItem>
-
-          <DropdownMenuSeparator />
-
-          {SORT_OPTIONS.map((opt) => (
-            <DropdownMenuSub key={opt.criterion}>
-              <DropdownMenuSubTrigger
-                data-active={sortState.criterion === opt.criterion || undefined}
-                className="data-active:text-(--icon-active)"
-              >
-                {opt.label}
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuRadioGroup
-                  value={sortState.criterion === opt.criterion ? sortState.direction : ""}
-                >
-                  <DropdownMenuRadioItem
-                    value="asc"
-                    onSelect={() => select(opt.criterion, "asc")}
-                  >
-                    {opt.directions!.asc}
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem
-                    value="desc"
-                    onSelect={() => select(opt.criterion, "desc")}
-                  >
-                    {opt.directions!.desc}
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-          ))}
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuItem
-            onSelect={() => select("random")}
-            data-active={sortState.criterion === "random" || undefined}
-            className="data-active:text-(--icon-active)"
-          >
-            Aléatoire
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {/* Navigation — destinations, collées à droite */}
+      <nav className="ml-auto flex items-center gap-1">
+        {NAV_DESTINATIONS.map(({ label, icon, path }) => (
+          <NavTab
+            key={label}
+            label={label}
+            icon={icon}
+            path={path}
+            active={path !== null && pathname === path}
+          />
+        ))}
+      </nav>
 
       {/* Droite */}
-      <div className="ml-auto flex items-center gap-3">
+      <div className="flex items-center gap-3">
         {count !== undefined && (
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
             {count} parfum{count > 1 ? "s" : ""}
@@ -203,5 +122,48 @@ export function AppHeader({ count, incompleteCount, onQuickAdd, onIncompleteBadg
         )}
       </div>
     </header>
+  );
+}
+
+function NavTab({
+  label,
+  icon: Icon,
+  path,
+  active,
+}: {
+  label: string;
+  icon: ElementType;
+  path: string | null;
+  active: boolean;
+}) {
+  const className =
+    "flex items-center gap-1.5 h-7 px-3 rounded-full text-xs transition-colors";
+
+  // Pas encore de page derrière — visible mais inerte (work in progress)
+  if (!path) {
+    return (
+      <span
+        className={`${className} cursor-default select-none`}
+        style={{ color: "var(--text-ghost)" }}
+        title={`${label} — à venir`}
+      >
+        <Icon size={15} strokeWidth={1.6} />
+        <span>{label}</span>
+      </span>
+    );
+  }
+
+  return (
+    <Link
+      to={path}
+      className={className}
+      style={{
+        backgroundColor: active ? "var(--icon-active)" : "transparent",
+        color: active ? "#fff" : "var(--text-muted)",
+      }}
+    >
+      <Icon size={15} strokeWidth={1.6} />
+      <span>{label}</span>
+    </Link>
   );
 }
